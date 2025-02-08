@@ -13,6 +13,7 @@ import DataPesantren from "./pages/Pendidikan/DataPesantren";
 import ErrorPage from "./components/ErrorPage"; // Komponen untuk menangani error
 import NotFound from "./components/404NotFound"; // Komponen untuk halaman 404
 import DetailDataPesantren from "./pages/Pendidikan/DetailDataPesantren";
+import Tasykil from "./pages/Profil/Tasykil";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -25,7 +26,7 @@ const router = createBrowserRouter(
         path="pendidikan/detail-pesantren"
         element={<DetailDataPesantren />}
       />
-
+      <Route path="profil/tasykil" element={<Tasykil />} />
       {/* Menangani 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Route>
