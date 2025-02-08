@@ -1,24 +1,33 @@
-import React from 'react';
-import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider } from 'react-router-dom';
+import React from "react";
+import {
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider,
+} from "react-router-dom";
 import Home from "./pages/Dashboard";
 import AdminLayout from "./layouts/AdminLayout";
-import DataAnggota from './pages/DataAnggota';
-import Statistik from './pages/Statistik';
+import DataAnggota from "./pages/Anggota/DataAnggota";
+import Statistik from "./pages/Anggota/Statistik";
+import DataPesantren from "./pages/Pendidikan/DataPesantren";
+import ErrorPage from "./components/ErrorPage"; // Komponen untuk menangani error
+import NotFound from "./components/404NotFound"; // Komponen untuk halaman 404
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<AdminLayout />}>
+    <Route path="/" element={<AdminLayout />} errorElement={<ErrorPage />}>
       <Route index element={<Home />} />
       <Route path="users/data-anggota" element={<DataAnggota />} />
       <Route path="users/statistik" element={<Statistik />} />
+      <Route path="pendidikan/data-pesantren" element={<DataPesantren />} />
+      {/* Menangani 404 Not Found */}
+      <Route path="*" element={<NotFound />} />
     </Route>
   )
 );
 
 function App() {
-  return (
-    <RouterProvider router={router} />
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
