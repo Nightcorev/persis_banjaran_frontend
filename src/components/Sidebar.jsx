@@ -103,7 +103,7 @@ const Sidebar = () => {
             >
               <li>
                 <Link
-                  to="/users"
+                  to="/profil/tasykil"
                   className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
                 >
                   Tasykil
@@ -111,7 +111,7 @@ const Sidebar = () => {
               </li>
               <li>
                 <Link
-                  to="/users/statistics"
+                  to="/profil/fasilitas"
                   className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
                 >
                   Fasilitas
