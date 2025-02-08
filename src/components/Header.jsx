@@ -6,7 +6,7 @@ const Header = () => {
     >
 
       <a 
-        href="https://profil.persisbanjaran.org/" 
+        href="/" 
         className="flex items-center text-white text-lg font-bold"
         style={{ textDecoration: "none" }}
       >
