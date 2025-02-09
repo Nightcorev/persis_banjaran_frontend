@@ -15,6 +15,8 @@ import NotFound from "./components/404NotFound"; // Komponen untuk halaman 404
 import DetailDataPesantren from "./pages/Pendidikan/DetailDataPesantren";
 import Tasykil from "./pages/Profil/Tasykil";
 import Fasilitas from "./pages/Profil/Fasilitas";
+import DataAsatidz from "./pages/Pendidikan/DataAsatidz";
+import StatistikPendidikan from "./pages/Pendidikan/StatistikPendidikan";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -23,6 +25,8 @@ const router = createBrowserRouter(
       <Route path="users/data-anggota" element={<DataAnggota />} />
       <Route path="users/statistik" element={<Statistik />} />
       <Route path="pendidikan/data-pesantren" element={<DataPesantren />} />
+      <Route path="pendidikan/data-asatidz" element={<DataAsatidz />} />
+      <Route path="pendidikan/statistik" element={<StatistikPendidikan />} />
       <Route
         path="pendidikan/detail-pesantren"
         element={<DetailDataPesantren />}

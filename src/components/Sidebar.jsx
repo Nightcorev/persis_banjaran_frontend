@@ -288,7 +288,7 @@ const Sidebar = () => {
             >
               <li>
                 <Link
-                  to="/pendidikan"
+                  to="/pendidikan/statistik"
                   className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
                 >
                   Statistik
@@ -304,7 +304,7 @@ const Sidebar = () => {
               </li>
               <li>
                 <Link
-                  to="/pendidikan"
+                  to="/pendidikan/data-asatidz"
                   className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
                 >
                   Data Asatidz

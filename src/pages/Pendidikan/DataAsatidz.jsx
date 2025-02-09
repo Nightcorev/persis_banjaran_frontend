@@ -1,29 +1,34 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const DataPesantren = () => {
-  //const [pesantrens, setPesantren] = useState([]);
+const DataAsatidz = () => {
+  //const [asatidzs, setAsatidz] = useState([]);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const pesantrens = [
+  const asatidzs = [
     {
-      id_pesantren: 1,
-      nama_pesantren: "PPI 31 Banjaran",
-      nomor_pesantren: "31",
-      tingkat: "Madrasah Diniyyah",
-      nama_mudir: "Ahmad Amanudin",
-      jum_santri: 70,
-      alamat: "Jl Pajagalan",
-      no_kontak: "0821391831",
+      id_asatidz: 1,
+      nama_lengkap: "Abdul Abdurahman N",
+      nomor_anggota: "122.658",
+      jenis_kelamin: "pria",
+      tanggal_lahir: "1995-9-17",
+      alamat: "Jln Pajagalan",
+      pendidikan: "S1",
+      status: "1",
     },
   ];
 
+  const formatTanggal = (tanggal) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(tanggal).toLocaleDateString("id-ID", options);
+  };
+
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-lg font-bold mb-4">Data Pesantren</h1>
+      <h1 className="text-lg font-bold mb-4">Data Asatidz</h1>
 
       {/* Pencarian dan Dropdown untuk memilih perPage */}
       <div className="mb-4 flex justify-between items-center">
@@ -52,7 +57,7 @@ const DataPesantren = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)} // Update search term on change
-            placeholder="Cari pesantren..."
+            placeholder="Cari asatidz..."
             className="border p-2 rounded"
           />
         </div>
@@ -64,50 +69,54 @@ const DataPesantren = () => {
           <thead className="bg-gray-200">
             <tr>
               <th className="border p-2">No</th>
-              <th className="border p-2">Nama Pesantren</th>
-              <th className="border p-2">Nomor</th>
-              <th className="border p-2">Tingkat</th>
-              <th className="border p-2">Jama'ah</th>
-              <th className="border p-2">Mudir</th>
-              <th className="border p-2">Asatidz</th>
-              <th className="border p-2">Santri</th>
+              <th className="border p-2">Nama Lengkap</th>
+              <th className="border p-2">No Anggota</th>
+              <th className="border p-2">Jenis Kelamin</th>
+              <th className="border p-2">Tanggal Lahir</th>
               <th className="border p-2">Alamat</th>
+              <th className="border p-2">Pendidikan</th>
+              <th className="border p-2">Statis</th>
               <th className="border p-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {pesantrens.length > 0 ? (
-              pesantrens.map((pesantren, index) => (
-                <tr key={pesantren.id_pesantren} className="hover:bg-gray-100">
+            {asatidzs.length > 0 ? (
+              asatidzs.map((asatidz, index) => (
+                <tr key={asatidz.id_asatidz} className="hover:bg-gray-100">
                   <td className="border p-2 text-center">
                     {(page - 1) * perPage + index + 1}
                   </td>
 
                   <td className="border p-2 text-center">
-                    {pesantren.nama_pesantren}
+                    {asatidz.nama_lengkap}
                   </td>
                   <td className="border p-2 text-center">
-                    {pesantren.nomor_pesantren}
+                    {asatidz.nomor_anggota}
                   </td>
                   <td className="border p-2 text-center">
-                    {pesantren.tingkat}
+                    {asatidz.jenis_kelamin}
                   </td>
                   <td className="border p-2 text-center">
-                    {pesantren.jamaah || "N/A"}
+                    {formatTanggal(asatidz.tanggal_lahir)}
                   </td>
                   <td className="border p-2 text-center">
-                    {pesantren.nama_mudir || "N/A"}
+                    {asatidz.alamat || "N/A"}
                   </td>
                   <td className="border p-2 text-center">
-                    {pesantren.nama_asatidz || "N/A"}
+                    {asatidz.pendidikan || "N/A"}
                   </td>
-                  <td className="border p-2 text-center">
-                    {pesantren.jum_santri || "N/A"}
+                  <td
+                    className={`border p-2 text-center ${
+                      asatidz.status_aktif === 1
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {asatidz.status_aktif === 1 ? "Aktif" : "Tidak Aktif"}
                   </td>
-                  <td className="border p-2 ">{pesantren.alamat || "N/A"}</td>
                   <td className="border p-2 text-center space-x-2">
                     <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 items-center justify-centers">
-                      <Link to="/pendidikan/detail-pesantren">
+                      <Link to="/pendidikan/detail-asatidz">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -145,8 +154,8 @@ const DataPesantren = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="10" className="text-center border p-4">
-                  Tidak ada data Pesantren.
+                <td colSpan="9" className="text-center border p-4">
+                  Tidak ada data asatidz.
                 </td>
               </tr>
             )}
@@ -180,4 +189,4 @@ const DataPesantren = () => {
   );
 };
 
-export default DataPesantren;
+export default DataAsatidz;
