@@ -31,7 +31,7 @@ const DataMonografi = () => {
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-lg font-bold mb-4">Data Pesantren</h1>
+      <h1 className="text-lg font-bold mb-4">Data Monografi</h1>
 
       {/* Pencarian dan Dropdown untuk memilih perPage */}
       <div className="mb-4 flex justify-between items-center">
