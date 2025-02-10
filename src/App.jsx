@@ -17,6 +17,7 @@ import Tasykil from "./pages/Profil/Tasykil";
 import Fasilitas from "./pages/Profil/Fasilitas";
 import DataAsatidz from "./pages/Pendidikan/DataAsatidz";
 import StatistikPendidikan from "./pages/Pendidikan/StatistikPendidikan";
+import DataMonografi from "./pages/Jamiyah/DataMonografi";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -33,6 +34,7 @@ const router = createBrowserRouter(
       />
       <Route path="profil/tasykil" element={<Tasykil />} />
       <Route path="profil/fasilitas" element={<Fasilitas />} />
+      <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
       {/* Menangani 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Route>
