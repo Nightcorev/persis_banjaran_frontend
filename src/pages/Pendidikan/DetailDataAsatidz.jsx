@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const DetailDataPesantren = () => {
-  const [activeTab, setActiveTab] = useState("struktur");
+const DetailDataAsatidz = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const asatidzs = [
+  const riwayats = [
     {
-      id_asatidz: 1,
-      nama_lengkap: "Abdul Abdurahman N",
-      jenis_kelamin: "pria",
-      tanggal_lahir: "1995-9-17",
-      pendidikan: "S1",
+      id_riwayat: 1,
+      nama_pesantren: "PPI 354 Cipaku",
       jabatan: "Mudir",
+      mulai_bertugas: "2011-08-01",
+      lama_bertugas: "13 tahun 7 bulan",
+      status: "1",
       no_sk: "155 /B.3-C.1/J.009/2022",
       tmt: "2022-8-1",
     },
@@ -49,111 +48,76 @@ const DetailDataPesantren = () => {
             />
           </svg>
         </Link>
-        <h1 className="text-4xl font-bold ml-4">Detail Data Pesantren</h1>
+        <h1 className="text-4xl font-bold ml-4">Detail Data Asatidz</h1>
       </div>
 
       {/* Main Content */}
       <div className="flex flex-wrap gap-6 p-4">
         {/* Profile Card */}
-        <div className="bg-white shadow-md rounded-3xl p-4 text-center ">
+        <div className="bg-white shadow-md rounded-3xl p-4 text-center max-h-fit">
           <div className="w-64 h-80 bg-gray-300 flex items-center justify-center rounded-md mx-auto">
             <span className="text-gray-500">Foto</span>
           </div>
           <p className="font-bold text-lg mt-4">Abdul Mutakir</p>
-          <p className="text-gray-600 ">Mudir</p>
+          <p className="text-gray-600 ">Asatidz</p>
+          <div className="flex justify-between mt-2 py-2 border-t-2">
+            <p className="font-bold p-1 ">Status Mengajar</p>
+            <p className=" rounded-xl  px-2 py-1 bg-green-600 text-white ">
+              Aktif
+            </p>
+          </div>
+
+          <div className="flex justify-between  py-2">
+            <p className="font-bold p-1 ">Pendidikan</p>
+            <p className=" rounded-xl  px-2 py-1 bg-cyan-600 text-white ">S1</p>
+          </div>
         </div>
 
         {/* Statistics & Details */}
         <div className="flex-1 space-y-8">
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="p-6 bg-white rounded-3xl shadow-lg flex items-center">
-              <h3 className="text-6xl font-semibold mr-4">103</h3>
-              <p className="text-2xl font-bold">Santri</p>
-            </div>
-            <div className="p-6 bg-white rounded-3xl shadow-lg flex items-center">
-              <h3 className="text-6xl font-semibold mr-4">10</h3>
-              <p className="text-2xl font-bold">Asatidz</p>
-            </div>
-          </div>
-
           {/* Detail Information */}
           <div className="bg-white p-8 rounded-3xl shadow-lg">
-            <div className="grid grid-cols-4 gap-4">
-              <div className="col-span-1 ">
-                <p className="font-bold">Nama Pesantren</p>
-                <p>PPI 351 Girangdeukeut</p>
+            <div className="grid grid-cols-5 gap-2 pb-4">
+              <div>
+                <p className="font-bold">Nama Lengkap</p>
+                <p>Abdul Mutakir</p>
               </div>
-              <div className="col-span-3 ">
+              <div>
+                <p className="font-bold ">Nomor Anggota</p>
+                <p>122.658</p>
+              </div>
+              <div className="col-span-2 ">
                 <p className="font-bold">Alamat</p>
                 <p>Jl. Ciapus No.53 Ds. Banjaran Kec. Banjaran Kab. Bandung</p>
               </div>
+
               <div>
-                <p className="font-bold ">Tingkat</p>
-                <p>Madrasah Diniyyah</p>
+                <p className="font-bold ">Jenis Kelamin</p>
+                <p>Pria</p>
               </div>
               <div>
-                <p className="font-bold ">Nomor Kontak</p>
+                <p className="font-bold">Tempat,Tanggal Lahir</p>
+                <p>Bandung, 17 September 1995</p>
+              </div>
+              <div>
+                <p className="font-bold ">Nomor Telepon/HP</p>
                 <p>088218486116</p>
               </div>
               <div>
-                <p className="font-bold ">Luas Tanah</p>
-                <p>200 m²</p>
+                <p className="font-bold ">E-mail</p>
+                <p>abdul@gmail.com</p>
               </div>
               <div>
-                <p className="font-bold ">Status Tanah</p>
-                <p>Legal</p>
+                <p className="font-bold ">Pendidikan Trakhir</p>
+                <p>S1</p>
               </div>
               <div>
-                <p className="font-bold ">Nomor Pesantren</p>
-                <p>351</p>
-              </div>
-              <div>
-                <p className="font-bold ">Tahun Berdiri</p>
-                <p>2003</p>
-              </div>
-              <div className="col-span-2 ">
-                <p className="font-bold">Luas Bangunan</p>
-                <p>100 m²</p>
+                <p className="font-bold ">Nama Sekolah Terakhir</p>
+                <p>universitas</p>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <div className="p-4">
-        {/* Tabs Header */}
-        <div className="flex space-x-2">
-          {[
-            { id: "struktur", label: "Struktur Kepengurusan" },
-            { id: "asatidz", label: "Data Asatidz" },
-            { id: "santri", label: "Data Santri" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              className={`px-4 py-2 rounded-t-lg font-medium ${
-                activeTab === tab.id ? "bg-white" : "bg-gray-500 text-white"
-              }`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tabs Content */}
-        <div className="p-6 bg-white rounded-b-3xl shadow-md">
-          {activeTab === "struktur" && (
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Struktur Kepengurusan</h2>
-              <div className="flex mt-4">
-                <p className="pr-4 font-bold">Mudir</p>
-                <div className="pl-4">Abdul Mutakir</div>
-              </div>
-            </div>
-          )}
-          {activeTab === "asatidz" && (
-            <div>
-              <h2 className="text-2xl font-bold mb-4 ">Data Asatidz</h2>
+            <div className="mt-4 pt-4 border-t-2">
+              <h2 className="text-2xl font-bold mb-4 ">Riwayat Penugasan</h2>
               {/* Pencarian dan Dropdown untuk memilih perPage */}
               <div className="mb-4 flex justify-between items-center">
                 <div className="flex items-center text-sm">
@@ -181,7 +145,7 @@ const DetailDataPesantren = () => {
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)} // Update search term on change
-                    placeholder="Cari asatidz..."
+                    placeholder="Cari..."
                     className="border p-2 rounded"
                   />
                 </div>
@@ -193,23 +157,21 @@ const DetailDataPesantren = () => {
                   <thead className="bg-gray-200">
                     <tr>
                       <th className="border p-2">No</th>
-                      <th className="border p-2">Nama Lengkap</th>
-                      <th className="border p-2">Jenis Kelamin</th>
-
-                      <th className="border p-2">Tanggal Lahir</th>
-
-                      <th className="border p-2">Pendidikan</th>
+                      <th className="border p-2">Nama Pesantren</th>
                       <th className="border p-2">Jabatan</th>
+                      <th className="border p-2">Mulai Bertugas</th>
                       <th className="border p-2">Nomor SK</th>
                       <th className="border p-2">TMT</th>
+                      <th className="border p-2">Lama Bertugas</th>
+                      <th className="border p-2">Status</th>
                       <th className="border p-2">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {asatidzs.length > 0 ? (
-                      asatidzs.map((asatidz, index) => (
+                    {riwayats.length > 0 ? (
+                      riwayats.map((riwayat, index) => (
                         <tr
-                          key={asatidz.id_asatidz}
+                          key={riwayat.id_riwayat}
                           className="hover:bg-gray-100"
                         >
                           <td className="border p-2 text-center">
@@ -217,33 +179,39 @@ const DetailDataPesantren = () => {
                           </td>
 
                           <td className="border p-2 text-center">
-                            {asatidz.nama_lengkap}
+                            {riwayat.nama_pesantren}
                           </td>
                           <td className="border p-2 text-center">
-                            {asatidz.jenis_kelamin}
+                            {riwayat.jabatan}
                           </td>
 
                           <td className="border p-2 text-center">
-                            {formatTanggal(asatidz.tanggal_lahir)}
+                            {formatTanggal(riwayat.mulai_bertugas)}
                           </td>
                           <td className="border p-2 text-center">
-                            {asatidz.pendidikan || "N/A"}
+                            {formatTanggal(riwayat.tmt)}
                           </td>
                           <td className="border p-2 text-center">
-                            {asatidz.jabatan || "N/A"}
+                            {riwayat.tmt || "N/A"}
                           </td>
                           <td className="border p-2 text-center">
-                            {asatidz.no_sk || "N/A"}
+                            {riwayat.lama_bertugas || "N/A"}
                           </td>
-                          <td className="border p-2 text-center">
-                            {formatTanggal(asatidz.tmt)}
+                          <td
+                            className={`border p-2 text-center ${
+                              riwayat.status === 1
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {riwayat.status === 1 ? "Aktif" : "Tidak Aktif"}
                           </td>
                           <td className="border p-2 text-center ">
                             <div className=" inline-block space-y-1">
                               {/* Tombol Detail */}
                               <button className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center">
                                 <Link
-                                  to="/pendidikan/detail-asatidz"
+                                  to="/pendidikan/detail-pesantren"
                                   className="flex items-center gap-4"
                                 >
                                   <svg
@@ -275,7 +243,7 @@ const DetailDataPesantren = () => {
                     ) : (
                       <tr>
                         <td colSpan="9" className="text-center border p-4">
-                          Tidak ada data asatidz.
+                          Tidak ada data Riwayat Penugasan.
                         </td>
                       </tr>
                     )}
@@ -306,17 +274,11 @@ const DetailDataPesantren = () => {
                 </button>
               </div>
             </div>
-          )}
-          {activeTab === "santri" && (
-            <div>
-              <h2 className="text-2xl font-bold ">Data Santri</h2>
-              <p className="mt-2">Informasi tentang para santri</p>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default DetailDataPesantren;
+export default DetailDataAsatidz;
