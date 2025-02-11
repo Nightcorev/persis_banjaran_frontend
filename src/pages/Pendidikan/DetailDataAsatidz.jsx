@@ -30,7 +30,7 @@ const DetailDataAsatidz = () => {
       {/* Header */}
       <div className="flex items-center mb-6">
         <Link
-          to="/pendidikan/data-pesantren"
+          to="/pendidikan/data-asatidz"
           className="text-4xl p-2 hover:bg-gray-200 rounded-lg"
         >
           <svg
