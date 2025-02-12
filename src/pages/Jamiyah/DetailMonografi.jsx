@@ -10,7 +10,7 @@ const DetailMonografi = () => {
 
     const musyawarahs = [
         {
-          id_asatidz: 1,
+          id_musyawarah: 1,
           tanggal_musjam: "2023-12-19",
           nama_lengkap: "HELMI SOFYAN",
           tgl_akhir_jihad: "2026-12-16",
@@ -80,7 +80,7 @@ const DetailMonografi = () => {
         <div className="p-6 bg-white rounded-b-3xl shadow-md">
         {activeTab === "musyawarah" && (
             <div>
-              <h2 className="text-2xl font-bold mb-4 ">Data Asatidz</h2>
+              <h2 className="text-2xl font-bold mb-4 ">Data Musyawarah</h2>
               {/* Pencarian dan Dropdown untuk memilih perPage */}
               <div className="mb-4 flex justify-between items-center">
                 <div className="flex items-center text-sm">
@@ -108,7 +108,7 @@ const DetailMonografi = () => {
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)} // Update search term on change
-                    placeholder="Cari asatidz..."
+                    placeholder="Cari musyawarah..."
                     className="border p-2 rounded"
                   />
                 </div>
@@ -129,7 +129,7 @@ const DetailMonografi = () => {
                     {musyawarahs.length > 0 ? (
                       musyawarahs.map((musyawarah, index) => (
                         <tr
-                          key={musyawarah.id_asatidz}
+                          key={musyawarah.id_musyawarah}
                           className="hover:bg-gray-100"
                         >
                           <td className="border p-2 text-center">
@@ -151,7 +151,7 @@ const DetailMonografi = () => {
                     ) : (
                       <tr>
                         <td colSpan="9" className="text-center border p-4">
-                          Tidak ada data asatidz.
+                          Tidak ada data musyawarah.
                         </td>
                       </tr>
                     )}
