@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 const DataMonografi = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [total, setTotal] = useState(0);
+  const [total] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   const jamiyah = [
     {
@@ -17,15 +18,15 @@ const DataMonografi = () => {
       jml_persis: "53",
       jml_persistri: "47",
       jml_pemuda: "62",
-      jml_pemudi:"49",
-      jml_mubaligh:"52",
-      jml_asatidz:"33",
-      jml_ra:"10",
-      jml_md:"11",
-      jml_mi:"31",
-      jml_tsn:"22",
-      jml_smp:"35",
-      jml_ma:"11"
+      jml_pemudi: "49",
+      jml_mubaligh: "52",
+      jml_asatidz: "33",
+      jml_ra: "10",
+      jml_md: "11",
+      jml_mi: "31",
+      jml_tsn: "22",
+      jml_smp: "35",
+      jml_ma: "11"
     },
   ];
 
@@ -70,8 +71,8 @@ const DataMonografi = () => {
       <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-sm">
         <table className="table-auto w-full border-collapse border border-gray-300 text-black">
           <thead className="bg-gray-200">
-          <>
-            <tr>
+            <>
+              <tr>
                 <th rowspan="2">No</th>
                 <th rowspan="2">Nama Jama'ah</th>
                 <th rowspan="2">Ketua PJ</th>
@@ -82,8 +83,8 @@ const DataMonografi = () => {
                 <th rowspan="2"><center>Asatidz</center></th>
                 <th colspan="6"><center>Jumlah Santri</center></th>
                 <th rowspan="2"><center>Aksi</center></th>
-            </tr>
-            <tr>
+              </tr>
+              <tr>
                 <th>Persis</th>
                 <th>Persistri</th>
                 <th>Pemuda</th>
@@ -94,8 +95,8 @@ const DataMonografi = () => {
                 <th>TSn</th>
                 <th>SMP</th>
                 <th>MLN</th>
-            </tr>
-</>
+              </tr>
+            </>
 
           </thead>
           <tbody>
@@ -154,42 +155,112 @@ const DataMonografi = () => {
                   <td className="border p-2 text-center">
                     {data_jamiyah.jml_ma || "N/A"}
                   </td>
-                  
-                  <td className="border p-2 text-center space-x-2">
-                    <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 items-center justify-centers">
-                      <Link to="/jamiyah/detail-jamiyah">
+
+                  <td className="border p-2 text-center">
+                    {/* Tombol Detail, Edit & Delete */}
+                    <div className=" inline-block space-y-1">
+                      {/* Tombol Detail */}
+                      <button className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center">
+                        <Link
+                          to="/jamiyah/detail-jamiyah"
+                          className="flex items-center gap-4"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="size-5"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                            />
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                            />
+                          </svg>
+                          Lihat
+                        </Link>
+                      </button>
+                      {/* Tombol Edit */}
+                      <button className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 flex items-center">
+                        <Link
+                          to="/jamiyah/edit-jamiyah"
+                          className="flex items-center gap-6"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="currentColor"
+                            className="w-5 h-5"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                            />
+                          </svg>
+                          Edit
+                        </Link>
+                      </button>
+
+                      {/* Tombol Delete */}
+                      <button
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center gap-2"
+                        onClick={() => setShowModal(true)}
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
-                          stroke-width="1.5"
+                          strokeWidth="1.5"
                           stroke="currentColor"
-                          class="size-5"
+                          className="w-5 h-5"
                         >
                           <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                           />
                         </svg>
-                      </Link>
-                    </button>
-                    <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 items-center justify-centers">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="size-5"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                        />
-                      </svg>
-                    </button>
+                        Hapus
+                      </button>
+                    </div>
+
+                    {/* Modal Konfirmasi Hapus */}
+                    {showModal && (
+                      <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+                        <div className="bg-white p-6 rounded shadow-lg w-96">
+                          <h2 className="text-lg font-semibold text-gray-800">
+                            Konfirmasi Hapus
+                          </h2>
+                          <p className=" text-gray-600 mt-2">
+                            Apakah Anda yakin ingin menghapus item ini?
+                          </p>
+                          <div className="mt-4 flex justify-end space-x-3">
+                            <button
+                              className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+                              onClick={() => setShowModal(false)}
+                            >
+                              Batal
+                            </button>
+                            <button
+                              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                              onClick={handleDelete}
+                            >
+                              Hapus
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))
