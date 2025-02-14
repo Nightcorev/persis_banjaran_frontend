@@ -30,17 +30,29 @@ const DetailMonografi = () => {
           <div className="bg-gray-300 rounded-lg p-6">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-lg font-bold">HELMI SOFYAN</h2>
+                <h2 className="text-xl font-bold">HELMI SOFYAN</h2>
                 <p className="text-sm">KETUA</p>
               </div>
               <div className="bg-gray-400 rounded-full h-20 w-20 mt-5 mr-5"></div>
             </div>
             <br></br>
             <div className="grid grid-cols-4 gap-4">
-              <div className="flex items-center justify-center bg-gray-500 h-12 rounded-lg text-white">53 <br></br>PERSIS</div>
-              <div className="flex items-center justify-center bg-gray-500 h-12 rounded-lg text-white">47<br></br>PERSISTRI</div>
-              <div className="flex items-center justify-center bg-gray-500 h-12 rounded-lg text-white">62<br></br>PEMUDA</div>
-              <div className="flex items-center justify-center bg-gray-500 h-12 rounded-lg text-white">49<br></br>PEMUDI</div>
+              <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
+                <span>53</span>
+                <span>PERSIS</span>
+              </div>
+              <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
+                <span>47</span>
+                <span>PERSISTRI</span>
+              </div>
+              <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
+                <span>62</span>
+                <span>PEMUDA</span>
+              </div>
+              <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
+                <span>49</span>
+                <span>PEMUDI</span>
+              </div>
             </div>
           </div>
 
@@ -55,7 +67,7 @@ const DetailMonografi = () => {
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-4 mt-5">
         {/* Tabs Header */}
         <div className="flex space-x-3">
           {[
@@ -67,7 +79,7 @@ const DetailMonografi = () => {
           ].map((tab) => (
             <button
               key={tab.id}
-              className={`px-4 py-2 rounded-t-lg font-medium ${
+              className={`px-4 py-2 rounded-t-lg font-medium border border-gray-400 ${
                 activeTab === tab.id ? "bg-white" : "bg-gray-500 text-white"
               }`}
               onClick={() => setActiveTab(tab.id)}
@@ -76,8 +88,9 @@ const DetailMonografi = () => {
             </button>
           ))}
         </div>
+
         {/* Tabs Content */}
-        <div className="p-6 bg-white rounded-b-3xl shadow-md">
+        <div className="p-6 bg-white rounded-b-3xl shadow-md border border-gray-400">
         {activeTab === "musyawarah" && (
             <div>
               <h2 className="text-2xl font-bold mb-4 ">Data Musyawarah</h2>
