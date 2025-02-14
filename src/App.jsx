@@ -19,6 +19,7 @@ import Fasilitas from "./pages/Profil/Fasilitas";
 import DataAsatidz from "./pages/Pendidikan/DataAsatidz";
 import StatistikPendidikan from "./pages/Pendidikan/StatistikPendidikan";
 import DataMonografi from "./pages/Jamiyah/DataMonografi";
+import DetailDataAsatidz from "./pages/Pendidikan/DetailDataAsatidz";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -34,6 +35,7 @@ const router = createBrowserRouter(
         path="pendidikan/detail-pesantren"
         element={<DetailDataPesantren />}
       />
+      <Route path="pendidikan/detail-asatidz" element={<DetailDataAsatidz />} />
       <Route path="profil/tasykil" element={<Tasykil />} />
       <Route path="profil/fasilitas" element={<Fasilitas />} />
       <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
