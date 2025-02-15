@@ -1,82 +1,63 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import MusyawarahTab from "../Jamiyah/Tab/MusyawarahTab";
+import AnggotaTab from "../Jamiyah/Tab/AnggotaTab";
+import PesantrenTab from "../Jamiyah/Tab/PesantrenTab";
+import FasilitasTab from "../Jamiyah/Tab/FasilitasTab";
 
 const DetailMonografi = () => {
-    const [activeTab, setActiveTab] = useState("musyawarah");
-    const [page, setPage] = useState(1);
-    const [perPage, setPerPage] = useState(10);
-    const [total ] = useState(0);
-    const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("musyawarah");
 
-    const musyawarahs = [
-        {
-          id_musyawarah: 1,
-          tanggal_musjam: "2023-12-19",
-          nama_lengkap: "HELMI SOFYAN",
-          tgl_akhir_jihad: "2026-12-16",
-        },
-      ];
+  const tabs = [
+    { id: "musyawarah", label: "Musyawarah Jamaah" },
+    { id: "anggota", label: "Anggota" },
+    { id: "pesantren", label: "Pesantren" },
+    { id: "fasilitas", label: "Fasilitas" },
+  ];
 
-      const formatTanggal = (tanggal) => {
-        const options = { year: "numeric", month: "long", day: "numeric" };
-        return new Date(tanggal).toLocaleDateString("id-ID", options);
-      };
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "musyawarah":
+        return <MusyawarahTab />;
+      case "anggota":
+        return <AnggotaTab />;
+      case "pesantren":
+        return <PesantrenTab />;
+      case "fasilitas":
+        return <FasilitasTab />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold mb-6">PJ PERSIS BANJARAN</h1>
-        <div className="grid grid-cols-2 gap-6">
-          {/* Card Section */}
-          <div className="bg-gray-300 rounded-lg p-6">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-xl font-bold">HELMI SOFYAN</h2>
-                <p className="text-sm">KETUA</p>
-              </div>
-              <div className="bg-gray-400 rounded-full h-20 w-20 mt-5 mr-5"></div>
+      <h1 className="text-2xl font-bold mb-6">PJ PERSIS BANJARAN</h1>
+      <div className="grid grid-cols-2 gap-6">
+        <div className="bg-gray-300 rounded-lg p-6">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-bold">HELMI SOFYAN</h2>
+              <p className="text-sm">KETUA</p>
             </div>
-            <br></br>
-            <div className="grid grid-cols-4 gap-4">
-              <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
-                <span>53</span>
-                <span>PERSIS</span>
-              </div>
-              <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
-                <span>47</span>
-                <span>PERSISTRI</span>
-              </div>
-              <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
-                <span>62</span>
-                <span>PEMUDA</span>
-              </div>
-              <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
-                <span>49</span>
-                <span>PEMUDI</span>
-              </div>
-            </div>
+            <div className="bg-gray-400 rounded-full h-20 w-20 mt-3"></div>
           </div>
-
-          {/* Jamaah Info Section */}
-          <div className="bg-gray-300 rounded-lg p-6">
-            <h2 className="text-lg font-bold mb-1">NAMA JAMAAH</h2>
-            <p className="mb-2">BANJARAN</p>
-            <h2 className="text-lg font-bold mb-1">NOMOR JAMAAH</h2>
-            <p className="mb-2">1</p>
-            <h2 className="text-lg font-bold mb-1">ALAMAT</h2>
-            <p>Jl.Pajagalan 115 Ds.Banjaran Kec.Banjaran Kab.Bandung</p>
+          <div className="grid grid-cols-4 gap-4">
+            <StatCard title="53" subtitle="PERSIS" />
+            <StatCard title="47" subtitle="PERSISTRI" />
+            <StatCard title="62" subtitle="PEMUDA" />
+            <StatCard title="49" subtitle="PEMUDI" />
           </div>
         </div>
-
-        <div className="p-4 mt-5">
+        <div className="bg-gray-300 rounded-lg p-6">
+          <InfoRow label="NAMA JAMAAH" value="BANJARAN" />
+          <InfoRow label="NOMOR JAMAAH" value="1" />
+          <InfoRow label="ALAMAT" value="Jl.Pajagalan 115 Ds.Banjaran Kec.Banjaran Kab.Bandung" />
+        </div>
+      </div>
+      <div className="p-4 mt-5">
         {/* Tabs Header */}
         <div className="flex space-x-3">
-          {[
-            { id: "musyawarah", label: "Musyawarah Jamaah" },
-            { id: "anggota", label: "Anggota" },
-            { id: "pesantren", label: "Pesantren" },
-            { id: "wakaf", label: "Wakaf" },
-            { id: "fasilitas", label: "Fasilitas" },
-          ].map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
               className={`px-4 py-2 rounded-t-lg font-medium border border-gray-400 ${
@@ -91,115 +72,26 @@ const DetailMonografi = () => {
 
         {/* Tabs Content */}
         <div className="p-6 bg-white rounded-b-3xl shadow-md border border-gray-400">
-        {activeTab === "musyawarah" && (
-            <div>
-              <h2 className="text-2xl font-bold mb-4 ">Data Musyawarah</h2>
-              {/* Pencarian dan Dropdown untuk memilih perPage */}
-              <div className="mb-4 flex justify-between items-center">
-                <div className="flex items-center text-sm">
-                  <label className="mr-2">Tampilkan:</label>
-                  <select
-                    value={perPage}
-                    onChange={(e) => setPerPage(Number(e.target.value))}
-                    className="border p-2 rounded"
-                  >
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                  </select>
-                  <span className="ml-2">data per halaman</span>
-                </div>
-
-                {/* Input Pencarian */}
-                <div className="flex items-center text-sm">
-                  <label htmlFor="search" className="mr-2">
-                    Cari:
-                  </label>
-                  <input
-                    id="search"
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)} // Update search term on change
-                    placeholder="Cari musyawarah..."
-                    className="border p-2 rounded"
-                  />
-                </div>
-              </div>
-
-              {/* Tabel Data */}
-              <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-sm">
-                <table className="table-auto w-full border-collapse border border-gray-300 text-black">
-                  <thead className="bg-gray-200">
-                    <tr>
-                      <th className="border p-2">No</th>
-                      <th className="border p-2">Tanggal Musjam</th>
-                      <th className="border p-2">Ketua Terpilih</th>
-                      <th className="border p-2">Habis Masa Jihad</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {musyawarahs.length > 0 ? (
-                      musyawarahs.map((musyawarah, index) => (
-                        <tr
-                          key={musyawarah.id_musyawarah}
-                          className="hover:bg-gray-100"
-                        >
-                          <td className="border p-2 text-center">
-                            {(page - 1) * perPage + index + 1}
-                          </td>
-
-                          <td className="border p-2 text-center">
-                            {formatTanggal(musyawarah.tanggal_musjam)}
-                          </td>
-                          <td className="border p-2 text-center">
-                            {musyawarah.nama_lengkap}
-                          </td>
-
-                          <td className="border p-2 text-center">
-                            {formatTanggal(musyawarah.tgl_akhir_jihad)}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="9" className="text-center border p-4">
-                          Tidak ada data musyawarah.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination Buttons */}
-              <div className="mt-4 flex justify-between items-center">
-                <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
-                  className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
-                >
-                  Prev
-                </button>
-
-                <span>
-                  Halaman {page} dari {Math.ceil(total / perPage)}
-                </span>
-
-                <button
-                  onClick={() => setPage((prev) => prev + 1)}
-                  disabled={page >= Math.ceil(total / perPage)}
-                  className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          {renderTabContent()}
         </div>
-    </div>
+      </div>
     </div>
   );
 };
+
+// Utility components for the stats and info rows
+const StatCard = ({ title, subtitle }) => (
+  <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
+    <span>{title}</span>
+    <span>{subtitle}</span>
+  </div>
+);
+
+const InfoRow = ({ label, value }) => (
+  <div className="mb-4">
+    <h2 className="text-lg font-bold">{label}</h2>
+    <p>{value}</p>
+  </div>
+);
 
 export default DetailMonografi;
