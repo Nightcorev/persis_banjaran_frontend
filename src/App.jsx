@@ -19,6 +19,7 @@ import DataAsatidz from "./pages/Pendidikan/DataAsatidz";
 import StatistikPendidikan from "./pages/Pendidikan/StatistikPendidikan";
 import DataMonografi from "./pages/Jamiyah/DataMonografi";
 import DetailDataAsatidz from "./pages/Pendidikan/DetailDataAsatidz";
+import DetailMonografi from "./pages/Jamiyah/DetailMonografi"
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -29,14 +30,12 @@ const router = createBrowserRouter(
       <Route path="pendidikan/data-pesantren" element={<DataPesantren />} />
       <Route path="pendidikan/data-asatidz" element={<DataAsatidz />} />
       <Route path="pendidikan/statistik" element={<StatistikPendidikan />} />
-      <Route
-        path="pendidikan/detail-pesantren"
-        element={<DetailDataPesantren />}
-      />
+      <Route path="pendidikan/detail-pesantren"element={<DetailDataPesantren />}/>
       <Route path="pendidikan/detail-asatidz" element={<DetailDataAsatidz />} />
       <Route path="profil/tasykil" element={<Tasykil />} />
       <Route path="profil/fasilitas" element={<Fasilitas />} />
       <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
+      <Route path="jamiyah/detail-jamiyah" element={<DetailMonografi />} />
       {/* Menangani 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Route>
