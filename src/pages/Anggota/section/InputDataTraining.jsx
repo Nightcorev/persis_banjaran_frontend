@@ -1,8 +1,7 @@
-// InputDataTraining.jsx
 import React, { useState } from "react";
 import Modal from "../../../components/Modal";
 
-const InputDataTraining = ({ nomorAnggota }) => {
+const InputDataTraining = ({ data = [], onDataChange, nomorAnggota }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [training, setTraining] = useState({
     namaTraining: "",
@@ -10,50 +9,50 @@ const InputDataTraining = ({ nomorAnggota }) => {
     tanggal: "",
   });
 
-  const handleOpenPopup = () => {
-    setIsPopupOpen(true);
-  };
-
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-  };
+  const handleOpenPopup = () => setIsPopupOpen(true);
+  const handleClosePopup = () => setIsPopupOpen(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setTraining({
-      ...training,
+    setTraining((prevState) => ({
+      ...prevState,
       [name]: value,
-    });
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(training);
+    onDataChange([...data, training]);
+    setTraining({
+      namaTraining: "",
+      tempat: "",
+      tanggal: "",
+    });
     handleClosePopup();
   };
 
   return (
     <div>
       <div className="flex items-center gap-2">
-          <label className="text-xs">Nomor Anggota</label>
-          <input
+        <label className="text-xs">Nomor Anggota</label>
+        <input
           type="text"
           className="w-sm p-2 border rounded-md text-xs"
           value={nomorAnggota}
           disabled
-          />
+        />
       </div>
 
-      <div className="flex flex-row-reverse">
-      <button
-        onClick={handleOpenPopup}
-        className="py-2 px-4 bg-green-600 text-white rounded-md mt-4 text-sm"
-      >
-        Tambah Data Training
-      </button>
+      <div className="flex flex-row-reverse mt-2">
+        <button
+          onClick={handleOpenPopup}
+          className="py-2 px-4 bg-green-600 text-white rounded-md text-sm"
+        >
+          Tambah Training
+        </button>
       </div>
 
-      <div className="overflow-x-auto mt-4">
+      <div className="overflow-x-auto mt-2">
         <table className="min-w-full table-auto">
           <thead>
             <tr className="bg-gray-100">
@@ -65,50 +64,52 @@ const InputDataTraining = ({ nomorAnggota }) => {
             </tr>
           </thead>
           <tbody>
-            {/* Tabel kosong, siap diisi nanti */}
+            {data.length > 0 ? (
+              data.map((item, index) => (
+                <tr key={index}>
+                  <td className="py-2 px-4 border text-xs">{index + 1}</td>
+                  <td className="py-2 px-4 border text-xs">{item.namaTraining}</td>
+                  <td className="py-2 px-4 border text-xs">{item.tempat}</td>
+                  <td className="py-2 px-4 border text-xs">{item.tanggal}</td>
+                  <td className="py-2 px-4 border text-xs">
+                    <button
+                      className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                      onClick={() => {
+                        const newData = data.filter((_, i) => i !== index);
+                        onDataChange(newData);
+                      }}
+                    >
+                      Hapus
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="py-2 px-4 text-center text-xs">
+                  Data training kosong
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Gunakan Modal dengan title dinamis */}
-      <Modal isOpen={isPopupOpen} onClose={handleClosePopup} title="Input Data Pendidikan">
+      <Modal isOpen={isPopupOpen} onClose={handleClosePopup} title="Input Data Training">
         <form onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-2">
-            <label className="text-xs">Nama Training</label>
-            <input
-              type="text"
-              name="namaTraining"
-              value={training.namaTraining}
-              onChange={handleInputChange}
-              className="p-2 border rounded-md text-xs"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 mt-2">
-            <label className="text-xs">Tempat</label>
-            <input
-              type="text"
-              name="tempat"
-              value={training.tempat}
-              onChange={handleInputChange}
-              className="p-2 border rounded-md text-xs"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 mt-2">
-            <label className="text-xs">Tanggal</label>
-            <input
-              type="number"
-              name="tanggal"
-              value={training.tanggal}
-              onChange={handleInputChange}
-              className="p-2 border rounded-md text-xs"
-              required
-            />
-          </div>
-
+          {["Nama Training", "Tempat", "Tanggal"].map((label, idx) => (
+            <div key={idx} className="flex flex-col gap-2 mt-2">
+              <label className="text-xs">{label}</label>
+              <input
+                type={label === "Tanggal" ? "date" : "text"}
+                name={label.toLowerCase().replace(" ", "")}
+                value={training[label.toLowerCase().replace(" ", "")]}
+                onChange={handleInputChange}
+                className="p-2 border rounded-md text-xs"
+                required
+              />
+            </div>
+          ))}
           <div className="flex justify-end gap-2 mt-4">
             <button
               type="button"

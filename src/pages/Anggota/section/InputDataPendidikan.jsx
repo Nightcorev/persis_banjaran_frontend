@@ -1,8 +1,7 @@
-// InputDataPendidikan.jsx
 import React, { useState } from "react";
 import Modal from "../../../components/Modal";
 
-const InputDataPendidikan = ({ nomorAnggota }) => {
+const InputDataPendidikan = ({ data = [], onDataChange, nomorAnggota }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [pendidikan, setPendidikan] = useState({
     tingkat: "",
@@ -12,50 +11,52 @@ const InputDataPendidikan = ({ nomorAnggota }) => {
     tahunKeluar: "",
   });
 
-  const handleOpenPopup = () => {
-    setIsPopupOpen(true);
-  };
-
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-  };
+  const handleOpenPopup = () => setIsPopupOpen(true);
+  const handleClosePopup = () => setIsPopupOpen(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setPendidikan({
-      ...pendidikan,
+    setPendidikan((prevState) => ({
+      ...prevState,
       [name]: value,
-    });
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(pendidikan);
+    onDataChange([...data, pendidikan]); // Kirim data baru ke AddAnggota
+    setPendidikan({
+      tingkat: "",
+      namaSekolah: "",
+      jurusan: "",
+      tahunMasuk: "",
+      tahunKeluar: "",
+    });
     handleClosePopup();
   };
 
   return (
     <div>
       <div className="flex items-center gap-2">
-            <label className="text-xs">Nomor Anggota</label>
-            <input
-            type="text"
-            className="w-sm p-2 border rounded-md text-xs"
-            value={nomorAnggota}
-            disabled
-            />
+        <label className="text-xs">Nomor Anggota</label>
+        <input
+          type="text"
+          className="w-sm p-2 border rounded-md text-xs"
+          value={nomorAnggota}
+          disabled
+        />
       </div>
 
       <div className="flex flex-row-reverse">
         <button
           onClick={handleOpenPopup}
-          className="py-2 px-4 bg-green-600 text-white rounded-md mt-4 text-sm"
+          className="py-2 px-4 bg-green-600 text-white rounded-md text-sm"
         >
           Tambah Pendidikan
         </button>
       </div>
 
-      <div className="overflow-x-auto mt-4">
+      <div className="overflow-x-auto mt-2">
         <table className="min-w-full table-auto">
           <thead>
             <tr className="bg-gray-100">
@@ -69,12 +70,38 @@ const InputDataPendidikan = ({ nomorAnggota }) => {
             </tr>
           </thead>
           <tbody>
-            {/* Tabel kosong, siap diisi nanti */}
+            {data.length > 0 ? (data.map((item, index) => (
+              <tr key={index}>
+                <td className="py-2 px-4 border text-xs">{index + 1}</td>
+                <td className="py-2 px-4 border text-xs">{item.tingkat}</td>
+                <td className="py-2 px-4 border text-xs">{item.namaSekolah}</td>
+                <td className="py-2 px-4 border text-xs">{item.jurusan}</td>
+                <td className="py-2 px-4 border text-xs">{item.tahunMasuk}</td>
+                <td className="py-2 px-4 border text-xs">{item.tahunKeluar}</td>
+                <td className="py-2 px-4 border text-xs">
+                  <button
+                    className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                    onClick={() => {
+                      const newData = data.filter((_, i) => i !== index);
+                      onDataChange(newData);
+                    }}
+                  >
+                    Hapus
+                  </button>
+                </td>
+              </tr>
+            ))): (
+              <tr>
+                <td colSpan="4" className="py-2 px-4 text-center text-xs">
+                  Data pendidikan kosong
+                </td>
+              </tr>
+            )
+            }
           </tbody>
         </table>
       </div>
 
-      {/* Gunakan Modal dengan title dinamis */}
       <Modal isOpen={isPopupOpen} onClose={handleClosePopup} title="Input Data Pendidikan">
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">

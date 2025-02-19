@@ -1,8 +1,7 @@
-// InputDataOrganisasi.jsx
 import React, { useState } from "react";
 import Modal from "../../../components/Modal";
 
-const InputDataOrganisasi = ({ nomorAnggota }) => {
+const InputDataOrganisasi = ({ data = [], onDataChange, nomorAnggota }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [organisasi, setOrganisasi] = useState({
     namaOrganisasi: "",
@@ -12,50 +11,52 @@ const InputDataOrganisasi = ({ nomorAnggota }) => {
     tahunSelesai: "",
   });
 
-  const handleOpenPopup = () => {
-    setIsPopupOpen(true);
-  };
-
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-  };
+  const handleOpenPopup = () => setIsPopupOpen(true);
+  const handleClosePopup = () => setIsPopupOpen(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setOrganisasi({
-      ...organisasi,
+    setOrganisasi((prevState) => ({
+      ...prevState,
       [name]: value,
-    });
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(organisasi);
+    onDataChange([...data, organisasi]);
+    setOrganisasi({
+      namaOrganisasi: "",
+      tingkat: "",
+      jabatan: "",
+      tahunMulai: "",
+      tahunSelesai: "",
+    });
     handleClosePopup();
   };
 
   return (
     <div>
       <div className="flex items-center gap-2">
-          <label className="text-xs">Nomor Anggota</label>
-          <input
+        <label className="text-xs">Nomor Anggota</label>
+        <input
           type="text"
           className="w-sm p-2 border rounded-md text-xs"
           value={nomorAnggota}
           disabled
-          />
+        />
       </div>
 
-      <div className="flex flex-row-reverse">
+      <div className="flex flex-row-reverse mt-2">
         <button
           onClick={handleOpenPopup}
-          className="py-2 px-4 bg-green-600 text-white rounded-md mt-4 text-sm"
+          className="py-2 px-4 bg-green-600 text-white rounded-md text-sm"
         >
-          Tambah Data Organisasi
+          Tambah Organisasi
         </button>
       </div>
 
-      <div className="overflow-x-auto mt-4">
+      <div className="overflow-x-auto mt-2">
         <table className="min-w-full table-auto">
           <thead>
             <tr className="bg-gray-100">
@@ -69,14 +70,52 @@ const InputDataOrganisasi = ({ nomorAnggota }) => {
             </tr>
           </thead>
           <tbody>
-            {/* Tabel kosong, siap diisi nanti */}
+            {data.length > 0 ? (
+              data.map((item, index) => (
+                <tr key={index}>
+                  <td className="py-2 px-4 border text-xs">{index + 1}</td>
+                  <td className="py-2 px-4 border text-xs">{item.namaOrganisasi}</td>
+                  <td className="py-2 px-4 border text-xs">{item.tingkat}</td>
+                  <td className="py-2 px-4 border text-xs">{item.jabatan}</td>
+                  <td className="py-2 px-4 border text-xs">{item.tahunMulai}</td>
+                  <td className="py-2 px-4 border text-xs">{item.tahunSelesai}</td>
+                  <td className="py-2 px-4 border text-xs">
+                    <button
+                      className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                      onClick={() => {
+                        const newData = data.filter((_, i) => i !== index);
+                        onDataChange(newData);
+                      }}
+                    >
+                      Hapus
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="py-2 px-4 text-center text-xs">
+                  Data organisasi kosong
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Gunakan Modal dengan title dinamis */}
       <Modal isOpen={isPopupOpen} onClose={handleClosePopup} title="Input Data Organisasi">
-        <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-2">
+            <label className="text-xs">Tingkat</label>
+            <input
+              type="text"
+              name="tingkat"
+              value={pendidikan.tingkat}
+              onChange={handleInputChange}
+              className="p-2 border rounded-md text-xs"
+              required
+            />
+          </div>
 
           <div className="flex flex-col gap-2 mt-2">
             <label className="text-xs">Nama Organisasi</label>
@@ -90,12 +129,12 @@ const InputDataOrganisasi = ({ nomorAnggota }) => {
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-xs">Tingkat</label>
+          <div className="flex flex-col gap-2 mt-2">
+            <label className="text-xs">Jurusan</label>
             <input
               type="text"
-              name="tingkat"
-              value={organisasi.tingkat}
+              name="jurusan"
+              value={pendidikan.jurusan}
               onChange={handleInputChange}
               className="p-2 border rounded-md text-xs"
               required
@@ -103,23 +142,11 @@ const InputDataOrganisasi = ({ nomorAnggota }) => {
           </div>
 
           <div className="flex flex-col gap-2 mt-2">
-            <label className="text-xs">Jabatan</label>
-            <input
-              type="text"
-              name="jabatan"
-              value={organisasi.jabatan}
-              onChange={handleInputChange}
-              className="p-2 border rounded-md text-xs"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 mt-2">
-            <label className="text-xs">Tahun Mulai</label>
+            <label className="text-xs">Tahun Masuk</label>
             <input
               type="number"
-              name="tahunMulai"
-              value={organisasi.tahunMulai}
+              name="tahunMasuk"
+              value={pendidikan.tahunMasuk}
               onChange={handleInputChange}
               className="p-2 border rounded-md text-xs"
               required
@@ -127,11 +154,11 @@ const InputDataOrganisasi = ({ nomorAnggota }) => {
           </div>
 
           <div className="flex flex-col gap-2 mt-2">
-            <label className="text-xs">Tahun Selesai</label>
+            <label className="text-xs">Tahun Keluar</label>
             <input
               type="number"
-              name="tahunSelesai"
-              value={organisasi.tahunSelesai}
+              name="tahunKeluar"
+              value={pendidikan.tahunKeluar}
               onChange={handleInputChange}
               className="p-2 border rounded-md text-xs"
               required

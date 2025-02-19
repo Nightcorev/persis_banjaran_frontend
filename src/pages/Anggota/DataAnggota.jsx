@@ -18,7 +18,6 @@ const DataAnggota = () => {
         const response = await axios.get(
           `http://127.0.0.1:8000/api/anggota?page=${page}&perPage=${perPage}&search=${searchTerm}`
         );
-        console.log("API Response:", response.data.data.total);
         setUsers(response.data.data.data);
         setTotal(response.data.data.total);
       } catch (error) {

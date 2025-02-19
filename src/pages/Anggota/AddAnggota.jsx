@@ -16,19 +16,34 @@ const sections = [
 const AddAnggota = () => {
   const [activeSection, setActiveSection] = useState("personal");
   const [nomorAnggota, setNomorAnggota] = useState("");
+  const [formData, setFormData] = useState({
+    personal: {},
+    education: [],
+    work: [],
+    organization: [],
+    training: [],
+  });
+
+  // Fungsi untuk menangani perubahan data dari masing-masing form
+  const handleDataChange = (section, newData) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [section]: newData,
+    }));
+  };
 
   const renderForm = () => {
     switch (activeSection) {
       case "personal":
-        return <InputDataPribadi nomorAnggota={nomorAnggota} setNomorAnggota={setNomorAnggota} />;
+        return <InputDataPribadi data={formData.personal} onDataChange={(fieldName, value) => handleDataChange("personal", { ...formData.personal, [fieldName]: value })} nomorAnggota={nomorAnggota} setNomorAnggota={setNomorAnggota} />;
       case "education":
-        return <InputDataPendidikan nomorAnggota={nomorAnggota} />;
+        return <InputDataPendidikan data={formData.education} onDataChange={(newData) => handleDataChange("education", newData)} nomorAnggota={nomorAnggota} />;
       case "work":
-        return <InputDataPekerjaanKeterampilan nomorAnggota={nomorAnggota} />;
+        return <InputDataPekerjaanKeterampilan data={formData.work} onDataChange={(newData) => handleDataChange("work", newData)} nomorAnggota={nomorAnggota} />;
       case "organization":
-        return <InputDataOrganisasi nomorAnggota={nomorAnggota} />;
+        return <InputDataOrganisasi data={formData.organization} onDataChange={(newData) => handleDataChange("organization", newData)} nomorAnggota={nomorAnggota} />;
       case "training":
-        return <InputDataTraining nomorAnggota={nomorAnggota} />;
+        return <InputDataTraining data={formData.training} onDataChange={(newData) => handleDataChange("training", newData)} nomorAnggota={nomorAnggota} />;
       default:
         return null;
     }
@@ -36,24 +51,20 @@ const AddAnggota = () => {
 
   return (
     <div className="w-full p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-lg font-bold mb-4">Tambah Anggota</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold">Tambah Anggota</h2>
+        <button className="p-4 bg-green-600 text-white py-2 rounded-md" onClick={() => console.log(formData)}>Simpan</button>
+      </div>
+
       <ul className="flex w-full justify-between border-b pb-2 text-sm">
         {sections.map((section) => (
-          <li
-            key={section.key}
-            className={`cursor-pointer p-1 border-b-2 ${
-              activeSection === section.key ? "border-blue-500" : "border-transparent"
-            }`}
-            onClick={() => setActiveSection(section.key)}
-          >
+          <li key={section.key} className={`cursor-pointer p-1 border-b-2 ${activeSection === section.key ? "border-blue-500" : "border-transparent"}`} onClick={() => setActiveSection(section.key)}>
             {section.label}
           </li>
         ))}
       </ul>
+
       <div className="mt-4 flex flex-col w-full">{renderForm()}</div>
-      <div className="flex flex-row-reverse">
-        <button className="mt-4 p-4 bg-green-600 text-white py-2 rounded-md">Simpan</button>
-      </div>
     </div>
   );
 };
