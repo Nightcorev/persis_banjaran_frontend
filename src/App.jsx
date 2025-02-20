@@ -8,6 +8,7 @@ import {
 import Home from "./pages/Dashboard";
 import AdminLayout from "./layouts/AdminLayout";
 import DataAnggota from "./pages/Anggota/DataAnggota";
+import AddAnggota from "./pages/Anggota/AddAnggota";
 import Statistik from "./pages/Anggota/Statistik";
 import DataPesantren from "./pages/Pendidikan/DataPesantren";
 import ErrorPage from "./components/ErrorPage"; // Komponen untuk menangani error
@@ -26,6 +27,7 @@ const router = createBrowserRouter(
     <Route path="/" element={<AdminLayout />} errorElement={<ErrorPage />}>
       <Route index element={<Home />} />
       <Route path="users/data-anggota" element={<DataAnggota />} />
+      <Route path="/users/data-anggota/add-anggota" element={<AddAnggota />} />
       <Route path="users/statistik" element={<Statistik />} />
       <Route path="pendidikan/data-pesantren" element={<DataPesantren />} />
       <Route path="pendidikan/data-asatidz" element={<DataAsatidz />} />
