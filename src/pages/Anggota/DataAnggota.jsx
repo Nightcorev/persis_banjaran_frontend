@@ -18,8 +18,8 @@ const DataAnggota = () => {
         const response = await axios.get(
           `http://127.0.0.1:8000/api/anggota?page=${page}&perPage=${perPage}&search=${searchTerm}`
         );
-        setUsers(response.data.data_anggota);
-        setTotal(response.data.total);
+        setUsers(response.data.data.data);
+        setTotal(response.data.data.total);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -38,8 +38,14 @@ const DataAnggota = () => {
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-lg font-bold mb-4">Data Anggota</h1>
-
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-lg font-bold">Data Anggota</h1>
+        <a href="/users/data-anggota/add-anggota">
+          <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-gray-500">
+            + Tambah Anggota
+          </button>
+        </a>
+      </div>
       {/* Pencarian dan Dropdown untuk memilih perPage */}
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center text-sm">
@@ -136,6 +142,14 @@ const DataAnggota = () => {
                       {user.status_aktif === 1 ? "Aktif" : "Tidak Aktif"}
                     </td>
                     <td className="border p-2 text-center space-x-2">
+                    <button className="bg-green-600 text-white px-3 py-1 rounded hover:bg-blue-600 items-center justify-centers">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+
+                      </button>
+                      
                       <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 items-center justify-centers">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -152,6 +166,7 @@ const DataAnggota = () => {
                           />
                         </svg>
                       </button>
+
                       <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 items-center justify-centers">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"

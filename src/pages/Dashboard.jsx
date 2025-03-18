@@ -3,13 +3,22 @@ import React from 'react';
 const Dashboard = () => {
     return (
     <>
-      <div className="flex" style={{ height: "230px", marginTop: "40px", gap: "40px" }}>
+      <div className="flex" style={{ height: "500px", marginTop: "40px", gap: "40px" }}>
         <div className="p-6 bg-white rounded-lg shadow-lg w-1/3" style={{ marginLeft: "110px" }}>
           <h1 className="text-lg font-bold mb-4">Jumlah Iuran</h1>
         </div>
 
         <div className="p-6 bg-white rounded-lg shadow-lg w-1/3">
           <h1 className="text-lg font-bold mb-4">Jadwal Dakwah</h1>
+          <iframe
+          src="https://dakwah.persisbanjaran.org/"
+          width="100%"
+          height="400px"
+          style={{border: 0}}
+          allowFullScreen=""
+          loading="lazy"
+          >
+          </iframe>
         </div>
 
         <div className="p-6 bg-white rounded-lg shadow-lg w-1/3" style={{ marginRight: "70px" }}>

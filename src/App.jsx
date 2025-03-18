@@ -8,6 +8,7 @@ import {
 import Home from "./pages/Dashboard";
 import AdminLayout from "./layouts/AdminLayout";
 import DataAnggota from "./pages/Anggota/DataAnggota";
+import AddAnggota from "./pages/Anggota/AddAnggota";
 import Statistik from "./pages/Anggota/Statistik";
 import DataPesantren from "./pages/Pendidikan/DataPesantren";
 import ErrorPage from "./components/ErrorPage"; // Komponen untuk menangani error
@@ -22,12 +23,14 @@ import DetailDataAsatidz from "./pages/Pendidikan/DetailDataAsatidz";
 import KelolaAkun from "./pages/ManajementRoles/KelolaAkun";
 import KelolaPermission from "./pages/ManajementRoles/KelolaPermission";
 import KelolaRole from "./pages/ManajementRoles/KelolaRole";
+import DetailMonografi from "./pages/Jamiyah/DetailMonografi";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<AdminLayout />} errorElement={<ErrorPage />}>
       <Route index element={<Home />} />
       <Route path="users/data-anggota" element={<DataAnggota />} />
+      <Route path="/users/data-anggota/add-anggota" element={<AddAnggota />} />
       <Route path="users/statistik" element={<Statistik />} />
       <Route path="pendidikan/data-pesantren" element={<DataPesantren />} />
       <Route path="pendidikan/data-asatidz" element={<DataAsatidz />} />
@@ -43,6 +46,7 @@ const router = createBrowserRouter(
       <Route path="manageAuth/roles" element={<KelolaRole />} />
       <Route path="manageAuth/akun" element={<KelolaAkun />} />
       <Route path="manageAuth/izin" element={<KelolaPermission />} />
+      <Route path="jamiyah/detail-jamiyah" element={<DetailMonografi />} />
       {/* Menangani 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Route>
