@@ -19,6 +19,9 @@ import DataAsatidz from "./pages/Pendidikan/DataAsatidz";
 import StatistikPendidikan from "./pages/Pendidikan/StatistikPendidikan";
 import DataMonografi from "./pages/Jamiyah/DataMonografi";
 import DetailDataAsatidz from "./pages/Pendidikan/DetailDataAsatidz";
+import KelolaAkun from "./pages/ManajementRoles/KelolaAkun";
+import KelolaPermission from "./pages/ManajementRoles/KelolaPermission";
+import KelolaRole from "./pages/ManajementRoles/KelolaRole";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -37,6 +40,9 @@ const router = createBrowserRouter(
       <Route path="profil/tasykil" element={<Tasykil />} />
       <Route path="profil/fasilitas" element={<Fasilitas />} />
       <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
+      <Route path="manageAuth/roles" element={<KelolaRole />} />
+      <Route path="manageAuth/akun" element={<KelolaAkun />} />
+      <Route path="manageAuth/izin" element={<KelolaPermission />} />
       {/* Menangani 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Route>
