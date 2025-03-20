@@ -1,35 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const MusyawarahTab = () => {
+const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const perPage = 10;
+  const [jamaahData, setJamaahData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const musyawarahs = [
-    {
-      id_musyawarah: 1,
-      tanggal_musjam: "2023-12-19",
-      nama_lengkap: "HELMI SOFYAN",
-      tgl_akhir_jihad: "2026-12-16",
-    },
-  ];
+  useEffect(() => {
+    const fetchJamaahData = async () => {
+      setLoading(true);
+      try {
+        // Use masterJamaahId for fetching jamaah data
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/jamaah-monografi/${masterJamaahId}`
+        );
+        
+        console.log("API response:", response.data);
+        
+        // Set the jamaah data (which contains musyawarah details)
+        setJamaahData(response.data.data || null);
+      } catch (error) {
+        console.error("Error fetching jamaah data:", error);
+        setError("Gagal mengambil data jamaah. Silakan coba lagi nanti.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (masterJamaahId) {
+      fetchJamaahData();
+    }
+  }, [masterJamaahId]);
 
   const formatTanggal = (tanggal) => {
+    if (!tanggal) return "-";
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(tanggal).toLocaleDateString("id-ID", options);
   };
 
-  const filteredMusyawarahs = musyawarahs.filter((musyawarah) =>
-    musyawarah.nama_lengkap.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  if (loading) return <div>Memuat data musyawarah...</div>;
+  if (error) return <div>{error}</div>;
+  if (!jamaahData) return <div>Tidak ada data musyawarah.</div>;
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Data Musyawarah</h2>
-      <SearchAndFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-sm">
-        <table className="table-auto w-full border-collapse border border-gray-300 text-black">
-          <thead className="bg-gray-200">
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">Data Musyawarah</h2>
+      
+      <div className="overflow-x-auto mt-4">
+        <table className="min-w-full bg-white border">
+          <thead className="bg-gray-100">
             <tr>
               <th className="border p-2">No</th>
               <th className="border p-2">Tanggal Musjam</th>
@@ -38,47 +59,17 @@ const MusyawarahTab = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredMusyawarahs.length > 0 ? (
-              filteredMusyawarahs.map((musyawarah, index) => (
-                <tr key={musyawarah.id_musyawarah} className="hover:bg-gray-100">
-                  <td className="border p-2 text-center">
-                    {(page - 1) * perPage + index + 1}
-                  </td>
-                  <td className="border p-2 text-center">{formatTanggal(musyawarah.tanggal_musjam)}</td>
-                  <td className="border p-2 text-center">{musyawarah.nama_lengkap}</td>
-                  <td className="border p-2 text-center">{formatTanggal(musyawarah.tgl_akhir_jihad)}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="text-center border p-4">
-                  Tidak ada data musyawarah.
-                </td>
-              </tr>
-            )}
+            <tr>
+              <td className="border p-2 text-center">1</td>
+              <td className="border p-2">{formatTanggal(jamaahData.tgl_pelaksanaan)}</td>
+              <td className="border p-2">{jamaahData.nama_lengkap}</td>
+              <td className="border p-2">{formatTanggal(jamaahData.tgl_akhir_jihad)}</td>
+            </tr>
           </tbody>
         </table>
       </div>
     </div>
   );
 };
-
-const SearchAndFilter = ({ searchTerm, setSearchTerm }) => (
-  <div className="mb-4 flex justify-between items-center">
-    <div className="flex items-center text-sm">
-      <label htmlFor="search" className="mr-2">
-        Cari:
-      </label>
-      <input
-        id="search"
-        type="text"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Cari musyawarah..."
-        className="border p-2 rounded"
-      />
-    </div>
-  </div>
-);
 
 export default MusyawarahTab;

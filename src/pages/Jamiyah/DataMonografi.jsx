@@ -4,7 +4,6 @@ import axios from "axios";
 
 const DataMonografi = () => {
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -47,10 +46,10 @@ const DataMonografi = () => {
             onChange={(e) => setPerPage(Number(e.target.value))}
             className="border p-2 rounded"
           >
+            <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="50">50</option>
-            <option value="100">100</option>
           </select>
           <span className="ml-2">data per halaman</span>
         </div>
@@ -166,25 +165,25 @@ const DataMonografi = () => {
                       {/* Tombol Detail */}
                       <button className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center">
                         <Link
-                          to="/jamiyah/detail-jamiyah"
+                          to={`/jamiyah/detail-jamiyah/${data_jamiyah.id_master_jamaah}`}
                           className="flex items-center gap-4"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
-                            stroke-width="1.5"
+                            strokeWidth="1.5"
                             stroke="currentColor"
-                            class="size-5"
+                            className="size-5"
                           >
                             <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                               d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
                             />
                             <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                               d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                             />
                           </svg>
@@ -270,7 +269,7 @@ const DataMonografi = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="10" className="text-center border p-4">
+                <td colSpan="5" className="text-center border p-4">
                   Tidak ada data Jamiyah.
                 </td>
               </tr>

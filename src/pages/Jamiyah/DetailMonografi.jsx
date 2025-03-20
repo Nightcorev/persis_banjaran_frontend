@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import axios from "axios";
 import MusyawarahTab from "../Jamiyah/Tab/MusyawarahTab";
 import AnggotaTab from "../Jamiyah/Tab/AnggotaTab";
 import PesantrenTab from "../Jamiyah/Tab/PesantrenTab";
 import FasilitasTab from "../Jamiyah/Tab/FasilitasTab";
 
 const DetailMonografi = () => {
+  const { id } = useParams(); // Mengambil id dari URL
+  const [jamaah, setJamaah] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("musyawarah");
+  const [masterJamaahId, setMasterJamaahId] = useState(null);
 
   const tabs = [
     { id: "musyawarah", label: "Musyawarah Jamaah" },
@@ -14,44 +21,77 @@ const DetailMonografi = () => {
     { id: "fasilitas", label: "Fasilitas" },
   ];
 
+  useEffect(() => {
+    const fetchJamaahDetail = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/jamaah-monografi/${id}`
+        );
+        setJamaah(response.data.data);
+        // Store the id_master_jamaah separately
+        setMasterJamaahId(response.data.data.id_master_jamaah);
+      } catch (error) {
+        console.error("Error fetching jamaah detail:", error);
+        setError("Gagal mengambil detail jamaah. Silakan coba lagi nanti.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJamaahDetail();
+  }, [id]);
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "musyawarah":
-        return <MusyawarahTab />;
+        return <MusyawarahTab jamaahId={id} masterJamaahId={masterJamaahId} />;
       case "anggota":
-        return <AnggotaTab />;
+        return <AnggotaTab jamaahId={id} masterJamaahId={masterJamaahId} />;
       case "pesantren":
-        return <PesantrenTab />;
+        return <PesantrenTab jamaahId={id} masterJamaahId={masterJamaahId} />;
       case "fasilitas":
-        return <FasilitasTab />;
+        return <FasilitasTab jamaahId={id} masterJamaahId={masterJamaahId} />;
       default:
         return null;
     }
   };
 
+  if (loading) return <div className="p-6">Memuat data...</div>;
+  if (error) return <div className="p-6 text-red-500">{error}</div>;
+  if (!jamaah) return <div className="p-6">Data jamaah tidak ditemukan.</div>;
+
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold mb-6">PJ PERSIS BANJARAN</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">{jamaah.nama_jamaah}</h1>
+        <Link
+          to="/jamiyah/data-jamiyah"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Kembali
+        </Link>
+      </div>
       <div className="grid grid-cols-2 gap-6">
         <div className="bg-gray-300 rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-xl font-bold">HELMI SOFYAN</h2>
+              <h2 className="text-xl font-bold">{jamaah.nama_lengkap}</h2>
               <p className="text-sm">KETUA</p>
             </div>
             <div className="bg-gray-400 rounded-full h-20 w-20 mt-3"></div>
           </div>
           <div className="grid grid-cols-4 gap-4">
-            <StatCard title="53" subtitle="PERSIS" />
-            <StatCard title="47" subtitle="PERSISTRI" />
-            <StatCard title="62" subtitle="PEMUDA" />
-            <StatCard title="49" subtitle="PEMUDI" />
+            <StatCard title={jamaah.jml_persis} subtitle="PERSIS" />
+            <StatCard title={jamaah.jml_persistri} subtitle="PERSISTRI" />
+            <StatCard title={jamaah.jml_pemuda} subtitle="PEMUDA" />
+            <StatCard title={jamaah.jml_pemudi} subtitle="PEMUDI" />
           </div>
         </div>
         <div className="bg-gray-300 rounded-lg p-6">
-          <InfoRow label="NAMA JAMAAH" value="BANJARAN" />
-          <InfoRow label="NOMOR JAMAAH" value="1" />
-          <InfoRow label="ALAMAT" value="Jl.Pajagalan 115 Ds.Banjaran Kec.Banjaran Kab.Bandung" />
+          <InfoRow label="NAMA JAMAAH" value={jamaah.nama_jamaah} />
+          <InfoRow label="NOMOR JAMAAH" value={jamaah.id_master_jamaah} />
+          <InfoRow label="ALAMAT" value={jamaah.alamat} />
         </div>
       </div>
       <div className="p-4 mt-5">
