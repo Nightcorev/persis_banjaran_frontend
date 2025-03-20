@@ -1,34 +1,38 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const DataMonografi = () => {
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
-  const [total] = useState(0);
+  const [perPage, setPerPage] = useState(5);
+  const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [jamiyah, setJamiyah] = useState([]); // State untuk menyimpan data dari API
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const jamiyah = [
-    {
-      id_master_jamaah: 1,
-      nama_jamaah: "BANJARAN",
-      nama_lengkap: "HELMI SOFYAN",
-      tgl_pelaksanaan: "16 Dec 2023",
-      tgl_akhir_jihad: "16 Dec 2026",
-      jml_persis: "53",
-      jml_persistri: "47",
-      jml_pemuda: "62",
-      jml_pemudi: "49",
-      jml_mubaligh: "52",
-      jml_asatidz: "33",
-      jml_ra: "10",
-      jml_md: "11",
-      jml_mi: "31",
-      jml_tsn: "22",
-      jml_smp: "35",
-      jml_ma: "11"
-    },
-  ];
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:8000/api/data_jamaah?page=${page}&perPage=${perPage}&search=${searchTerm}`
+      );
+      setJamiyah(response.data.data.data); // Update state dengan data dari API
+      setTotal(response.data.data.total);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError("Gagal mengambil data, coba lagi nanti.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // useEffect untuk memanggil fetchData saat page, perPage, atau searchTerm berubah
+    useEffect(() => {
+      fetchData();
+    }, [page, perPage, searchTerm]);
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
@@ -43,10 +47,10 @@ const DataMonografi = () => {
             onChange={(e) => setPerPage(Number(e.target.value))}
             className="border p-2 rounded"
           >
+            <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="50">50</option>
-            <option value="100">100</option>
           </select>
           <span className="ml-2">data per halaman</span>
         </div>
@@ -73,16 +77,16 @@ const DataMonografi = () => {
           <thead className="bg-gray-200">
             <>
               <tr>
-                <th rowspan="2">No</th>
-                <th rowspan="2">Nama Jama'ah</th>
-                <th rowspan="2">Ketua PJ</th>
-                <th rowspan="2">Tanggal Musjam</th>
-                <th rowspan="2">Akhir Masa Jihad</th>
-                <th colspan="4"><center>Jumlah Anggota</center></th>
-                <th rowspan="2"><center>Mubaligh</center></th>
-                <th rowspan="2"><center>Asatidz</center></th>
-                <th colspan="6"><center>Jumlah Santri</center></th>
-                <th rowspan="2"><center>Aksi</center></th>
+                <th rowSpan="2">No</th>
+                <th rowSpan="2">Nama Jama'ah</th>
+                <th rowSpan="2">Ketua PJ</th>
+                <th rowSpan="2">Tanggal Musjam</th>
+                <th rowSpan="2">Akhir Masa Jihad</th>
+                <th colSpan="4"><center>Jumlah Anggota</center></th>
+                <th rowSpan="2"><center>Mubaligh</center></th>
+                <th rowSpan="2"><center>Asatidz</center></th>
+                <th colSpan="6"><center>Jumlah Santri</center></th>
+                <th rowSpan="2"><center>Aksi</center></th>
               </tr>
               <tr>
                 <th>Persis</th>
@@ -117,43 +121,43 @@ const DataMonografi = () => {
                     {data_jamiyah.tgl_pelaksanaan}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.tgl_akhir_jihad || "N/A"}
+                    {data_jamiyah.tgl_akhir_jihad}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_persis || "N/A"}
+                    {data_jamiyah.jml_persis}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_persistri || "N/A"}
+                    {data_jamiyah.jml_persistri}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_pemuda || "N/A"}
+                    {data_jamiyah.jml_pemuda}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_pemudi || "N/A"}
+                    {data_jamiyah.jml_pemudi}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_mubaligh || "N/A"}
+                    {data_jamiyah.jml_mubaligh}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_asatidz || "N/A"}
+                    {data_jamiyah.jml_asatidz}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_ra || "N/A"}
+                    {data_jamiyah.jml_ra}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_md || "N/A"}
+                    {data_jamiyah.jml_md}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_mi || "N/A"}
+                    {data_jamiyah.jml_mi}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_tsn || "N/A"}
+                    {data_jamiyah.jml_tsn}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_smp || "N/A"}
+                    {data_jamiyah.jml_smp}
                   </td>
                   <td className="border p-2 text-center">
-                    {data_jamiyah.jml_ma || "N/A"}
+                    {data_jamiyah.jml_ma}
                   </td>
 
                   <td className="border p-2 text-center">
@@ -162,25 +166,25 @@ const DataMonografi = () => {
                       {/* Tombol Detail */}
                       <button className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center">
                         <Link
-                          to="/jamiyah/detail-jamiyah"
+                          to={`/jamiyah/detail-jamiyah/${data_jamiyah.id_master_jamaah}`}
                           className="flex items-center gap-4"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
-                            stroke-width="1.5"
+                            strokeWidth="1.5"
                             stroke="currentColor"
-                            class="size-5"
+                            className="size-5"
                           >
                             <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                               d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
                             />
                             <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                               d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                             />
                           </svg>
@@ -266,7 +270,7 @@ const DataMonografi = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="10" className="text-center border p-4">
+                <td colSpan="5" className="text-center border p-4">
                   Tidak ada data Jamiyah.
                 </td>
               </tr>
@@ -277,26 +281,35 @@ const DataMonografi = () => {
 
       {/* Pagination Buttons */}
       <div className="mt-4 flex justify-between items-center">
-        <button
-          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          disabled={page === 1}
-          className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
-        >
-          Prev
-        </button>
+      <button
+        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+        disabled={page === 1}
+        className={`px-4 py-2 rounded-lg text-white font-semibold transition ${
+          page === 1
+            ? "bg-gray-300 cursor-not-allowed"
+            : "bg-blue-500 hover:bg-blue-600"
+        }`}
+      >
+        ← Prev
+      </button>
 
-        <span>
-          Halaman {page} dari {Math.ceil(total / perPage)}
-        </span>
+      <span className="text-sm font-medium">
+        Halaman {page} dari {Math.ceil(total / perPage)}
+      </span>
 
-        <button
-          onClick={() => setPage((prev) => prev + 1)}
-          disabled={page >= Math.ceil(total / perPage)}
-          className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+      <button
+        onClick={() => setPage((prev) => (prev < Math.ceil(total / perPage) ? prev + 1 : prev))}
+        disabled={page >= Math.ceil(total / perPage) || jamiyah.length < perPage}
+        className={`px-4 py-2 rounded-lg text-white font-semibold transition ${
+          page >= Math.ceil(total / perPage) || jamiyah.length < perPage
+            ? "bg-gray-300 cursor-not-allowed"
+            : "bg-blue-500 hover:bg-blue-600"
+        }`}
+      >
+        Next →
+      </button>
+    </div>
+
     </div>
   );
 };

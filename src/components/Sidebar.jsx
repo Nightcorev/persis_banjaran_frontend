@@ -238,7 +238,7 @@ const Sidebar = () => {
                   to="/jamiyah/data-jamiyah"
                   className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
                 >
-                  Data Monografi
+                  Data Jamaah
                 </Link>
               </li>
             </ul>

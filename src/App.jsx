@@ -37,7 +37,7 @@ const router = createBrowserRouter(
       <Route path="profil/tasykil" element={<Tasykil />} />
       <Route path="profil/fasilitas" element={<Fasilitas />} />
       <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
-      <Route path="jamiyah/detail-jamiyah" element={<DetailMonografi />} />
+      <Route path="/jamiyah/detail-jamiyah/:id" element={<DetailMonografi />} />
       {/* Menangani 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Route>
