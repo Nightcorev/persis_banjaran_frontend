@@ -4,7 +4,6 @@ import axios from "axios";
 
 const DataMonografi = () => {
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(5);
   const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
