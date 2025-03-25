@@ -5,6 +5,8 @@ import {
   createRoutesFromElements,
   RouterProvider,
 } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css"; // Import CSS untuk toast notifications
+import { ToastContainer } from "react-toastify";
 import Home from "./pages/Dashboard";
 import AdminLayout from "./layouts/AdminLayout";
 import DataAnggota from "./pages/Anggota/DataAnggota";
@@ -53,8 +55,12 @@ const router = createBrowserRouter(
   )
 );
 
-function App() {
-  return <RouterProvider router={router} />;
-}
-
+const App = () => {
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ToastContainer /> {/* Tempatkan ToastContainer di luar RouterProvider */}
+    </>
+  );
+};
 export default App;
