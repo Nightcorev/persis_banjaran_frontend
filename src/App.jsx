@@ -5,6 +5,8 @@ import {
   createRoutesFromElements,
   RouterProvider,
 } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css"; // Import CSS untuk toast notifications
+import { ToastContainer } from "react-toastify";
 import Home from "./pages/Dashboard";
 import AdminLayout from "./layouts/AdminLayout";
 import DataAnggota from "./pages/Anggota/DataAnggota";
@@ -20,7 +22,10 @@ import DataAsatidz from "./pages/Pendidikan/DataAsatidz";
 import StatistikPendidikan from "./pages/Pendidikan/StatistikPendidikan";
 import DataMonografi from "./pages/Jamiyah/DataMonografi";
 import DetailDataAsatidz from "./pages/Pendidikan/DetailDataAsatidz";
-import DetailMonografi from "./pages/Jamiyah/DetailMonografi"
+import KelolaAkun from "./pages/ManajementRoles/KelolaAkun";
+import KelolaPermission from "./pages/ManajementRoles/KelolaPermission";
+import KelolaRole from "./pages/ManajementRoles/KelolaRole";
+import DetailMonografi from "./pages/Jamiyah/DetailMonografi";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -32,20 +37,30 @@ const router = createBrowserRouter(
       <Route path="pendidikan/data-pesantren" element={<DataPesantren />} />
       <Route path="pendidikan/data-asatidz" element={<DataAsatidz />} />
       <Route path="pendidikan/statistik" element={<StatistikPendidikan />} />
-      <Route path="pendidikan/detail-pesantren"element={<DetailDataPesantren />}/>
+      <Route
+        path="pendidikan/detail-pesantren"
+        element={<DetailDataPesantren />}
+      />
       <Route path="pendidikan/detail-asatidz" element={<DetailDataAsatidz />} />
       <Route path="profil/tasykil" element={<Tasykil />} />
       <Route path="profil/fasilitas" element={<Fasilitas />} />
       <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
       <Route path="/jamiyah/detail-jamiyah/:id" element={<DetailMonografi />} />
+      <Route path="manageAuth/roles" element={<KelolaRole />} />
+      <Route path="manageAuth/akun" element={<KelolaAkun />} />
+      <Route path="manageAuth/izin" element={<KelolaPermission />} />
       {/* Menangani 404 Not Found */}
       <Route path="*" element={<NotFound />} />
     </Route>
   )
 );
 
-function App() {
-  return <RouterProvider router={router} />;
-}
-
+const App = () => {
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ToastContainer /> {/* Tempatkan ToastContainer di luar RouterProvider */}
+    </>
+  );
+};
 export default App;
