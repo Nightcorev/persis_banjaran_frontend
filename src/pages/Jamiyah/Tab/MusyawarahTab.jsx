@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
+const MusyawarahTab = ({ masterJamaahId }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(5);
   const [jamaahData, setJamaahData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,14 +12,15 @@ const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
     const fetchJamaahData = async () => {
       setLoading(true);
       try {
-        // Use masterJamaahId for fetching jamaah data
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/jamaah-monografi/${masterJamaahId}`
+          `http://127.0.0.1:8000/api/jamaah-monografi/${masterJamaahId}`,
+          {
+            params: { searchTerm, perPage },
+          }
         );
-        
+
         console.log("API response:", response.data);
-        
-        // Set the jamaah data (which contains musyawarah details)
+
         setJamaahData(response.data.data || null);
       } catch (error) {
         console.error("Error fetching jamaah data:", error);
@@ -32,7 +33,15 @@ const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
     if (masterJamaahId) {
       fetchJamaahData();
     }
-  }, [masterJamaahId]);
+  }, [masterJamaahId, searchTerm, perPage]);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handlePerPageChange = (e) => {
+    setPerPage(Number(e.target.value));
+  };
 
   const formatTanggal = (tanggal) => {
     if (!tanggal) return "-";
@@ -40,14 +49,29 @@ const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
     return new Date(tanggal).toLocaleDateString("id-ID", options);
   };
 
-  if (loading) return <div>Memuat data musyawarah...</div>;
-  if (error) return <div>{error}</div>;
-  if (!jamaahData) return <div>Tidak ada data musyawarah.</div>;
-
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Data Musyawarah</h2>
-      
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Data Musyawarah</h2>
+
+      {/* Input Pencarian & Dropdown PerPage */}
+      <div className="flex items-center gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Cari ketua terpilih..."
+          value={searchTerm}
+          onChange={handleSearch}
+          className="border p-2 rounded w-full"
+        />
+        <select value={perPage} onChange={handlePerPageChange} className="border p-2 rounded">
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+        </select>
+      </div>
+
+      {/* Menampilkan Error */}
+      {error && <div className="text-red-500">{error}</div>}
+
       <div className="overflow-x-auto mt-4">
         <table className="min-w-full bg-white border">
           <thead className="bg-gray-100">
@@ -59,12 +83,22 @@ const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td className="border p-2 text-center">1</td>
-              <td className="border p-2">{formatTanggal(jamaahData.tgl_pelaksanaan)}</td>
-              <td className="border p-2">{jamaahData.nama_lengkap}</td>
-              <td className="border p-2">{formatTanggal(jamaahData.tgl_akhir_jihad)}</td>
-            </tr>
+            {loading ? (
+              <tr>
+                <td colSpan="4" className="text-center p-4">Memuat data...</td>
+              </tr>
+            ) : jamaahData ? (
+              <tr>
+                <td className="border p-2 text-center">1</td>
+                <td className="border p-2">{formatTanggal(jamaahData.tgl_pelaksanaan)}</td>
+                <td className="border p-2">{jamaahData.nama_lengkap}</td>
+                <td className="border p-2">{formatTanggal(jamaahData.tgl_akhir_jihad)}</td>
+              </tr>
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center p-4">Tidak ada data musyawarah.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

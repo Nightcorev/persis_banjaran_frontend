@@ -1,51 +1,58 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const AnggotaTab = ({ masterJamaahId }) => {
+const MusyawarahTab = ({ masterJamaahId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
-  const [anggotas, setAnggotas] = useState([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [anggotaData, setAnggota] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch data from the API
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      setError(null);
       try {
-        let url = `http://127.0.0.1:8000/api/anggota/by-jamaah/${masterJamaahId}`;
-        
-        const response = await axios.get(url);
-        
+        const response = await axios.get(`http://127.0.0.1:8000/api/anggota/by-jamaah/${masterJamaahId}`, {
+          params: { page, searchTerm, perPage }
+        });
+
         console.log("API response:", response.data);
-        
-        if (response.data.status === 200) {
-          // Handle Laravel pagination data structure
-          setAnggotas(response.data.data.data || []);
-          setTotalItems(response.data.data.total || 0);
-          setTotalPages(response.data.data.last_page || 1);
-        } else {
-          setError("Terjadi kesalahan saat mengambil data");
-        }
+
+        setAnggota(response.data.data || null);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        setError("Gagal mengambil data anggota. Silakan coba lagi nanti.");
+        console.error("Error fetching jamaah data:", error);
+        setError("Gagal mengambil data jamaah. Silakan coba lagi nanti.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [page, perPage, searchTerm, masterJamaahId]);
+    if (masterJamaahId) {
+      fetchData();
+    }
+  }, [masterJamaahId, page, searchTerm, perPage]);
 
-  // Handle search with debounce
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setPage(1); // Reset to first page when searching
+    setPage(1); // Reset ke halaman pertama saat mencari
+  };
+
+  const handleNextPage = () => {
+    if (anggotaData && anggotaData.next_page_url) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (anggotaData && anggotaData.prev_page_url) {
+      setPage((prev) => Math.max(prev - 1, 1));
+    }
+  };
+
+  const handlePerPageChange = (e) => {
+    setPerPage(Number(e.target.value));
+    setPage(1); // Reset ke halaman pertama saat mengganti perPage
   };
 
   const formatTanggal = (tanggal) => {
@@ -57,29 +64,29 @@ const AnggotaTab = ({ masterJamaahId }) => {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Data Anggota</h2>
-      
-      {/* Search Bar */}
-      <div className="mb-4">
+
+      {/* Input Pencarian & Dropdown PerPage */}
+      <div className="flex items-center gap-4 mb-4">
         <input
           type="text"
+          placeholder="Cari nama..."
           value={searchTerm}
           onChange={handleSearch}
-          placeholder="Cari anggota..."
           className="border p-2 rounded w-full"
         />
+        <select value={perPage} onChange={handlePerPageChange} className="border p-2 rounded">
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+        </select>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+      {/* Menampilkan Error */}
+      {error && <div className="text-red-500">{error}</div>}
 
-      {/* Tabel Anggota */}
-      <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-sm">
-        <table className="table-auto w-full border-collapse border border-gray-300 text-black">
-          <thead className="bg-gray-200">
+      <div className="overflow-x-auto mt-4">
+        <table className="min-w-full bg-white border">
+          <thead className="bg-gray-100">
             <tr>
               <th className="border p-2">No</th>
               <th className="border p-2">Foto</th>
@@ -94,50 +101,38 @@ const AnggotaTab = ({ masterJamaahId }) => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="8" className="text-center border p-4">
-                  <div className="flex justify-center items-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mr-2"></div>
-                    Loading...
-                  </div>
-                </td>
+                <td colSpan="8" className="text-center p-4">Memuat data...</td>
               </tr>
-            ) : anggotas.length > 0 ? (
-              anggotas.map((anggota, index) => (
-                <tr key={anggota.id_anggota} className="hover:bg-gray-100">
+            ) : anggotaData && anggotaData.data.length > 0 ? (
+              anggotaData.data.map((anggota, index) => (
+                <tr key={index}>
+                  <td className="border p-2 text-center">{(page - 1) * perPage + index + 1}</td>
                   <td className="border p-2 text-center">
-                    {(page - 1) * perPage + index + 1}
-                  </td>
-                  <td className="border p-2 text-center">
-                    <img
-                      src={`/media/images/anggota/${anggota.foto || 'default.jpg'}`}
-                      alt="Foto Anggota"
-                      className="w-12 h-12 rounded-full object-cover mx-auto"
-                      onError={(e) => {
-                        e.target.src = '/media/images/anggota/default.jpg';
-                      }}
+                      <img
+                      src={`$/public/uploads/${anggota.foto}`}
+                      alt="Foto User"
+                      className="w-12 h-12 object-cover rounded-full mx-auto"
                     />
-                  </td>
-                  <td className="border p-2 text-center">{anggota.nik || '-'}</td>
-                  <td className="border p-2 text-center">{anggota.nama_lengkap}</td>
-                  <td className="border p-2 text-center">{formatTanggal(anggota.tanggal_lahir)}</td>
-                  <td className="border p-2 text-center">{anggota.anggota_pendidikan.instansi || '-'}</td>
-                  <td className="border p-2 text-center">{anggota.anggota_pekerjaan.master_pekerjaan.nama_pekerjaan || '-'}</td>
-                  <td className="border p-2 text-center">
-                    {anggota.status_aktif === 1
-                      ? "Aktif" 
-                      : anggota.status_aktif === 2
-                      ? "Meninggal"
-                      : anggota.status_aktif === 3
-                      ? "Mutasi"
-                      : "Tidak Diketahui"}
-                  </td>
+                    </td>
+                  <td className="border p-2">{anggota.nik}</td>
+                  <td className="border p-2">{anggota.nama_lengkap}</td>
+                  <td className="border p-2">{formatTanggal(anggota.tanggal_lahir)}</td>
+                  <td className="border p-2">{anggota.anggota_pendidikan?.instansi || "-"}</td>
+                  <td className="border p-2">{anggota.anggota_pekerjaan?.master_pekerjaan?.nama_pekerjaan || "-"}</td>
+                  <td
+                      className={`border p-2 text-center ${
+                        anggota.status_aktif === 1
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {anggota.status_aktif === 1 ? "Aktif" : "Tidak Aktif"}
+                    </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="text-center border p-4">
-                  Tidak ada data anggota.
-                </td>
+                <td colSpan="8" className="text-center p-4">Tidak ada data anggota.</td>
               </tr>
             )}
           </tbody>
@@ -145,24 +140,12 @@ const AnggotaTab = ({ masterJamaahId }) => {
       </div>
 
       {/* Pagination */}
-      <div className="mt-4 flex justify-between items-center">
-        <button
-          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          disabled={page === 1 || loading}
-          className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
-        >
+      <div className="flex justify-between mt-4">
+        <button onClick={handlePrevPage} disabled={!anggotaData?.prev_page_url} className="p-2 bg-gray-300 rounded">
           Prev
         </button>
-
-        <span>
-          Halaman {page} dari {totalPages || 1}
-        </span>
-
-        <button
-          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={page === totalPages || totalPages === 0 || loading}
-          className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
-        >
+        <span>Halaman {anggotaData?.current_page || 1} dari {anggotaData?.last_page || 1}</span>
+        <button onClick={handleNextPage} disabled={!anggotaData?.next_page_url} className="p-2 bg-gray-300 rounded">
           Next
         </button>
       </div>
@@ -170,4 +153,4 @@ const AnggotaTab = ({ masterJamaahId }) => {
   );
 };
 
-export default AnggotaTab;
+export default MusyawarahTab;
