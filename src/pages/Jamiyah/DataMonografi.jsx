@@ -5,7 +5,7 @@ import api from "../../utils/api";
 
 const DataMonografi = () => {
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(5);
+  const [perPage, setPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -50,10 +50,10 @@ const DataMonografi = () => {
             onChange={(e) => setPerPage(Number(e.target.value))}
             className="border p-2 rounded"
           >
-            <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="50">50</option>
+            <option value="100">100</option>
           </select>
           <span className="ml-2">data per halaman</span>
         </div>
@@ -258,34 +258,6 @@ const DataMonografi = () => {
                         </button>
                       )}
                     </div>
-
-                    {/* Modal Konfirmasi Hapus */}
-                    {showModal && (
-                      <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-                        <div className="bg-white p-6 rounded shadow-lg w-96">
-                          <h2 className="text-lg font-semibold text-gray-800">
-                            Konfirmasi Hapus
-                          </h2>
-                          <p className=" text-gray-600 mt-2">
-                            Apakah Anda yakin ingin menghapus item ini?
-                          </p>
-                          <div className="mt-4 flex justify-end space-x-3">
-                            <button
-                              className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-                              onClick={() => setShowModal(false)}
-                            >
-                              Batal
-                            </button>
-                            <button
-                              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                              onClick={handleDelete}
-                            >
-                              Hapus
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </td>
                 </tr>
               ))
