@@ -235,7 +235,7 @@ const DataMonografi = () => {
 
                       {/* Tombol Delete */}
                       {(account?.role === "Super Admin" ||
-                        permissions.includes("edit_data_jamaah")) && (
+                        permissions.includes("delete_data_jamaah")) && (
                         <button
                           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center gap-2"
                           onClick={() => setShowModal(true)}
