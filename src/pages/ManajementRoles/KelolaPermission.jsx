@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import api from "../../utils/api";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const KelolaPermission = () => {
   //const [permssions, setpermission] = useState([]);
@@ -20,7 +23,6 @@ const KelolaPermission = () => {
   const [selectedFeature, setSelectedFeature] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [showModalAdd, setShowModalAdd] = useState(false);
-  const API_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -34,7 +36,7 @@ const KelolaPermission = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_URL}/permissions`, {
+      const response = await api.get(`${API_URL}/permissions`, {
         params: { page, perPage, search: searchTerm },
       });
       setPermissions(response.data.data.data);
@@ -66,7 +68,7 @@ const KelolaPermission = () => {
     };
 
     try {
-      await axios.post(`${API_URL}/permissions`, newPermission);
+      await api.post(`${API_URL}/permissions`, newPermission);
       toast.success("Permission berhasil ditambahkan!");
       setShowModalAdd(false);
       setSelectedFeature(""); // Reset
@@ -97,7 +99,7 @@ const KelolaPermission = () => {
     };
 
     try {
-      await axios.put(
+      await api.put(
         `${API_URL}/permissions/${editingPermission.id}`,
         newPermission
       );
@@ -114,7 +116,7 @@ const KelolaPermission = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/permissions/${showModalDelete.id}`);
+      await api.delete(`${API_URL}/permissions/${showModalDelete.id}`);
       toast.success("Permission berhasil dihapus!");
       setShowModalDelete(null);
       fetchPermissions();
@@ -128,6 +130,10 @@ const KelolaPermission = () => {
       nama_fitur: "Data Anggota",
       value_fitur: "data_anggota",
     },
+    {
+      nama_fitur: "Data Jamaah",
+      value_fitur: "data_jamaah",
+    },
   ];
 
   const jenis = [
@@ -136,7 +142,7 @@ const KelolaPermission = () => {
       value_jenis: "add",
     },
     {
-      nama_jenis: "Lihat",
+      nama_jenis: "Index",
       value_jenis: "show",
     },
     {

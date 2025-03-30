@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import api from "../../../utils/api";
 
 const AnggotaTab = ({ masterJamaahId }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,12 +18,12 @@ const AnggotaTab = ({ masterJamaahId }) => {
       setLoading(true);
       setError(null);
       try {
-        let url = `http://127.0.0.1:8000/api/anggota/by-jamaah/${masterJamaahId}`;
-        
-        const response = await axios.get(url);
-        
+        let url = `/anggota/by-jamaah/${masterJamaahId}`;
+
+        const response = await api.get(url);
+
         console.log("API response:", response.data);
-        
+
         if (response.data.status === 200) {
           // Handle Laravel pagination data structure
           setAnggotas(response.data.data.data || []);
@@ -57,7 +58,7 @@ const AnggotaTab = ({ masterJamaahId }) => {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Data Anggota</h2>
-      
+
       {/* Search Bar */}
       <div className="mb-4">
         <input
@@ -109,22 +110,35 @@ const AnggotaTab = ({ masterJamaahId }) => {
                   </td>
                   <td className="border p-2 text-center">
                     <img
-                      src={`/media/images/anggota/${anggota.foto || 'default.jpg'}`}
+                      src={`/media/images/anggota/${
+                        anggota.foto || "default.jpg"
+                      }`}
                       alt="Foto Anggota"
                       className="w-12 h-12 rounded-full object-cover mx-auto"
                       onError={(e) => {
-                        e.target.src = '/media/images/anggota/default.jpg';
+                        e.target.src = "/media/images/anggota/default.jpg";
                       }}
                     />
                   </td>
-                  <td className="border p-2 text-center">{anggota.nik || '-'}</td>
-                  <td className="border p-2 text-center">{anggota.nama_lengkap}</td>
-                  <td className="border p-2 text-center">{formatTanggal(anggota.tanggal_lahir)}</td>
-                  <td className="border p-2 text-center">{anggota.anggota_pendidikan.instansi || '-'}</td>
-                  <td className="border p-2 text-center">{anggota.anggota_pekerjaan.master_pekerjaan.nama_pekerjaan || '-'}</td>
+                  <td className="border p-2 text-center">
+                    {anggota.nik || "-"}
+                  </td>
+                  <td className="border p-2 text-center">
+                    {anggota.nama_lengkap}
+                  </td>
+                  <td className="border p-2 text-center">
+                    {formatTanggal(anggota.tanggal_lahir)}
+                  </td>
+                  <td className="border p-2 text-center">
+                    {anggota.anggota_pendidikan.instansi || "-"}
+                  </td>
+                  <td className="border p-2 text-center">
+                    {anggota.anggota_pekerjaan.master_pekerjaan
+                      .nama_pekerjaan || "-"}
+                  </td>
                   <td className="border p-2 text-center">
                     {anggota.status_aktif === 1
-                      ? "Aktif" 
+                      ? "Aktif"
                       : anggota.status_aktif === 2
                       ? "Meninggal"
                       : anggota.status_aktif === 3

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import api from "../../../utils/api";
 
 const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,12 +14,10 @@ const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
       setLoading(true);
       try {
         // Use masterJamaahId for fetching jamaah data
-        const response = await axios.get(
-          `http://127.0.0.1:8000/api/jamaah-monografi/${masterJamaahId}`
-        );
-        
+        const response = await api.get(`/jamaah-monografi/${masterJamaahId}`);
+
         console.log("API response:", response.data);
-        
+
         // Set the jamaah data (which contains musyawarah details)
         setJamaahData(response.data.data || null);
       } catch (error) {
@@ -47,7 +46,7 @@ const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Data Musyawarah</h2>
-      
+
       <div className="overflow-x-auto mt-4">
         <table className="min-w-full bg-white border">
           <thead className="bg-gray-100">
@@ -61,9 +60,13 @@ const MusyawarahTab = ({ jamaahId, masterJamaahId }) => {
           <tbody>
             <tr>
               <td className="border p-2 text-center">1</td>
-              <td className="border p-2">{formatTanggal(jamaahData.tgl_pelaksanaan)}</td>
+              <td className="border p-2">
+                {formatTanggal(jamaahData.tgl_pelaksanaan)}
+              </td>
               <td className="border p-2">{jamaahData.nama_lengkap}</td>
-              <td className="border p-2">{formatTanggal(jamaahData.tgl_akhir_jihad)}</td>
+              <td className="border p-2">
+                {formatTanggal(jamaahData.tgl_akhir_jihad)}
+              </td>
             </tr>
           </tbody>
         </table>

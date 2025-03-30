@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import api from "../../utils/api";
 
 const DataMonografi = () => {
   const [page, setPage] = useState(1);
@@ -11,13 +12,15 @@ const DataMonografi = () => {
   const [jamiyah, setJamiyah] = useState([]); // State untuk menyimpan data dari API
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+  const account = JSON.parse(localStorage.getItem("user"));
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/data_jamaah?page=${page}&perPage=${perPage}&search=${searchTerm}`
+      const response = await api.get(
+        `/data_jamaah?page=${page}&perPage=${perPage}&search=${searchTerm}`
       );
       setJamiyah(response.data.data.data); // Update state dengan data dari API
       setTotal(response.data.data.total);
@@ -30,9 +33,9 @@ const DataMonografi = () => {
   };
 
   // useEffect untuk memanggil fetchData saat page, perPage, atau searchTerm berubah
-    useEffect(() => {
-      fetchData();
-    }, [page, perPage, searchTerm]);
+  useEffect(() => {
+    fetchData();
+  }, [page, perPage, searchTerm]);
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
@@ -82,11 +85,21 @@ const DataMonografi = () => {
                 <th rowSpan="2">Ketua PJ</th>
                 <th rowSpan="2">Tanggal Musjam</th>
                 <th rowSpan="2">Akhir Masa Jihad</th>
-                <th colSpan="4"><center>Jumlah Anggota</center></th>
-                <th rowSpan="2"><center>Mubaligh</center></th>
-                <th rowSpan="2"><center>Asatidz</center></th>
-                <th colSpan="6"><center>Jumlah Santri</center></th>
-                <th rowSpan="2"><center>Aksi</center></th>
+                <th colSpan="4">
+                  <center>Jumlah Anggota</center>
+                </th>
+                <th rowSpan="2">
+                  <center>Mubaligh</center>
+                </th>
+                <th rowSpan="2">
+                  <center>Asatidz</center>
+                </th>
+                <th colSpan="6">
+                  <center>Jumlah Santri</center>
+                </th>
+                <th rowSpan="2">
+                  <center>Aksi</center>
+                </th>
               </tr>
               <tr>
                 <th>Persis</th>
@@ -101,12 +114,14 @@ const DataMonografi = () => {
                 <th>MLN</th>
               </tr>
             </>
-
           </thead>
           <tbody>
             {jamiyah.length > 0 ? (
               jamiyah.map((data_jamiyah, index) => (
-                <tr key={data_jamiyah.id_master_jamaah} className="hover:bg-gray-100">
+                <tr
+                  key={data_jamiyah.id_master_jamaah}
+                  className="hover:bg-gray-100"
+                >
                   <td className="border p-2 text-center">
                     {(page - 1) * perPage + index + 1}
                   </td>
@@ -192,10 +207,38 @@ const DataMonografi = () => {
                         </Link>
                       </button>
                       {/* Tombol Edit */}
-                      <button className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 flex items-center">
-                        <Link
-                          to="/jamiyah/edit-jamiyah"
-                          className="flex items-center gap-6"
+                      {(account?.role === "Super Admin" ||
+                        permissions.includes("edit_data_jamaah")) && (
+                        <button className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 flex items-center">
+                          <Link
+                            to="/jamiyah/edit-jamiyah"
+                            className="flex items-center gap-6"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth="1.5"
+                              stroke="currentColor"
+                              className="w-5 h-5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                              />
+                            </svg>
+                            Edit
+                          </Link>
+                        </button>
+                      )}
+
+                      {/* Tombol Delete */}
+                      {(account?.role === "Super Admin" ||
+                        permissions.includes("edit_data_jamaah")) && (
+                        <button
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center gap-2"
+                          onClick={() => setShowModal(true)}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -208,34 +251,12 @@ const DataMonografi = () => {
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                             />
                           </svg>
-                          Edit
-                        </Link>
-                      </button>
-
-                      {/* Tombol Delete */}
-                      <button
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center gap-2"
-                        onClick={() => setShowModal(true)}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="w-5 h-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                          />
-                        </svg>
-                        Hapus
-                      </button>
+                          Hapus
+                        </button>
+                      )}
                     </div>
 
                     {/* Modal Konfirmasi Hapus */}
@@ -281,35 +302,40 @@ const DataMonografi = () => {
 
       {/* Pagination Buttons */}
       <div className="mt-4 flex justify-between items-center">
-      <button
-        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-        disabled={page === 1}
-        className={`px-4 py-2 rounded-lg text-white font-semibold transition ${
-          page === 1
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-blue-500 hover:bg-blue-600"
-        }`}
-      >
-        ← Prev
-      </button>
+        <button
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          className={`px-4 py-2 rounded-lg text-white font-semibold transition ${
+            page === 1
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600"
+          }`}
+        >
+          ← Prev
+        </button>
 
-      <span className="text-sm font-medium">
-        Halaman {page} dari {Math.ceil(total / perPage)}
-      </span>
+        <span className="text-sm font-medium">
+          Halaman {page} dari {Math.ceil(total / perPage)}
+        </span>
 
-      <button
-        onClick={() => setPage((prev) => (prev < Math.ceil(total / perPage) ? prev + 1 : prev))}
-        disabled={page >= Math.ceil(total / perPage) || jamiyah.length < perPage}
-        className={`px-4 py-2 rounded-lg text-white font-semibold transition ${
-          page >= Math.ceil(total / perPage) || jamiyah.length < perPage
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-blue-500 hover:bg-blue-600"
-        }`}
-      >
-        Next →
-      </button>
-    </div>
-
+        <button
+          onClick={() =>
+            setPage((prev) =>
+              prev < Math.ceil(total / perPage) ? prev + 1 : prev
+            )
+          }
+          disabled={
+            page >= Math.ceil(total / perPage) || jamiyah.length < perPage
+          }
+          className={`px-4 py-2 rounded-lg text-white font-semibold transition ${
+            page >= Math.ceil(total / perPage) || jamiyah.length < perPage
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600"
+          }`}
+        >
+          Next →
+        </button>
+      </div>
     </div>
   );
 };

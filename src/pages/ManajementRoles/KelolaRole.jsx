@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import api from "../../utils/api";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const KelolaRole = () => {
   const [roles, setRoles] = useState([]);
@@ -19,8 +22,6 @@ const KelolaRole = () => {
   const [editingRoleId, setEditingRoleId] = useState(null); // Untuk menyimpan ID role yang sedang diedit
   const [permissions, setPermissions] = useState([]);
 
-  const API_URL = import.meta.env.VITE_API_BASE_URL;
-
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchRoles();
@@ -34,7 +35,7 @@ const KelolaRole = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_URL}/roles`, {
+      const response = await api.get(`${API_URL}/roles`, {
         params: { page, perPage, search: searchTerm },
       });
       setRoles(response.data.data.data);
@@ -50,7 +51,7 @@ const KelolaRole = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_URL}/permissions`);
+      const response = await api.get(`${API_URL}/permissions`);
       setPermissions(response.data.data.data);
     } catch (error) {
       setError("Gagal mengambil data, coba lagi nanti.");
@@ -98,7 +99,7 @@ const KelolaRole = () => {
   };
   const handleDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/roles/${showModalDelete.id}`);
+      await api.delete(`${API_URL}/roles/${showModalDelete.id}`);
       toast.success("Delete berhasil dihapus!");
       setShowModalDelete(null);
       fetchRoles();
@@ -128,10 +129,10 @@ const KelolaRole = () => {
       console.log(payload); // Debugging
 
       if (isEditMode) {
-        await axios.put(`${API_URL}/roles/${editingRoleId}`, payload);
+        await api.put(`${API_URL}/roles/${editingRoleId}`, payload);
         toast.success("Role berhasil diperbarui");
       } else {
-        await axios.post(`${API_URL}/roles`, payload);
+        await api.post(`${API_URL}/roles`, payload);
         toast.success("Role berhasil ditambahkan");
       }
 

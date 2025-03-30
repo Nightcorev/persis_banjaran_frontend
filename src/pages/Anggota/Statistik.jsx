@@ -1,44 +1,80 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Bar, Doughnut } from "react-chartjs-2";
-import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from "chart.js";
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
+import api from "../../utils/api";
 
-Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 function Statistik() {
   const [selectedChart, setSelectedChart] = useState("Bar");
   const [selectedData, setSelectedData] = useState("anggota");
-  const [responseData, setResponseData] = useState({ pendidikan: [], pekerjaan: [], keterampilan: [], anggota: [] });
-  const [monografiData, setMonografiData] = useState({ jum_persistri: 0, jum_pemuda: 0, jum_pemudi: 0, jum_persis: 0 });
+  const [responseData, setResponseData] = useState({
+    pendidikan: [],
+    pekerjaan: [],
+    keterampilan: [],
+    anggota: [],
+  });
+  const [monografiData, setMonografiData] = useState({
+    jum_persistri: 0,
+    jum_pemuda: 0,
+    jum_pemudi: 0,
+    jum_persis: 0,
+  });
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/data_chart")
-      .then(response => {
+    api
+      .get("/data_chart")
+      .then((response) => {
         setResponseData(response.data);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error fetching data_chart:", error);
       });
 
-    axios.get("http://127.0.0.1:8000/api/data_monografi")
-      .then(response => {
+    api
+      .get("/data_monografi")
+      .then((response) => {
         setMonografiData(response.data.data_monografi);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error fetching monografi data:", error);
       });
   }, []);
 
-  const dataOptions = ["anggota", "pendidikan", "pekerjaan", "keterampilan", "mubaligh"];
-  
+  const dataOptions = [
+    "anggota",
+    "pendidikan",
+    "pekerjaan",
+    "keterampilan",
+    "mubaligh",
+  ];
+
   const selectedStats = responseData[selectedData] || [];
 
-  const labels = selectedStats.map(stat => {
+  const labels = selectedStats.map((stat) => {
     if (selectedData === "anggota") return stat.nama_jamaah;
     if (selectedData === "pendidikan") return stat.tingkat_pendidikan;
     if (selectedData === "pekerjaan") return stat.nama_pekerjaan;
     if (selectedData === "keterampilan") return stat.nama_minat;
-    if (selectedData === "mubaligh") return stat.nama_jamaah; 
+    if (selectedData === "mubaligh") return stat.nama_jamaah;
     return "";
   });
 
@@ -50,25 +86,25 @@ function Statistik() {
       datasets: [
         {
           label: "Jumlah Persis",
-          data: selectedStats.map(stat => stat.jum_persis),
+          data: selectedStats.map((stat) => stat.jum_persis),
           backgroundColor: "#22c55e", // Biru
         },
         {
           label: "Jumlah Persistri",
-          data: selectedStats.map(stat => stat.jum_persistri),
+          data: selectedStats.map((stat) => stat.jum_persistri),
           backgroundColor: "#3b82f6", // Hijau
         },
         {
           label: "Jumlah Pemuda",
-          data: selectedStats.map(stat => stat.jum_pemuda),
+          data: selectedStats.map((stat) => stat.jum_pemuda),
           backgroundColor: "#ef4444", // Merah
         },
         {
           label: "Jumlah Pemudi",
-          data: selectedStats.map(stat => stat.jum_pemudi),
+          data: selectedStats.map((stat) => stat.jum_pemudi),
           backgroundColor: "#fbbf24", // Kuning
-        }
-      ]
+        },
+      ],
     };
   } else {
     chartData = {
@@ -76,18 +112,49 @@ function Statistik() {
       datasets: [
         {
           label: "Jumlah Anggota",
-          data: selectedStats.map(stat => stat.jumlah_anggota),
-          backgroundColor: ["#3b82f6", "#22c55e", "#ef4444", "#fbbf24", "#8b5cf6", "#ec4899", "#10b981", "#6366f1", "#f97316", "#14b8a6"],
+          data: selectedStats.map((stat) => stat.jumlah_anggota),
+          backgroundColor: [
+            "#3b82f6",
+            "#22c55e",
+            "#ef4444",
+            "#fbbf24",
+            "#8b5cf6",
+            "#ec4899",
+            "#10b981",
+            "#6366f1",
+            "#f97316",
+            "#14b8a6",
+          ],
         },
       ],
     };
   }
 
   const monos = [
-    { title: "Jumlah Persis", count: monografiData.jum_persis, color: "bg-green-500", route: "" },
-    { title: "Jumlah Persistri", count: monografiData.jum_persistri, color: "bg-blue-500", route: "" },
-    { title: "Jumlah Pemuda", count: monografiData.jum_pemuda, color: "bg-red-500", route: "" },
-    { title: "Jumlah Pemudi", count: monografiData.jum_pemudi, color: "bg-yellow-500", route: "" }
+    {
+      title: "Jumlah Persis",
+      count: monografiData.jum_persis,
+      color: "bg-green-500",
+      route: "",
+    },
+    {
+      title: "Jumlah Persistri",
+      count: monografiData.jum_persistri,
+      color: "bg-blue-500",
+      route: "",
+    },
+    {
+      title: "Jumlah Pemuda",
+      count: monografiData.jum_pemuda,
+      color: "bg-red-500",
+      route: "",
+    },
+    {
+      title: "Jumlah Pemudi",
+      count: monografiData.jum_pemudi,
+      color: "bg-yellow-500",
+      route: "",
+    },
   ];
 
   return (
@@ -119,7 +186,9 @@ function Statistik() {
               onChange={(e) => setSelectedData(e.target.value)}
             >
               {dataOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </select>
 
@@ -135,7 +204,11 @@ function Statistik() {
           </div>
         </div>
 
-        {selectedChart === "Bar" ? <Bar data={chartData} /> : <Doughnut data={chartData} />}
+        {selectedChart === "Bar" ? (
+          <Bar data={chartData} />
+        ) : (
+          <Doughnut data={chartData} />
+        )}
       </div>
     </div>
   );
