@@ -1,20 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "../../../components/Modal";
 
-const InputDataTraining = ({ data = [], onDataChange, nomorAnggota }) => {
+const InputDataMinat = ({ data = [], onDataChange, nomorAnggota }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [training, setTraining] = useState({
-    namaTraining: "",
-    tempat: "",
-    tanggal: ""
+  const [minatChoice, setMinatChoice] = useState([]);
+  const [minat, setMinat] = useState({
+    minat: "",
+    minatLainnya: "",
   });
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/data_choice_minat")
+      .then((response) => response.json())
+      .then((data) => setMinatChoice(data.minat || []))
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
 
   const handleOpenPopup = () => setIsPopupOpen(true);
   const handleClosePopup = () => setIsPopupOpen(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setTraining((prevState) => ({
+    setMinat((prevState) => ({
       ...prevState,
       [name]: value,
     }));
@@ -22,11 +29,10 @@ const InputDataTraining = ({ data = [], onDataChange, nomorAnggota }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onDataChange([...data, training]);
-    setTraining({
-      namaTraining: "",
-      tempat: "",
-      tanggal: ""
+    onDataChange([...data, minat]);
+    setMinat({
+      minat: "",
+      minatLainnya: "",
     });
     handleClosePopup();
   };
@@ -48,7 +54,7 @@ const InputDataTraining = ({ data = [], onDataChange, nomorAnggota }) => {
           onClick={handleOpenPopup}
           className="py-2 px-4 bg-green-600 text-white rounded-md text-sm"
         >
-          Tambah Training
+          Tambah Minat
         </button>
       </div>
 
@@ -57,9 +63,8 @@ const InputDataTraining = ({ data = [], onDataChange, nomorAnggota }) => {
           <thead>
             <tr className="bg-gray-100">
               <th className="py-2 px-4 border text-xs">No</th>
-              <th className="py-2 px-4 border text-xs">Nama Training</th>
-              <th className="py-2 px-4 border text-xs">Tempat</th>
-              <th className="py-2 px-4 border text-xs">Tanggal</th>
+              <th className="py-2 px-4 border text-xs">Nama Minat</th>
+              <th className="py-2 px-4 border text-xs">Lainnya</th>
               <th className="py-2 px-4 border text-xs">Action</th>
             </tr>
           </thead>
@@ -68,9 +73,8 @@ const InputDataTraining = ({ data = [], onDataChange, nomorAnggota }) => {
               data.map((item, index) => (
                 <tr key={index}>
                   <td className="py-2 px-4 border text-xs">{index + 1}</td>
-                  <td className="py-2 px-4 border text-xs">{item.namaTraining}</td>
-                  <td className="py-2 px-4 border text-xs">{item.tempat}</td>
-                  <td className="py-2 px-4 border text-xs">{item.tanggal}</td>
+                  <td className="py-2 px-4 border text-xs">{item.minat}</td>
+                  <td className="py-2 px-4 border text-xs">{item.minatLainnya}</td>
                   <td className="py-2 px-4 border text-xs">
                     <button
                       className="bg-red-500 text-white px-2 py-1 rounded text-xs"
@@ -86,8 +90,8 @@ const InputDataTraining = ({ data = [], onDataChange, nomorAnggota }) => {
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="py-2 px-4 text-center text-xs">
-                  Data training kosong
+                <td colSpan="4" className="py-2 px-4 text-center text-xs">
+                  Data minat kosong
                 </td>
               </tr>
             )}
@@ -95,45 +99,34 @@ const InputDataTraining = ({ data = [], onDataChange, nomorAnggota }) => {
         </table>
       </div>
 
-      <Modal isOpen={isPopupOpen} onClose={handleClosePopup} title="Input Data Training">
-      <form onSubmit={handleSubmit}>
+      <Modal isOpen={isPopupOpen} onClose={handleClosePopup} title="Input Data Minat">
+        <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2 mt-2">
-            <label className="text-xs">Nama Training</label>
+            <label className="text-xs">Minat</label>
             <select
-              name="namaTraining"
-              value={training.namaTraining}
+              name="minat"
+              value={minat.minat}
               onChange={handleInputChange}
               className="p-2 border rounded-md text-xs"
               required
             >
-              <option value="">-- Silahkan Pilih</option>
-              <option value="TAFIQ I">TAFIQ I</option>
-              <option value="TAFIQ II">TAFIQ II</option>
-              <option value="TAFIQ III">TAFIQ III</option>
+              <option value="">-- Silahkan Pilih --</option>
+              {minatChoice.map((item) => (
+                <option key={item.id_master_minat} value={item.nama_minat}>
+                  {item.nama_minat}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="flex flex-col gap-2 mt-2">
-            <label className="text-xs">Tempat</label>
+            <label className="text-xs">Lainnya</label>
             <input
               type="text"
-              name="tempat"
-              value={training.tempat}
+              name="minatLainnya"
+              value={minat.minatLainnya}
               onChange={handleInputChange}
               className="p-2 border rounded-md text-xs"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 mt-2">
-            <label className="text-xs">Tanggal</label>
-            <input
-              type="date"
-              name="tanggal"
-              value={training.tanggal}
-              onChange={handleInputChange}
-              className="p-2 border rounded-md text-xs"
-              required
             />
           </div>
 
@@ -158,4 +151,4 @@ const InputDataTraining = ({ data = [], onDataChange, nomorAnggota }) => {
   );
 };
 
-export default InputDataTraining;
+export default InputDataMinat;

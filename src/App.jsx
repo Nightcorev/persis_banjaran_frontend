@@ -26,6 +26,7 @@ import KelolaAkun from "./pages/ManajementRoles/KelolaAkun";
 import KelolaPermission from "./pages/ManajementRoles/KelolaPermission";
 import KelolaRole from "./pages/ManajementRoles/KelolaRole";
 import DetailMonografi from "./pages/Jamiyah/DetailMonografi";
+import ViewAnggota from "./pages/Anggota/ViewAnggota";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -33,6 +34,8 @@ const router = createBrowserRouter(
       <Route index element={<Home />} />
       <Route path="users/data-anggota" element={<DataAnggota />} />
       <Route path="/users/data-anggota/add-anggota" element={<AddAnggota />} />
+      <Route path="/users/data-anggota/view-anggota/:id" element={<ViewAnggota />} />
+      <Route path="/users/data-anggota/edit-anggota/:id" element={<AddAnggota />} />
       <Route path="users/statistik" element={<Statistik />} />
       <Route path="pendidikan/data-pesantren" element={<DataPesantren />} />
       <Route path="pendidikan/data-asatidz" element={<DataAsatidz />} />
