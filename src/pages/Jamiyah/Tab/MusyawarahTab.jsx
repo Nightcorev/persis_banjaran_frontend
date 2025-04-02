@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import api from "../../../utils/api";
 
 const MusyawarahTab = ({ masterJamaahId }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -12,12 +13,9 @@ const MusyawarahTab = ({ masterJamaahId }) => {
     const fetchJamaahData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `http://127.0.0.1:8000/api/jamaah-monografi/${masterJamaahId}`,
-          {
-            params: { searchTerm, perPage },
-          }
-        );
+        const response = await api.get(`/jamaah-monografi/${masterJamaahId}`, {
+          params: { searchTerm, perPage },
+        });
 
         console.log("API response:", response.data);
 
@@ -62,7 +60,11 @@ const MusyawarahTab = ({ masterJamaahId }) => {
           onChange={handleSearch}
           className="border p-2 rounded w-full"
         />
-        <select value={perPage} onChange={handlePerPageChange} className="border p-2 rounded">
+        <select
+          value={perPage}
+          onChange={handlePerPageChange}
+          className="border p-2 rounded"
+        >
           <option value={5}>5</option>
           <option value={10}>10</option>
           <option value={20}>20</option>
@@ -85,18 +87,26 @@ const MusyawarahTab = ({ masterJamaahId }) => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="4" className="text-center p-4">Memuat data...</td>
+                <td colSpan="4" className="text-center p-4">
+                  Memuat data...
+                </td>
               </tr>
             ) : jamaahData ? (
               <tr>
                 <td className="border p-2 text-center">1</td>
-                <td className="border p-2">{formatTanggal(jamaahData.tgl_pelaksanaan)}</td>
+                <td className="border p-2">
+                  {formatTanggal(jamaahData.tgl_pelaksanaan)}
+                </td>
                 <td className="border p-2">{jamaahData.nama_lengkap}</td>
-                <td className="border p-2">{formatTanggal(jamaahData.tgl_akhir_jihad)}</td>
+                <td className="border p-2">
+                  {formatTanggal(jamaahData.tgl_akhir_jihad)}
+                </td>
               </tr>
             ) : (
               <tr>
-                <td colSpan="4" className="text-center p-4">Tidak ada data musyawarah.</td>
+                <td colSpan="4" className="text-center p-4">
+                  Tidak ada data musyawarah.
+                </td>
               </tr>
             )}
           </tbody>

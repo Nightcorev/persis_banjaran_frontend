@@ -8,6 +8,9 @@ const Sidebar = () => {
   const [isPendidikanOpen, setIsPendidikanOpen] = useState(false);
   const [isManageAuthOpen, setIsManageAuthOpen] = useState(false);
 
+  const user = JSON.parse(localStorage.getItem("user"));
+  const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+
   const toggleProfilMenu = () => {
     setIsProfilOpen(!isProfilOpen);
   };
@@ -320,66 +323,68 @@ const Sidebar = () => {
           </li>
 
           {/* Menu manage role dan akun */}
-          <li>
-            <button
-              onClick={toggleManageAuthMenu}
-              className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-4"
+          {user?.role === "Super Admin" && (
+            <li>
+              <button
+                onClick={toggleManageAuthMenu}
+                className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
-                />
-              </svg>
-              Kelola Role dan Akun
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className={`w-4 h-4 ml-auto transition-transform ${
-                  isManageAuthOpen ? "rotate-180" : ""
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
+                  />
+                </svg>
+                Kelola Role dan Akun
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className={`w-4 h-4 ml-auto transition-transform ${
+                    isManageAuthOpen ? "rotate-180" : ""
+                  }`}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              <ul
+                className={`transition-all overflow-hidden duration-300 ease-in-out ${
+                  isManageAuthOpen ? "max-h-40" : "max-h-0"
                 }`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            <ul
-              className={`transition-all overflow-hidden duration-300 ease-in-out ${
-                isManageAuthOpen ? "max-h-40" : "max-h-0"
-              }`}
-            >
-              <li>
-                <Link
-                  to="/manageAuth/roles"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Kelola Roles dan Permission
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/manageAuth/akun"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Kelola Akun
-                </Link>
-              </li>
-            </ul>
-          </li>
+                <li>
+                  <Link
+                    to="/manageAuth/roles"
+                    className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                  >
+                    Kelola Roles dan Permission
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/manageAuth/akun"
+                    className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                  >
+                    Kelola Akun
+                  </Link>
+                </li>
+              </ul>
+            </li>
+          )}
         </ul>
       </nav>
     </div>

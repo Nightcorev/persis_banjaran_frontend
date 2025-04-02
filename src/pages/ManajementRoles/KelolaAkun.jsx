@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+
 import axios from "axios";
 import { toast } from "react-toastify";
 import Select from "react-select";
+import api from "../../utils/api";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const KelolaAkun = () => {
   const [akuns, setakun] = useState([]);
@@ -25,8 +28,6 @@ const KelolaAkun = () => {
 
   const [editingAkunId, setEditingAkunId] = useState(null);
 
-  const API_URL = import.meta.env.VITE_API_BASE_URL;
-
   useEffect(() => {
     fetchRoles();
     fetchAnggota();
@@ -44,7 +45,7 @@ const KelolaAkun = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_URL}/users`, {
+      const response = await api.get(`${API_URL}/users`, {
         params: { page, perPage, search: searchTerm },
       });
       setakun(response.data.data.data);
@@ -61,7 +62,7 @@ const KelolaAkun = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_URL}/roles`);
+      const response = await api.get(`${API_URL}/roles`);
       setRoles(response.data.data.data);
     } catch (error) {
       setError("Gagal mengambil data, coba lagi nanti.");
@@ -74,7 +75,7 @@ const KelolaAkun = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_URL}/anggota/all`);
+      const response = await api.get(`${API_URL}/anggota/all`);
       setAnggota(response.data.data);
     } catch (error) {
       setError("Gagal mengambil data, coba lagi nanti.");
@@ -85,7 +86,7 @@ const KelolaAkun = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/users/${showModalDelete.id}`);
+      await api.delete(`${API_URL}/users/${showModalDelete.id}`);
       toast.success("Delete berhasil dihapus!");
       setShowModalDelete(null);
       fetchUsers();
@@ -190,10 +191,10 @@ const KelolaAkun = () => {
       console.log("Payload yang dikirim:", payload); // Debugging
 
       if (isEditMode) {
-        await axios.put(`${API_URL}/users/${editingAkunId}`, payload);
+        await api.put(`${API_URL}/users/${editingAkunId}`, payload);
         toast.success("Akun berhasil diperbarui");
       } else {
-        await axios.post(`${API_URL}/users`, payload);
+        await api.post(`${API_URL}/users`, payload);
         toast.success("Akun berhasil ditambahkan");
       }
 

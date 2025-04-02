@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import api from "../../../utils/api";
 
-const MusyawarahTab = ({ masterJamaahId }) => {
+const AnggotaTab = ({ masterJamaahId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
@@ -13,8 +14,8 @@ const MusyawarahTab = ({ masterJamaahId }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/anggota/by-jamaah/${masterJamaahId}`, {
-          params: { page, searchTerm, perPage }
+        const response = await api.get(`/anggota/by-jamaah/${masterJamaahId}`, {
+          params: { page, searchTerm, perPage },
         });
 
         console.log("API response:", response.data);
@@ -74,7 +75,11 @@ const MusyawarahTab = ({ masterJamaahId }) => {
           onChange={handleSearch}
           className="border p-2 rounded w-full"
         />
-        <select value={perPage} onChange={handlePerPageChange} className="border p-2 rounded">
+        <select
+          value={perPage}
+          onChange={handlePerPageChange}
+          className="border p-2 rounded"
+        >
           <option value={5}>5</option>
           <option value={10}>10</option>
           <option value={20}>20</option>
@@ -101,38 +106,51 @@ const MusyawarahTab = ({ masterJamaahId }) => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="8" className="text-center p-4">Memuat data...</td>
+                <td colSpan="8" className="text-center p-4">
+                  Memuat data...
+                </td>
               </tr>
             ) : anggotaData && anggotaData.data.length > 0 ? (
               anggotaData.data.map((anggota, index) => (
                 <tr key={index}>
-                  <td className="border p-2 text-center">{(page - 1) * perPage + index + 1}</td>
                   <td className="border p-2 text-center">
-                      <img
+                    {(page - 1) * perPage + index + 1}
+                  </td>
+                  <td className="border p-2 text-center">
+                    <img
                       src={`$/public/uploads/${anggota.foto}`}
                       alt="Foto User"
                       className="w-12 h-12 object-cover rounded-full mx-auto"
                     />
-                    </td>
+                  </td>
                   <td className="border p-2">{anggota.nik}</td>
                   <td className="border p-2">{anggota.nama_lengkap}</td>
-                  <td className="border p-2">{formatTanggal(anggota.tanggal_lahir)}</td>
-                  <td className="border p-2">{anggota.anggota_pendidikan?.instansi || "-"}</td>
-                  <td className="border p-2">{anggota.anggota_pekerjaan?.master_pekerjaan?.nama_pekerjaan || "-"}</td>
+                  <td className="border p-2">
+                    {formatTanggal(anggota.tanggal_lahir)}
+                  </td>
+                  <td className="border p-2">
+                    {anggota.anggota_pendidikan?.instansi || "-"}
+                  </td>
+                  <td className="border p-2">
+                    {anggota.anggota_pekerjaan?.master_pekerjaan
+                      ?.nama_pekerjaan || "-"}
+                  </td>
                   <td
-                      className={`border p-2 text-center ${
-                        anggota.status_aktif === 1
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {anggota.status_aktif === 1 ? "Aktif" : "Tidak Aktif"}
-                    </td>
+                    className={`border p-2 text-center ${
+                      anggota.status_aktif === 1
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {anggota.status_aktif === 1 ? "Aktif" : "Tidak Aktif"}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="text-center p-4">Tidak ada data anggota.</td>
+                <td colSpan="8" className="text-center p-4">
+                  Tidak ada data anggota.
+                </td>
               </tr>
             )}
           </tbody>
@@ -141,11 +159,22 @@ const MusyawarahTab = ({ masterJamaahId }) => {
 
       {/* Pagination */}
       <div className="flex justify-between mt-4">
-        <button onClick={handlePrevPage} disabled={!anggotaData?.prev_page_url} className="p-2 bg-gray-300 rounded">
+        <button
+          onClick={handlePrevPage}
+          disabled={!anggotaData?.prev_page_url}
+          className="p-2 bg-gray-300 rounded"
+        >
           Prev
         </button>
-        <span>Halaman {anggotaData?.current_page || 1} dari {anggotaData?.last_page || 1}</span>
-        <button onClick={handleNextPage} disabled={!anggotaData?.next_page_url} className="p-2 bg-gray-300 rounded">
+        <span>
+          Halaman {anggotaData?.current_page || 1} dari{" "}
+          {anggotaData?.last_page || 1}
+        </span>
+        <button
+          onClick={handleNextPage}
+          disabled={!anggotaData?.next_page_url}
+          className="p-2 bg-gray-300 rounded"
+        >
           Next
         </button>
       </div>
@@ -153,4 +182,4 @@ const MusyawarahTab = ({ masterJamaahId }) => {
   );
 };
 
-export default MusyawarahTab;
+export default AnggotaTab;

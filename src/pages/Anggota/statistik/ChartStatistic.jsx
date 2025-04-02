@@ -1,35 +1,54 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Bar, Doughnut } from "react-chartjs-2";
+import { Bar, Pie } from "react-chartjs-2";
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from "chart.js";
-
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+import api from "../../../utils/api";
 
-function Statistik() {
+function ChartStatistik() {
   const [selectedChart, setSelectedChart] = useState("Bar");
   const [selectedData, setSelectedData] = useState("anggota");
-  const [responseData, setResponseData] = useState({ pendidikan: [], pekerjaan: [], keterampilan: [], anggota: [] });
-  const [monografiData, setMonografiData] = useState({ jum_persistri: 0, jum_pemuda: 0, jum_pemudi: 0, jum_persis: 0 });
+  
+  const [responseData, setResponseData] = useState({ 
+    pendidikan: [], 
+    pekerjaan: [], 
+    keterampilan: [], 
+    anggota: [] 
+  });
+  
+  const [monografiData, setMonografiData] = useState({ 
+    jum_persistri: 0, 
+    jum_pemuda: 0, 
+    jum_pemudi: 0, 
+    jum_persis: 0 
+  });
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/data_chart")
-      .then(response => {
-        setResponseData(response.data);
-      })
-      .catch(error => {
-        console.error("Error fetching data_chart:", error);
-      });
+      api
+        .get("/data_chart")
+        .then((response) => {
+          setResponseData(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching data_chart:", error);
+        });
+  
+      api
+        .get("/data_monografi")
+        .then((response) => {
+          setMonografiData(response.data.data_monografi);
+        })
+        .catch((error) => {
+          console.error("Error fetching monografi data:", error);
+        });
+    }, []);
 
-    axios.get("http://127.0.0.1:8000/api/data_monografi")
-      .then(response => {
-        setMonografiData(response.data.data_monografi);
-      })
-      .catch(error => {
-        console.error("Error fetching monografi data:", error);
-      });
-  }, []);
-
-  const dataOptions = ["anggota", "pendidikan", "pekerjaan", "keterampilan", "mubaligh"];
+  const dataOptions = [
+    "anggota", 
+    "pendidikan", 
+    "pekerjaan", 
+    "keterampilan", 
+    "mubaligh"
+  ];
   
   const selectedStats = responseData[selectedData] || [];
 
@@ -83,33 +102,8 @@ function Statistik() {
     };
   }
 
-  const monos = [
-    { title: "Jumlah Persis", count: monografiData.jum_persis, color: "bg-green-500", route: "" },
-    { title: "Jumlah Persistri", count: monografiData.jum_persistri, color: "bg-blue-500", route: "" },
-    { title: "Jumlah Pemuda", count: monografiData.jum_pemuda, color: "bg-red-500", route: "" },
-    { title: "Jumlah Pemudi", count: monografiData.jum_pemudi, color: "bg-yellow-500", route: "" }
-  ];
-
   return (
-    <div className="p-4">
-      <div className="flex gap-4">
-        {monos.map((mono, index) => (
-          <div
-            key={index}
-            className={`flex items-center p-4 w-1/4 text-white rounded-lg shadow-lg ${mono.color}`}
-          >
-            <div className="p-3 bg-white rounded-full text-gray-700">
-              <span className="text-2xl">👤</span>
-            </div>
-            <div className="ml-4 flex-1">
-              <h3 className="text-lg font-semibold">{mono.title}</h3>
-              <p className="text-2xl font-bold">{mono.count}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-8 bg-white p-4 shadow-lg rounded-lg">
+      <div className="bg-white p-4 shadow-lg rounded-lg">
         <div className="mb-2">
           <div className="flex-row space-x-4">
             <label className="text-lg pe-2">Pilih Data</label>
@@ -130,15 +124,14 @@ function Statistik() {
               onChange={(e) => setSelectedChart(e.target.value)}
             >
               <option value="Bar">Bar Chart</option>
-              <option value="Doughnut">Doughnut Chart</option>
+              <option value="Pie">Pie Chart</option>
             </select>
           </div>
         </div>
 
-        {selectedChart === "Bar" ? <Bar data={chartData} /> : <Doughnut data={chartData} />}
+        {selectedChart === "Bar" ? <Bar data={chartData} /> : <Pie data={chartData} />}
       </div>
-    </div>
   );
 }
 
-export default Statistik;
+export default ChartStatistik;

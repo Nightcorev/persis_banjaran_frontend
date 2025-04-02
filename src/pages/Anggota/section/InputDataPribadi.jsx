@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 
-const InputDataPribadi = ({ data, onDataChange }) => {
+const InputDataPribadi = ({ data, onDataChange, nomorAnggota, setNomorAnggota }) => {
     const [jamaahChoice, setJamaahChoice] = useState([]);
     const [otonomChoice, setOtonomChoice] = useState([]);
     
@@ -30,7 +30,21 @@ const InputDataPribadi = ({ data, onDataChange }) => {
               type="text"
               className="w-full p-2 border rounded-md text-xs"
               value={data.nomorAnggota || ""}
-              onChange={(e) => onDataChange("nomorAnggota", e.target.value)}
+              onChange={(e) => {
+                onDataChange("nomorAnggota", e.target.value);
+                setNomorAnggota(e.target.value); // Pastikan ini di dalam onChange
+              }}
+            />
+          </div>
+
+          {/* Nomor KTP */}
+          <div className="flex items-center gap-4 pb-4">
+            <label className="text-xs w-1/3">Nomor KTP</label>
+            <input
+              type="text"
+              className="w-full p-2 border rounded-md text-xs"
+              value={data.nomorKTP || ""}
+              onChange={(e) => onDataChange("nomorKTP", e.target.value)}
             />
           </div>
   
@@ -75,28 +89,32 @@ const InputDataPribadi = ({ data, onDataChange }) => {
               value={data.statusMerital || ""}
               onChange={(e) => onDataChange("statusMerital", e.target.value)}
             >
+              <option value="">-- Silahkan Pilih</option>
               <option value="Belum Menikah">Belum Menikah</option>
               <option value="Menikah">Menikah</option>
+              <option value="Menikah">Duda</option>
+              <option value="Menikah">Janda</option>
             </select>
           </div>
   
           {/* Golongan Darah */}
-          <div className="flex items-center gap-4 pb-4">
+          {/* <div className="flex items-center gap-4 pb-4">
             <label className="text-xs w-1/3">Golongan Darah</label>
             <select
               className="w-full p-2 border rounded-md text-xs"
               value={data.golonganDarah || ""}
               onChange={(e) => onDataChange("golonganDarah", e.target.value)}
             >
+              <option value="">-- Silahkan Pilih</option>
               <option value="A">A</option>
               <option value="B">B</option>
               <option value="AB">AB</option>
               <option value="O">O</option>
             </select>
-          </div>
+          </div> */}
   
           {/* Email */}
-          <div className="flex items-center gap-4 pb-4">
+          {/* <div className="flex items-center gap-4 pb-4">
             <label className="text-xs w-1/3">Email</label>
             <input
               type="email"
@@ -104,7 +122,7 @@ const InputDataPribadi = ({ data, onDataChange }) => {
               value={data.email || ""}
               onChange={(e) => onDataChange("email", e.target.value)}
             />
-          </div>
+          </div> */}
   
           {/* Nomor Telepon */}
           <div className="flex items-center gap-4 pb-4">
@@ -116,15 +134,37 @@ const InputDataPribadi = ({ data, onDataChange }) => {
               onChange={(e) => onDataChange("nomorTelepon", e.target.value)}
             />
           </div>
+
+          {/* Nomor WA */}
+          <div className="flex items-center gap-4 pb-4">
+            <label className="text-xs w-1/3">Nomor WA</label>
+            <input
+              type="tel"
+              className="w-full p-2 border rounded-md text-xs"
+              value={data.nomorWA || ""}
+              onChange={(e) => onDataChange("nomorWA", e.target.value)}
+            />
+          </div>
   
           {/* Alamat */}
           <div className="flex items-center gap-4 pb-4">
-            <label className="text-xs w-1/3">Alamat</label>
+            <label className="text-xs w-1/3">Alamat sesuai KTP</label>
             <input
               type="text"
               className="w-full p-2 border rounded-md text-xs"
               value={data.alamat || ""}
               onChange={(e) => onDataChange("alamat", e.target.value)}
+            />
+          </div>
+
+          {/* Alamat Tinggal */}
+          <div className="flex items-center gap-4 pb-4">
+            <label className="text-xs w-1/3">Alamat Tinggal</label>
+            <input
+              type="text"
+              className="w-full p-2 border rounded-md text-xs"
+              value={data.alamatTinggal || ""}
+              onChange={(e) => onDataChange("alamatTinggal", e.target.value)}
             />
           </div>
   
@@ -136,7 +176,7 @@ const InputDataPribadi = ({ data, onDataChange }) => {
               value={data.otonom || ""}
               onChange={(e) => onDataChange("otonom", e.target.value)}
             >
-              <option value="">Pilih Otonom </option> {/* Opsi default */}
+              <option value="">-- Silahkan Pilih</option>
                 {otonomChoice.map((choice) => (
                 <option key={choice.id_otonom} value={choice.id_otonom}>
                     {choice.nama_otonom}
@@ -153,7 +193,7 @@ const InputDataPribadi = ({ data, onDataChange }) => {
               value={data.jamaah || ""}
               onChange={(e) => onDataChange("jamaah", e.target.value)}
             >
-                <option value="">Pilih Jamaah</option> {/* Opsi default */}
+                <option value="">-- Silahkan Pilih</option>
                 {jamaahChoice.map((choice) => (
                 <option key={choice.id_master_jamaah} value={choice.id_master_jamaah}>
                     {choice.nama_jamaah}
@@ -167,23 +207,25 @@ const InputDataPribadi = ({ data, onDataChange }) => {
             <label className="text-xs w-1/3">Status Aktif</label>
             <select
               className="w-full p-2 border rounded-md text-xs"
-              value={data.statusAktif || ""}
+              value={data.statusAktif}
               onChange={(e) => onDataChange("statusAktif", e.target.value)}
             >
-              <option value="Aktif">Aktif</option>
-              <option value="Tidak">Tidak</option>
-              <option value="Meninggal Dunia">Meninggal Dunia</option>
-              <option value="Mutasi">Mutasi</option>
+              <option value="">-- Silahkan Pilih</option>
+              <option value="1">Aktif</option>
+              <option value="0">Tidak</option>
+              <option value="2">Meninggal Dunia</option>
+              <option value="3">Mutasi</option>
             </select>
           </div>
-  
-          {/* Keterangan */}
+
+          {/* Tahun Masuk Anggota */}
           <div className="flex items-center gap-4 pb-4">
-            <label className="text-xs w-1/3">Keterangan</label>
-            <textarea
+            <label className="text-xs w-1/3">Tahun Masuk Anggota</label>
+            <input
+              type="number"
               className="w-full p-2 border rounded-md text-xs"
-              value={data.keterangan || ""}
-              onChange={(e) => onDataChange("keterangan", e.target.value)}
+              value={data.tahunMasuk || ""}
+              onChange={(e) => onDataChange("tahunMasuk", e.target.value)}
             />
           </div>
   
@@ -195,6 +237,38 @@ const InputDataPribadi = ({ data, onDataChange }) => {
               className="w-full p-2 border rounded-md text-xs"
               value={data.masaAktif || ""}
               onChange={(e) => onDataChange("masaAktif", e.target.value)}
+            />
+          </div>
+          
+          {/* Kajian Rutin */}
+          <div className="flex items-center gap-4 pb-4">
+            <label className="text-xs w-1/3">Kajian Rutin</label>
+            <input
+              type="text"
+              className="w-full p-2 border rounded-md text-xs"
+              value={data.kajianRutin || ""}
+              onChange={(e) => onDataChange("kajianRutin", e.target.value)}
+            />
+          </div>
+          
+          {/* Tahun Haji */}
+          <div className="flex items-center gap-4 pb-4">
+            <label className="text-xs w-1/3">Tahun Haji</label>
+            <input
+              type="number"
+              className="w-full p-2 border rounded-md text-xs"
+              value={data.tahunHaji || ""}
+              onChange={(e) => onDataChange("tahunHaji", e.target.value)}
+            />
+          </div>
+
+          {/* Keterangan */}
+          <div className="flex items-center gap-4 pb-4">
+            <label className="text-xs w-1/3">Keterangan</label>
+            <textarea
+              className="w-full p-2 border rounded-md text-xs"
+              value={data.keterangan || ""}
+              onChange={(e) => onDataChange("keterangan", e.target.value)}
             />
           </div>
         </div>

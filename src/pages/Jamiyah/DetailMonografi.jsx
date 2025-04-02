@@ -5,6 +5,7 @@ import MusyawarahTab from "../Jamiyah/Tab/MusyawarahTab";
 import AnggotaTab from "../Jamiyah/Tab/AnggotaTab";
 import PesantrenTab from "../Jamiyah/Tab/PesantrenTab";
 import FasilitasTab from "../Jamiyah/Tab/FasilitasTab";
+import api from "../../utils/api";
 
 const DetailMonografi = () => {
   const { id } = useParams(); // Mengambil id dari URL
@@ -25,9 +26,7 @@ const DetailMonografi = () => {
     const fetchJamaahDetail = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `http://127.0.0.1:8000/api/jamaah-monografi/${id}`
-        );
+        const response = await api.get(`/jamaah-monografi/${id}`);
         setJamaah(response.data.data);
         // Store the id_master_jamaah separately
         setMasterJamaahId(response.data.data.id_master_jamaah);
