@@ -56,6 +56,215 @@ const AddAnggota = () => {
   };
 
   const handleSubmit = async () => {
+    if (!formData.personal.nomorAnggota) {
+      setMessage("Harap isi kolom Nomor Anggota.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.nomorKTP) {
+      setMessage("Harap isi kolom Nomor KTP.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.namaLengkap) {
+      setMessage("Harap isi kolom Nama Lengkap.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.tempatLahir) {
+      setMessage("Harap isi kolom Tempat Lahir.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.tanggalLahir) {
+      setMessage("Harap isi kolom Tanggal Lahir.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.statusMerital) {
+      setMessage("Harap isi kolom Status Merital.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.nomorTelepon) {
+      setMessage("Harap isi kolom Nomor Telepon.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.nomorWA) {
+      setMessage("Harap isi kolom Nomor WhatsApp.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.alamat) {
+      setMessage("Harap isi kolom Alamat KTP.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.alamatTinggal) {
+      setMessage("Harap isi kolom Alamat Tinggal.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.otonom) {
+      setMessage("Harap isi kolom Otonom.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.jamaah) {
+      setMessage("Harap isi kolom Jamaah.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.statusAktif) {
+      setMessage("Harap isi kolom Status Aktif.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.tahunMasuk) {
+      setMessage("Harap isi kolom Tahun Masuk.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.personal.masaAktif) {
+      setMessage("Harap isi kolom Masa Aktif.");
+      setIsModalOpen(true);
+      return;
+    }
+  
+    if (formData.personal.statusMerital === "Menikah" || formData.personal.statusMerital === "Duda"){
+      if (!formData.family.jumlahTanggungan) {
+        setMessage("Harap isi kolom Jumlah Tanggungan.");
+        setIsModalOpen(true);
+        return;
+      }
+      if (!formData.family.anggotaPersistri) {
+        setMessage("Harap isi kolom Anggota Persistri.");
+        setIsModalOpen(true);
+        return;
+      }
+      if (!formData.family.namaIstri) {
+        setMessage("Harap isi kolom Nama Istri.");
+        setIsModalOpen(true);
+        return;
+      }
+      if (!formData.family.statusKepemilikanRumah) {
+        setMessage("Harap isi kolom Status Kepemilikan Rumah.");
+        setIsModalOpen(true);
+        return;
+      }
+      if (!formData.family.jumlaSeluruhAnak) {
+        setMessage("Harap isi kolom Jumlah Seluruh Anak.");
+        setIsModalOpen(true);
+        return;
+      }
+      if (!formData.family.jumlaAnakPemuda) {
+        setMessage("Harap isi kolom Jumlah Anak Pemuda.");
+        setIsModalOpen(true);
+        return;
+      }
+      if (!formData.family.jumlaAnakPemudi) {
+        setMessage("Harap isi kolom Jumlah Anak Pemudi.");
+        setIsModalOpen(true);
+        return;
+      }
+    }
+  
+    // Validasi kolom education
+    if (!formData.education.tingkat) {
+      setMessage("Harap isi kolom Tingkat Pendidikan.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.education.namaSekolah) {
+      setMessage("Harap isi kolom Nama Sekolah.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.education.jurusan) {
+      setMessage("Harap isi kolom Jurusan.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.education.tahunMasuk) {
+      setMessage("Harap isi kolom Tahun Masuk Pendidikan.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.education.tahunKeluar) {
+      setMessage("Harap isi kolom Tahun Keluar Pendidikan.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.education.jenisPendidikan) {
+      setMessage("Harap isi kolom Jenis Pendidikan.");
+      setIsModalOpen(true);
+      return;
+    }
+  
+    // Validasi kolom work
+    if (!formData.work.pekerjaan) {
+      setMessage("Harap isi kolom Pekerjaan.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (formData.work.pekerjaan === "Lainnya" && !formData.work.pekerjaanLainnya) {
+      setMessage("Harap isi kolom Pekerjaan Lainnya.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.work.namaInstansi) {
+      setMessage("Harap isi kolom Nama Instansi.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.work.deskripsiPekerjaan) {
+      setMessage("Harap isi kolom Deskripsi Pekerjaan.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.work.pendapatan) {
+      setMessage("Harap isi kolom Pendapatan.");
+      setIsModalOpen(true);
+      return;
+    }
+  
+    // Validasi kolom skill
+    if (!formData.skill.keterampilan) {
+      setMessage("Harap isi kolom Keterampilan.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (formData.skill.keterampilan === "Lainnya" && !formData.skill.keterampilanLainnya) {
+      setMessage("Harap isi kolom Keterampilan Lainnya.");
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.skill.deskripsiKeterampilan) {
+      setMessage("Harap isi kolom Deskripsi Keterampilan.");
+      setIsModalOpen(true);
+      return;
+    }
+  
+    // Validasi kolom interest
+    if (!formData.interest || formData.interest.length === 0) {
+      setMessage("Harap isi setidaknya satu Minat.");
+      setIsModalOpen(true);
+      return;
+    }
+    for (let minat of formData.interest) {
+      if (minat.minat === "Lainnya" && !minat.minatLainnya) {
+        setMessage("Harap isi kolom Minat Lainnya.");
+        setIsModalOpen(true);
+        return;
+      }
+    }
+  
+    if (!formData.organization.keterlibatanOrganisasi) {
+      setMessage("Harap isi kolom Keterlibatan Organisasi.");
+      setIsModalOpen(true);
+      return;
+    }
     try {
       const response = await fetch(
         isEditMode

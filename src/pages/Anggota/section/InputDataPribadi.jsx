@@ -92,8 +92,8 @@ const InputDataPribadi = ({ data, onDataChange, nomorAnggota, setNomorAnggota })
               <option value="">-- Silahkan Pilih</option>
               <option value="Belum Menikah">Belum Menikah</option>
               <option value="Menikah">Menikah</option>
-              <option value="Menikah">Duda</option>
-              <option value="Menikah">Janda</option>
+              <option value="Duda">Duda</option>
+              <option value="Janda">Janda</option>
             </select>
           </div>
   
