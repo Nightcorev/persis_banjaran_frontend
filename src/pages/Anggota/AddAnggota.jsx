@@ -67,9 +67,9 @@ const AddAnggota = () => {
           body: JSON.stringify(formData),
         }
       );
-
+  
       if (response.ok) {
-        setMessage("Data berhasil disimpan!");
+        setMessage(isEditMode ? "Data berhasil diperbarui!" : "Data berhasil disimpan!");
       } else {
         const errorData = await response.json();
         setMessage("Terjadi kesalahan: " + errorData.message);
@@ -77,7 +77,9 @@ const AddAnggota = () => {
     } catch (error) {
       setMessage("Terjadi kesalahan saat menyimpan data.");
     }
+    setIsModalOpen(true); // Tampilkan popup setelah mengubah message
   };
+  
 
   return (
     <div className="w-full p-6 bg-white shadow-md rounded-lg">
