@@ -7,6 +7,7 @@ import api from "../../../utils/api";
 function ChartStatistik() {
   const [selectedChart, setSelectedChart] = useState("Bar");
   const [selectedData, setSelectedData] = useState("anggota");
+  const [monos, setMonos] = useState([]);
   
   const [responseData, setResponseData] = useState({ 
     pendidikan: [], 
@@ -14,13 +15,6 @@ function ChartStatistik() {
     keterampilan: [], 
     anggota: [] 
   });
-  
-  // const [monografiData, setMonografiData] = useState({ 
-  //   jum_persistri: 0, 
-  //   jum_pemuda: 0, 
-  //   jum_pemudi: 0, 
-  //   jum_persis: 0 
-  // });
 
   useEffect(() => {
       api
@@ -32,7 +26,19 @@ function ChartStatistik() {
           console.error("Error fetching data_chart:", error);
         });
   
-      // aps
+        api.get("/data_monografi")
+        .then(response => {
+          const data = response.data.data_monografi;
+          setMonos([
+            { title: "Jumlah Persis", count: data.jum_persis, color: "bg-green-500" },
+            { title: "Jumlah Persistri", count: data.jum_persistri, color: "bg-blue-500" },
+            { title: "Jumlah Pemuda", count: data.jum_pemuda, color: "bg-red-500" },
+            { title: "Jumlah Pemudi", count: data.jum_pemudi, color: "bg-yellow-500" }
+          ]);
+        })
+        .catch(error => {
+          console.error("Error fetching monografi data:", error);
+        });
     }, []);
 
   const dataOptions = [
@@ -96,6 +102,24 @@ function ChartStatistik() {
   }
 
   return (
+    <div className="p-4">
+      <div className="flex gap-4">
+        {monos.map((mono, index) => (
+          <div
+            key={index}
+            className={`flex items-center p-4 w-1/4 text-white rounded-lg shadow-lg ${mono.color}`}
+          >
+            <div className="p-3 bg-white rounded-full text-gray-700">
+              <span className="text-2xl">👤</span>
+            </div>
+            <div className="ml-4 flex-1">
+              <h3 className="text-lg font-semibold">{mono.title}</h3>
+              <p className="text-2xl font-bold">{mono.count}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="bg-white p-4 shadow-lg rounded-lg">
         <div className="mb-2">
           <div className="flex-row space-x-4">
@@ -124,6 +148,8 @@ function ChartStatistik() {
 
         {selectedChart === "Bar" ? <Bar data={chartData} /> : <Pie data={chartData} />}
       </div>
+    </div>
+      
   );
 }
 
