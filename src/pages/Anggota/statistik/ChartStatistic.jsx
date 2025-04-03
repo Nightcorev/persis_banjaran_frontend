@@ -15,12 +15,12 @@ function ChartStatistik() {
     anggota: [] 
   });
   
-  const [monografiData, setMonografiData] = useState({ 
-    jum_persistri: 0, 
-    jum_pemuda: 0, 
-    jum_pemudi: 0, 
-    jum_persis: 0 
-  });
+  // const [monografiData, setMonografiData] = useState({ 
+  //   jum_persistri: 0, 
+  //   jum_pemuda: 0, 
+  //   jum_pemudi: 0, 
+  //   jum_persis: 0 
+  // });
 
   useEffect(() => {
       api
@@ -32,14 +32,7 @@ function ChartStatistik() {
           console.error("Error fetching data_chart:", error);
         });
   
-      api
-        .get("/data_monografi")
-        .then((response) => {
-          setMonografiData(response.data.data_monografi);
-        })
-        .catch((error) => {
-          console.error("Error fetching monografi data:", error);
-        });
+      // aps
     }, []);
 
   const dataOptions = [
@@ -56,7 +49,7 @@ function ChartStatistik() {
     if (selectedData === "anggota") return stat.nama_jamaah;
     if (selectedData === "pendidikan") return stat.tingkat_pendidikan;
     if (selectedData === "pekerjaan") return stat.nama_pekerjaan;
-    if (selectedData === "keterampilan") return stat.nama_minat;
+    if (selectedData === "keterampilan") return stat.nama_keterampilan;
     if (selectedData === "mubaligh") return stat.nama_jamaah; 
     return "";
   });
