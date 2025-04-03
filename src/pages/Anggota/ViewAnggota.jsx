@@ -9,8 +9,8 @@ const ViewAnggota = () => {
 
   useEffect(() => {
     const fetchAnggotaData = async () => {
-        console.log('ID:', id);
-    console.log('ID Type:', typeof id);
+      console.log('ID:', id);
+      console.log('ID Type:', typeof id);
       try {
         const response = await fetch(`http://127.0.0.1:8000/api/get_anggota/${id}`);
         const data = await response.json();
@@ -29,20 +29,35 @@ const ViewAnggota = () => {
   const tabData = {
     Personal: [
       { label: "Nomor Anggota", value: anggotaData.personal.nomorAnggota },
+      { label: "Nomor KTP", value: anggotaData.personal.nomorKTP },
       { label: "Nama Lengkap", value: anggotaData.personal.namaLengkap },
       { label: "Tempat Lahir", value: anggotaData.personal.tempatLahir },
       { label: "Tanggal Lahir", value: anggotaData.personal.tanggalLahir },
       { label: "Status Pernikahan", value: anggotaData.personal.statusMerital },
       { label: "Nomor Telepon", value: anggotaData.personal.nomorTelepon },
-      { label: "Alamat", value: anggotaData.personal.alamat },
+      { label: "Nomor WA", value: anggotaData.personal.nomorWA },
+      { label: "Alamat KTP", value: anggotaData.personal.alamat },
+      { label: "Alamat Tinggal", value: anggotaData.personal.alamatTinggal },
+      { label: "Otonom", value: anggotaData.personal.namaOtonom },
+      { label: "Jamaah", value: anggotaData.personal.namaJamaah },
+      { label: "Status Aktif", value: anggotaData.personal.namaStatusAktif },
+      { label: "Tahun Masuk Anggota", value: anggotaData.personal.tahunMasuk },
+      { label: "Masa Aktif Anggota", value: anggotaData.personal.masaAktif },
+      { label: "Kajian Rutin", value: anggotaData.personal.kajianRutin },
+      { label: "Tahun Haji", value: anggotaData.personal.tahunHaji },
+      { label: "Keterangan", value: anggotaData.personal.keterangan },
     ],
     Family: [
       { label: "Jumlah Tanggungan", value: anggotaData.family.jumlahTanggungan },
       { label: "Nama Istri", value: anggotaData.family.namaIstri },
-      { label: "Jumlah Anak", value: anggotaData.family.jumlaSeluruhAnak },
+      { label: "Istri Persistri", value: anggotaData.family.anggotaPersistri },
+      { label: "Status Kepemilikian Rumah", value: anggotaData.family.statusKepemilikanRumah },
+      { label: "Jumlah Seluruh Anak", value: anggotaData.family.jumlaSeluruhAnak },
+      { label: "Jumlah Anak yang Menjadi Pemuda", value: anggotaData.family.jumlaAnakPemuda },
+      { label: "Jumlah Anak yang Menjadi Pemudi", value: anggotaData.family.jumlaAnakPemudi },
     ],
     Education: [
-      { label: "Tingkat Pendidikan", value: anggotaData.education.tingkat },
+      { label: "Tingkat Pendidikan", value: anggotaData.education.namaTingkat },
       { label: "Nama Sekolah", value: anggotaData.education.namaSekolah },
       { label: "Jurusan", value: anggotaData.education.jurusan },
       { label: "Tahun Masuk", value: anggotaData.education.tahunMasuk },
@@ -50,19 +65,19 @@ const ViewAnggota = () => {
       { label: "Jenis Pendidikan", value: anggotaData.education.jenisPendidikan },
     ],
     Work: [
-      { label: "Pekerjaan", value: anggotaData.work.pekerjaan },
+      { label: "Pekerjaan", value: anggotaData.work.namaPekerjaan },
       { label: "Nama Instansi", value: anggotaData.work.namaInstansi },
       { label: "Deskripsi Pekerjaan", value: anggotaData.work.deskripsiPekerjaan },
       { label: "Pendapatan", value: anggotaData.work.pendapatan },
     ],
     Skill: [
-      { label: "Keterampilan", value: anggotaData.skill.keterampilan },
+      { label: "Keterampilan", value: anggotaData.skill.namaKeterampilan },
       { label: "Deskripsi Keterampilan", value: anggotaData.skill.deskripsiKeterampilan },
     ],
     Interest: anggotaData.interest.map((interest, index) => ({
       label: `Minat ${index + 1}`,
-      value: interest.minatLainnya || `Minat ID: ${interest.minat}`,
-    })),
+      value: interest.minat === "Lainnya" ? interest.minatLainnya : interest.minat,
+    })),    
     Organization: [
       { label: "Keterlibatan Organisasi", value: anggotaData.organization.keterlibatanOrganisasi },
       { label: "Nama Organisasi", value: anggotaData.organization.namaOrganisasi },
