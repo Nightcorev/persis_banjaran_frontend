@@ -49,7 +49,7 @@ const KelolaAkun = () => {
         params: { page, perPage, search: searchTerm },
       });
       setakun(response.data.data.data);
-      console.log(akuns);
+      //console.log(akuns);
       setTotal(response.data.data.total);
     } catch (error) {
       setError("Gagal mengambil data.");
@@ -188,7 +188,7 @@ const KelolaAkun = () => {
         id_anggota: selectedAnggota[0].id,
       };
 
-      console.log("Payload yang dikirim:", payload); // Debugging
+      //console.log("Payload yang dikirim:", payload); // Debugging
 
       if (isEditMode) {
         await api.put(`${API_URL}/users/${editingAkunId}`, payload);

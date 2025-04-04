@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import api from "../../../utils/api";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const PesantrenTab = ({ masterJamaahId }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -11,17 +13,14 @@ const PesantrenTab = ({ masterJamaahId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        let url = `http://127.0.0.1:8000/api/pesantren/by-jamaah/${masterJamaahId}?page=${page}&perPage=${perPage}&searchTerm=${searchTerm}`;
-        
-        const response = await axios.get(url);
-        console.log("API response:", response.data);
-
+        const response = await api.get(`${API_URL}/pesantren/by-jamaah/${masterJamaahId}`, {
+          params: { page, perPage, search: searchTerm },
+        });
         if (response.data.status === 200) {
           setPesantrens(response.data.data.data || []);
           setTotalItems(response.data.data.total || 0);
