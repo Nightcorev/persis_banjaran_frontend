@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 const ViewAnggota = () => {
     const { id } = useParams();
-  const [photo] = useState("/default-avatar.png");  // You can modify this if you have a photo URL in the response
+    const [photo, setPhoto] = useState("");
   const [activeTab, setActiveTab] = useState("Personal");
   const [anggotaData, setAnggotaData] = useState(null);
 
@@ -15,6 +15,7 @@ const ViewAnggota = () => {
         const response = await fetch(`http://127.0.0.1:8000/api/get_anggota/${id}`);
         const data = await response.json();
         setAnggotaData(data); // Save the data to the state
+        setPhoto(data.personal.fotoURL);
         console.log(data);
       } catch (error) {
         console.error("Error fetching anggota data:", error);

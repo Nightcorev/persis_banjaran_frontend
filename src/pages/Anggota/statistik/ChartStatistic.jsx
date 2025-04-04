@@ -156,7 +156,12 @@ function ChartStatistik() {
 
         {/* Render Chart */}
         {selectedChart === "Bar" ? (
-  <Bar data={chartData} />
+          <div className="w-[1000px] h-[500px] mx-auto">
+          <Bar 
+            data={chartData} 
+            options={{ maintainAspectRatio: false }}
+          />
+        </div>
 ) : (
   <div className="w-[1000px] h-[600px] mx-auto">
     <Pie 
