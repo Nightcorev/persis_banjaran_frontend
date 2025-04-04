@@ -96,7 +96,15 @@ const ViewAnggota = () => {
 
   return (
     <div className="flex justify-center">
+      
       <div className="w-full p-6 border rounded-lg shadow-md">
+        <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold">View Anggota</h2>
+            <a href="/users/data-anggota">
+            <button className="p-4 bg-gray-600 text-white py-2 rounded-md">Kembali</button>
+            </a>
+        </div>
+
         <div className="border-b pb-2 mb-4 flex space-x-4">
           {Object.keys(tabData).map((tab) => (
             <button
@@ -108,10 +116,9 @@ const ViewAnggota = () => {
             </button>
           ))}
         </div>
-        
         <div className="flex gap-6">
           <div className="flex flex-col items-center gap-2">
-            <img src={photo} alt="Profile" className="w-32 h-32 rounded-full border" />
+            <img src={photo} alt="Profile" className="w-32 h-32 border" />
           </div>
           <div className="flex-1 grid grid-cols-2 gap-4">
             {tabData[activeTab].map((item) => (

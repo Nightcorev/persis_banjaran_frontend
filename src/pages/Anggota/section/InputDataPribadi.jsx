@@ -4,7 +4,9 @@ import React, { useState, useEffect } from "react";
 const InputDataPribadi = ({ data, onDataChange, nomorAnggota, setNomorAnggota }) => {
     const [jamaahChoice, setJamaahChoice] = useState([]);
     const [otonomChoice, setOtonomChoice] = useState([]);
-    
+    const [image, setImage] = useState(null);
+    const [preview, setPreview] = useState(null);
+
     useEffect(() => {
         // Fungsi untuk fetch data dari API
         const fetchChoices = async () => {
@@ -19,10 +21,45 @@ const InputDataPribadi = ({ data, onDataChange, nomorAnggota, setNomorAnggota })
     
         fetchChoices();
       }, []);
+    
+      const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Generate nama file terenkripsi
+            const encryptedName = CryptoJS.SHA256(file.name + Date.now()).toString().slice(0, 10);
+            const fileExtension = file.name.split('.').pop();
+            const newFileName = `${encryptedName}.${fileExtension}`;
+
+            // Resize atau crop gambar ke rasio 3:4 (bisa dilakukan di backend jika butuh kualitas lebih baik)
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+
+            setImage({ file, name: newFileName });
+        }
+    };
 
     return (
       <div className="flex justify-center">
-        <div className="w-full max-w-[60%] px-4 sm:px-2">
+        <div className="flex flex-col items-start mr-auto pb-4">
+              {preview ? (
+                  <img src={preview} alt="Preview" className="w-32 h-40 object-cover rounded-md border" />
+              ) : (
+                  <div className="w-32 h-40 flex items-center justify-center bg-gray-200 border rounded-md">
+                      <span className="text-xs text-gray-500">Upload Foto</span>
+                  </div>
+              )}
+              <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="mt-2 text-xs"
+              />
+          </div>
+          
+        <div className="w-full max-w-[80%] px-4 sm:px-2 mr-[20%]">
           {/* Nomor Anggota */}
           <div className="flex items-center gap-4 pb-4">
             <label className="text-xs w-1/3">Nomor Anggota</label>

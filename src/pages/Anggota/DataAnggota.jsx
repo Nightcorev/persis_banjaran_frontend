@@ -93,7 +93,7 @@ const DataAnggota = () => {
             id="search"
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)} // Update search term on change
+            onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} // Update search term on change
             placeholder="Cari anggota..."
             className="border p-2 rounded"
           />

@@ -8,12 +8,20 @@ const FieldAlert = ({ isOpen, onClose, message }) => {
       <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
         <h2 className="text-lg font-bold mb-4">Peringatan</h2>
         <p className="text-sm">{message}</p>
-        <button
-          onClick={onClose}
-          className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md"
-        >
-          Tutup
-        </button>
+        {message === "Data berhasil diperbarui!" || message === "Data berhasil disimpan!" ? (
+          <a href="/users/data-anggota">
+            <button className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md">
+              Tutup
+            </button>
+          </a>
+        ) : (
+          <button
+            onClick={onClose}
+            className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md"
+          >
+            Tutup
+          </button>
+        )}
       </div>
     </div>
   );

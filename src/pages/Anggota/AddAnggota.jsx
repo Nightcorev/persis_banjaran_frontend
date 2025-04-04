@@ -132,43 +132,44 @@ const AddAnggota = () => {
       return;
     }
   
-    if (formData.personal.statusMerital === "Menikah" || formData.personal.statusMerital === "Duda"){
-      if (!formData.family.jumlahTanggungan) {
-        setMessage("Harap isi kolom Jumlah Tanggungan.");
-        setIsModalOpen(true);
-        return;
+    if (formData.personal.statusMerital === "Menikah" || formData.personal.statusMerital === "Duda") {
+      if (formData.family.jumlahTanggungan === null || formData.family.jumlahTanggungan === undefined || formData.family.jumlahTanggungan === "") {
+          setMessage("Harap isi kolom Jumlah Tanggungan.");
+          setIsModalOpen(true);
+          return;
       }
-      if (!formData.family.anggotaPersistri) {
-        setMessage("Harap isi kolom Anggota Persistri.");
-        setIsModalOpen(true);
-        return;
+      if (formData.family.anggotaPersistri === null || formData.family.anggotaPersistri === undefined || formData.family.anggotaPersistri === "") {
+          setMessage("Harap isi kolom Anggota Persistri.");
+          setIsModalOpen(true);
+          return;
       }
       if (!formData.family.namaIstri) {
-        setMessage("Harap isi kolom Nama Istri.");
-        setIsModalOpen(true);
-        return;
+          setMessage("Harap isi kolom Nama Istri.");
+          setIsModalOpen(true);
+          return;
       }
       if (!formData.family.statusKepemilikanRumah) {
-        setMessage("Harap isi kolom Status Kepemilikan Rumah.");
-        setIsModalOpen(true);
-        return;
+          setMessage("Harap isi kolom Status Kepemilikan Rumah.");
+          setIsModalOpen(true);
+          return;
       }
-      if (!formData.family.jumlaSeluruhAnak) {
-        setMessage("Harap isi kolom Jumlah Seluruh Anak.");
-        setIsModalOpen(true);
-        return;
+      if (formData.family.jumlaSeluruhAnak === null || formData.family.jumlaSeluruhAnak === undefined || formData.family.jumlaSeluruhAnak === "") {
+          setMessage("Harap isi kolom Jumlah Seluruh Anak.");
+          setIsModalOpen(true);
+          return;
       }
-      if (!formData.family.jumlaAnakPemuda) {
-        setMessage("Harap isi kolom Jumlah Anak Pemuda.");
-        setIsModalOpen(true);
-        return;
+      if (formData.family.jumlaAnakPemuda === null || formData.family.jumlaAnakPemuda === undefined || formData.family.jumlaAnakPemuda === "") {
+          setMessage("Harap isi kolom Jumlah Anak Pemuda.");
+          setIsModalOpen(true);
+          return;
       }
-      if (!formData.family.jumlaAnakPemudi) {
-        setMessage("Harap isi kolom Jumlah Anak Pemudi.");
-        setIsModalOpen(true);
-        return;
+      if (formData.family.jumlaAnakPemudi === null || formData.family.jumlaAnakPemudi === undefined || formData.family.jumlaAnakPemudi === "") {
+          setMessage("Harap isi kolom Jumlah Anak Pemudi.");
+          setIsModalOpen(true);
+          return;
       }
-    }
+  }
+  
   
     // Validasi kolom education
     if (!formData.education.tingkat) {
@@ -265,6 +266,8 @@ const AddAnggota = () => {
       setIsModalOpen(true);
       return;
     }
+    console.log(formData)
+    console.log(JSON.stringify(formData))
     try {
       const response = await fetch(
         isEditMode
@@ -294,7 +297,12 @@ const AddAnggota = () => {
     <div className="w-full p-6 bg-white shadow-md rounded-lg">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold">{isEditMode ? "Edit Anggota" : "Tambah Anggota"}</h2>
-        <button className="p-4 bg-green-600 text-white py-2 rounded-md" onClick={handleSubmit}>Simpan</button>
+        <div>
+        <a href="/users/data-anggota">
+            <button className="p-4 bg-gray-600 text-white py-2 rounded-md">Kembali</button>
+            </a>
+            <button className="p-4 bg-green-600 text-white py-2 rounded-md ml-4" onClick={handleSubmit}>Simpan</button>
+        </div>
       </div>
       <ul className="flex w-full justify-between border-b pb-2 text-sm">
         {sections.map((section) => (
