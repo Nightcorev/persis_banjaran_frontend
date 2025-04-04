@@ -39,6 +39,7 @@ const KelolaRole = () => {
         params: { page, perPage, search: searchTerm },
       });
       setRoles(response.data.data.data);
+      //console.log(roles);
       setTotal(response.data.data.total);
     } catch (error) {
       setError("Gagal mengambil data.");
@@ -100,7 +101,7 @@ const KelolaRole = () => {
   const handleDelete = async () => {
     try {
       await api.delete(`${API_URL}/roles/${showModalDelete.id}`);
-      toast.success("Delete berhasil dihapus!");
+      toast.success("Role berhasil dihapus!");
       setShowModalDelete(null);
       fetchRoles();
     } catch (error) {
@@ -126,7 +127,7 @@ const KelolaRole = () => {
         permissions: selectedPermissions.map((permission) => permission.id), // Fix di sini
       };
 
-      console.log(payload); // Debugging
+      //console.log(payload); // Debugging
 
       if (isEditMode) {
         await api.put(`${API_URL}/roles/${editingRoleId}`, payload);

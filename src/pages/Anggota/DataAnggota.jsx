@@ -35,12 +35,16 @@ const DataAnggota = () => {
   }, [page, perPage, searchTerm]); // Menambahkan searchTerm sebagai dependensi
 
   const handleDelete = async (id_anggota) => {
-    const confirmDelete = window.confirm("Apakah Anda yakin ingin menghapus anggota ini?");
+    const confirmDelete = window.confirm(
+      "Apakah Anda yakin ingin menghapus anggota ini?"
+    );
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/delete_anggota/${id_anggota}`);
-      setUsers(users.filter(user => user.id_anggota !== id_anggota));
+      await axios.delete(
+        `http://127.0.0.1:8000/api/delete_anggota/${id_anggota}`
+      );
+      setUsers(users.filter((user) => user.id_anggota !== id_anggota));
       alert("Data anggota berhasil dihapus!");
     } catch (error) {
       console.error("Error deleting data:", error);
@@ -163,36 +167,37 @@ const DataAnggota = () => {
                       {user.status_aktif === 1 ? "Aktif" : "Tidak Aktif"}
                     </td>
                     <td className="border p-2 text-center space-x-2">
-                    {(account?.role === "Super Admin" ||
-                        permissions.includes("detail_data_anggota")) && (
-                          <a href={ `/users/data-anggota/view-anggota/${user.id_anggota}`}>
-                            <button className="bg-green-600 text-white px-3 py-1 rounded hover:bg-blue-600 items-center justify-centers">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="size-4"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                              />
-                            </svg>
-                          </button>
-                          </a>
-                      )}
+                      <a
+                        href={`/users/data-anggota/view-anggota/${user.id_anggota}`}
+                      >
+                        <button className="bg-green-600 text-white px-3 py-1 rounded hover:bg-blue-600 items-center justify-centers">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                            />
+                          </svg>
+                        </button>
+                      </a>
 
                       {(account?.role === "Super Admin" ||
                         permissions.includes("edit_data_anggota")) && (
-                        <a href={ `/users/data-anggota/edit-anggota/${user.id_anggota}`}>
+                        <a
+                          href={`/users/data-anggota/edit-anggota/${user.id_anggota}`}
+                        >
                           <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 items-center justify-centers">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -213,9 +218,10 @@ const DataAnggota = () => {
                       )}
                       {(account?.role === "Super Admin" ||
                         permissions.includes("delete_data_anggota")) && (
-                          <button
-                          onClick={() => handleDelete(user.id_anggota)} 
-                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 items-center justify-centers">
+                        <button
+                          onClick={() => handleDelete(user.id_anggota)}
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 items-center justify-centers"
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
