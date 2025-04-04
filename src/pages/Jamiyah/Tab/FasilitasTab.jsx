@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import api from "../../../utils/api";
 
-const FasilitasTab = ({ masterJamaahId = null }) => {
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
+
+const FasilitasTab = ({ masterJamaahId = null}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [perPage, setPerPage] = useState(5);
   const [fasilitasData, setFasilitasData] = useState([]);
@@ -9,17 +12,14 @@ const FasilitasTab = ({ masterJamaahId = null }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+
     const fetchJamaahData = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const response = await axios.get(
-          `http://127.0.0.1:8000/api/fasilitas/by-jamaah/${masterJamaahId}`,
-          { params: { searchTerm, perPage } }
-        );
-
-        console.log("API response:", response.data);
-
-        // Ambil array fasilitas dengan aman
+        const response = await api.get(`${API_URL}/fasilitas/by-jamaah/${masterJamaahId}`, {
+          params: { perPage, search: searchTerm },
+        });
         const fasilitasArray = response.data?.data?.data || [];
         setFasilitasData(fasilitasArray);
       } catch (error) {
