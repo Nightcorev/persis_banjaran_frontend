@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
+import api from "../../../utils/api";
 
 const InputDataKeterampilan = ({ data, onDataChange, nomorAnggota }) => {
   const [keterampilanChoice, setKeterampilanChoice] = useState([]);
   const [isLainnya, setIsLainnya] = useState(false);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/data_choice_keterampilan")
-      .then((response) => response.json())
-      .then((data) => setKeterampilanChoice(data.keterampilan || []))
+    api.get("/data_choice_keterampilan")
+      .then((response) => setKeterampilanChoice(response.data.keterampilan || []))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 

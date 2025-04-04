@@ -51,7 +51,7 @@ const InputDataKeluarga = ({ data, onDataChange, nomorAnggota }) => {
                 <select
                 name="anggotaPersistri"
                 className="w-full p-2 border rounded-md text-xs"
-                value={data.anggotaPersistri}
+                value={data.anggotaPersistri ?? ""}
                 onChange={handleInputChange}
                 >
                 <option value="">-- Silahkan Pilih</option>
@@ -80,7 +80,7 @@ const InputDataKeluarga = ({ data, onDataChange, nomorAnggota }) => {
                 type="number"
                 name="jumlaSeluruhAnak"
                 className="w-full p-2 border rounded-md text-xs"
-                value={data.jumlaSeluruhAnak || ""}
+                value={data.jumlaSeluruhAnak ?? 0}
                 onChange={handleInputChange}
                 />
             </div>
@@ -91,7 +91,7 @@ const InputDataKeluarga = ({ data, onDataChange, nomorAnggota }) => {
                 type="number"
                 name="jumlaAnakPemuda"
                 className="w-full p-2 border rounded-md text-xs"
-                value={data.jumlaAnakPemuda || ""}
+                value={data.jumlaAnakPemuda ?? 0}
                 onChange={handleInputChange}
                 />
             </div>
@@ -102,7 +102,7 @@ const InputDataKeluarga = ({ data, onDataChange, nomorAnggota }) => {
                 type="number"
                 name="jumlaAnakPemudi"
                 className="w-full p-2 border rounded-md text-xs"
-                value={data.jumlaAnakPemudi || ""}
+                value={data.jumlaAnakPemudi ?? 0}
                 onChange={handleInputChange}
                 />
             </div>

@@ -17,37 +17,24 @@ function ChartStatistik() {
   });
 
   useEffect(() => {
-      api
-        .get("/data_chart")
-        .then((response) => {
-          setResponseData(response.data);
-        })
-        .catch((error) => {
-          console.error("Error fetching data_chart:", error);
-        });
-  
-        api.get("/data_monografi")
-        .then(response => {
-          const data = response.data.data_monografi;
-          setMonos([
-            { title: "Jumlah Persis", count: data.jum_persis, color: "bg-green-500" },
-            { title: "Jumlah Persistri", count: data.jum_persistri, color: "bg-blue-500" },
-            { title: "Jumlah Pemuda", count: data.jum_pemuda, color: "bg-red-500" },
-            { title: "Jumlah Pemudi", count: data.jum_pemudi, color: "bg-yellow-500" }
-          ]);
-        })
-        .catch(error => {
-          console.error("Error fetching monografi data:", error);
-        });
-    }, []);
+    api.get("/data_chart")
+      .then((response) => setResponseData(response.data))
+      .catch((error) => console.error("Error fetching data_chart:", error));
 
-  const dataOptions = [
-    "anggota", 
-    "pendidikan", 
-    "pekerjaan", 
-    "keterampilan", 
-    "mubaligh"
-  ];
+    api.get("/data_monografi")
+      .then(response => {
+        const data = response.data.data_monografi;
+        setMonos([
+          { title: "Jumlah Persis", count: data.jum_persis, color: "#22c55e" }, 
+          { title: "Jumlah Persistri", count: data.jum_persistri, color: "#3b82f6" }, 
+          { title: "Jumlah Pemuda", count: data.jum_pemuda, color: "#ef4444" }, 
+          { title: "Jumlah Pemudi", count: data.jum_pemudi, color: "#fbbf24" }
+        ]);
+      })
+      .catch(error => console.error("Error fetching monografi data:", error));
+  }, []);
+
+  const dataOptions = ["anggota", "pendidikan", "pekerjaan", "keterampilan", "mubaligh"];
   
   const selectedStats = responseData[selectedData] || [];
 
@@ -56,37 +43,55 @@ function ChartStatistik() {
     if (selectedData === "pendidikan") return stat.tingkat_pendidikan;
     if (selectedData === "pekerjaan") return stat.nama_pekerjaan;
     if (selectedData === "keterampilan") return stat.nama_keterampilan;
-    if (selectedData === "mubaligh") return stat.nama_jamaah; 
+    if (selectedData === "mubaligh") return stat.nama_jamaah;
     return "";
   });
 
   let chartData;
+
+  const randomColors = [
+    "#FF6633", "#FFB399", "#FF33FF", "#FFFF99", "#00B3E6",
+    "#E6B333", "#3366E6", "#999966", "#99FF99", "#B34D4D",
+    "#80B300", "#809900", "#E6B3B3", "#6680B3", "#66991A",
+    "#FF99E6", "#CCFF1A", "#FF1A66", "#E6331A", "#33FFCC",
+    "#66994D", "#B366CC", "#4D8000", "#B33300", "#CC80CC",
+    "#66664D", "#991AFF", "#E666FF", "#4DB3FF", "#1AB399",
+    "#E666B3", "#33991A", "#CC9999", "#B3B31A", "#00E680"
+  ];
 
   if (selectedData === "anggota") {
     chartData = {
       labels,
       datasets: [
         {
-          label: "Jumlah Persis",
+          label: "Persis",
           data: selectedStats.map(stat => stat.jum_persis),
-          backgroundColor: "#22c55e", // Biru
+          backgroundColor: selectedChart === "Pie"
+          ? randomColors.slice(0, labels.length) // Gunakan warna sesuai jumlah jamaah
+          : "#22c55e",
         },
         {
-          label: "Jumlah Persistri",
+          label: "Persistri",
           data: selectedStats.map(stat => stat.jum_persistri),
-          backgroundColor: "#3b82f6", // Hijau
+          backgroundColor: selectedChart === "Pie"
+          ? randomColors.slice(0, labels.length) // Gunakan warna sesuai jumlah jamaah
+          : "#3b82f6",
         },
         {
-          label: "Jumlah Pemuda",
+          label: "Pemuda",
           data: selectedStats.map(stat => stat.jum_pemuda),
-          backgroundColor: "#ef4444", // Merah
+          backgroundColor: selectedChart === "Pie"
+          ? randomColors.slice(0, labels.length) // Gunakan warna sesuai jumlah jamaah
+          : "#ef4444",
         },
         {
-          label: "Jumlah Pemudi",
+          label: "Pemudi",
           data: selectedStats.map(stat => stat.jum_pemudi),
-          backgroundColor: "#fbbf24", // Kuning
-        }
-      ]
+          backgroundColor: selectedChart === "Pie"
+          ? randomColors.slice(0, labels.length) // Gunakan warna sesuai jumlah jamaah
+          : "#fbbf24",
+        },
+      ],
     };
   } else {
     chartData = {
@@ -95,7 +100,7 @@ function ChartStatistik() {
         {
           label: "Jumlah Anggota",
           data: selectedStats.map(stat => stat.jumlah_anggota),
-          backgroundColor: ["#3b82f6", "#22c55e", "#ef4444", "#fbbf24", "#8b5cf6", "#ec4899", "#10b981", "#6366f1", "#f97316", "#14b8a6"],
+          backgroundColor: randomColors.slice(0, labels.length),
         },
       ],
     };
@@ -103,11 +108,13 @@ function ChartStatistik() {
 
   return (
     <div className="p-4">
+      {/* Statistik Mono */}
       <div className="flex gap-4">
         {monos.map((mono, index) => (
           <div
             key={index}
-            className={`flex items-center p-4 w-1/4 text-white rounded-lg shadow-lg ${mono.color}`}
+            className={`flex items-center p-4 w-1/4 text-white rounded-lg shadow-lg`}
+            style={{ backgroundColor: mono.color }}
           >
             <div className="p-3 bg-white rounded-full text-gray-700">
               <span className="text-2xl">👤</span>
@@ -120,6 +127,7 @@ function ChartStatistik() {
         ))}
       </div>
 
+      {/* Chart */}
       <div className="bg-white p-4 shadow-lg rounded-lg">
         <div className="mb-2">
           <div className="flex-row space-x-4">
@@ -146,10 +154,25 @@ function ChartStatistik() {
           </div>
         </div>
 
-        {selectedChart === "Bar" ? <Bar data={chartData} /> : <Pie data={chartData} />}
+        {/* Render Chart */}
+        {selectedChart === "Bar" ? (
+          <div className="w-[1000px] h-[500px] mx-auto">
+          <Bar 
+            data={chartData} 
+            options={{ maintainAspectRatio: false }}
+          />
+        </div>
+) : (
+  <div className="w-[1000px] h-[600px] mx-auto">
+    <Pie 
+      data={chartData} 
+      options={{ maintainAspectRatio: false }}
+    />
+  </div>
+)}
+
       </div>
     </div>
-      
   );
 }
 

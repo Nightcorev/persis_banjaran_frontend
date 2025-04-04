@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
+import api from "../../../utils/api";
 
 const InputDataPekerjaan = ({ data, onDataChange, nomorAnggota }) => {
   const [pekerjaanChoice, setPekerjaanChoice] = useState([]);
   const [isLainnya, setIsLainnya] = useState(false);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/data_choice_pekerjaan")
-      .then((response) => response.json())
-      .then((data) => setPekerjaanChoice(data.pekerjaan || []))
-      .catch((error) => console.error("Error fetching data:", error));
+    api.get("/data_choice_pekerjaan")
+      .then((response) => {
+        setPekerjaanChoice(response.data.pekerjaan || []);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
   }, []);
 
   const handleInputChange = (e) => {

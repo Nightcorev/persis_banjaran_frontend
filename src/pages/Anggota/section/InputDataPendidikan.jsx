@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import api from "../../../utils/api";
 
 const InputDataPendidikan = ({ data, onDataChange, nomorAnggota }) => {
   const [tingkatPendidikanChoice, setTingkatPendidikanChoice] = useState([]);
@@ -9,10 +10,13 @@ const InputDataPendidikan = ({ data, onDataChange, nomorAnggota }) => {
   };
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/data_choice_pendidikan")
-      .then((response) => response.json())
-      .then((data) => setTingkatPendidikanChoice(data.pendidikan || []))
-      .catch((error) => console.error("Error fetching data:", error));
+    api.get("/data_choice_pendidikan")
+      .then((response) => {
+        setTingkatPendidikanChoice(response.data.pendidikan || []);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
   }, []);
 
   return (

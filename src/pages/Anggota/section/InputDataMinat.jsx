@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Modal from "../../../components/Modal";
+import api from "../../../utils/api";
 
 const InputDataMinat = ({ data = [], onDataChange, nomorAnggota }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -10,9 +11,8 @@ const InputDataMinat = ({ data = [], onDataChange, nomorAnggota }) => {
   });
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/data_choice_minat")
-      .then((response) => response.json())
-      .then((data) => setMinatChoice(data.minat || []))
+    api.get("/data_choice_minat")
+      .then((response) => setMinatChoice(response.data.minat || []))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
