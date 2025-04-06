@@ -19,7 +19,7 @@ const PesantrenTab = ({ masterJamaahId }) => {
       setError(null);
       try {
         const response = await api.get(`${API_URL}/pesantren/by-jamaah/${masterJamaahId}`, {
-          params: { page, perPage, search: searchTerm },
+          params: { page, perPage, searchTerm },
         });
         if (response.data.status === 200) {
           setPesantrens(response.data.data.data || []);
