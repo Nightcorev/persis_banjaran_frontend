@@ -19,12 +19,12 @@ const InputDataPekerjaan = ({ data, onDataChange, nomorAnggota }) => {
     const { name, value } = e.target;
     onDataChange({ ...data, [name]: value });
 
-    if (name === "pekerjaan") {
-      setIsLainnya(value === "Lainnya");
-      if (value !== "Lainnya") {
-        onDataChange({ ...data, pekerjaan: value, pekerjaanLainnya: "" });
-      }
-    }
+    // if (name === "pekerjaan") {
+    //   setIsLainnya(value === 16);
+    //   if (value !== 16) {
+    //     onDataChange({ ...data, pekerjaan: value, pekerjaanLainnya: "" });
+    //   }
+    // }
   };
 
   return (
@@ -60,18 +60,17 @@ const InputDataPekerjaan = ({ data, onDataChange, nomorAnggota }) => {
         </div>
 
         {/* Inputan tambahan jika memilih "Lainnya" */}
-        {isLainnya && (
-          <div className="flex items-center gap-4 pb-4">
-            <label className="text-xs w-1/3">Pekerjaan Lainnya</label>
-            <input
-              type="text"
-              name="pekerjaanLainnya"
-              className="w-full p-2 border rounded-md text-xs"
-              value={data.pekerjaanLainnya || ""}
-              onChange={handleInputChange}
-            />
-          </div>
-        )}
+        
+        <div className="flex items-center gap-4 pb-4">
+          <label className="text-xs w-1/3">Pekerjaan Lainnya</label>
+          <input
+            type="text"
+            name="pekerjaanLainnya"
+            className="w-full p-2 border rounded-md text-xs"
+            value={data.pekerjaanLainnya || ""}
+            onChange={handleInputChange}
+          />
+        </div>
 
         {/* Nama Instansi */}
         <div className="flex items-center gap-4 pb-4">
