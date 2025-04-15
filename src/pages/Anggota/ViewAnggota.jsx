@@ -67,12 +67,14 @@ const ViewAnggota = () => {
     ],
     Work: [
       { label: "Pekerjaan", value: anggotaData.work.namaPekerjaan },
+      { label: "Pekerjaan Lainnya", value: anggotaData.work.pekerjaanLainnya },
       { label: "Nama Instansi", value: anggotaData.work.namaInstansi },
       { label: "Deskripsi Pekerjaan", value: anggotaData.work.deskripsiPekerjaan },
       { label: "Pendapatan", value: anggotaData.work.pendapatan },
     ],
     Skill: [
       { label: "Keterampilan", value: anggotaData.skill.namaKeterampilan },
+      { label: "Keterampilan Lainnya", value: anggotaData.skill.keterampilanLainnya },
       { label: "Deskripsi Keterampilan", value: anggotaData.skill.deskripsiKeterampilan },
     ],
     Interest: anggotaData.interest.map((interest, index) => ({

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen }) => {
   const [isProfilOpen, setIsProfilOpen] = useState(false);
   const [isUsersOpen, setIsUsersOpen] = useState(false);
   const [isJamiyyahOpen, setIsJamiyyahOpen] = useState(false);
@@ -32,7 +32,14 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 h-full bg-gray-800 text-white flex flex-col overflow-auto">
+    <div
+  className={`
+    ${isOpen ? "md:static" : "absolute"} 
+    top-0 left-0 h-full w-64 bg-gray-800 text-white 
+    transition-transform duration-300 z-40 
+    ${isOpen ? "translate-x-0" : "-translate-x-full"}
+  `}
+>
       <div className="p-3 text-sm bg-gray-900">Menu</div>
       <nav className="flex-1 text-sm">
         <ul>

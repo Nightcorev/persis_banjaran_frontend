@@ -15,12 +15,12 @@ const InputDataKeterampilan = ({ data, onDataChange, nomorAnggota }) => {
     const { name, value } = e.target;
     onDataChange({ ...data, [name]: value });
 
-    if (name === "keterampilan") {
-      setIsLainnya(value === "Lainnya");
-      if (value !== "Lainnya") {
-        onDataChange({ ...data, keterampilan: value, keterampilanLainnya: "" });
-      }
-    }
+  //   if (name === "keterampilan") {
+  //     setIsLainnya(value === "Lainnya");
+  //     if (value !== "Lainnya") {
+  //       onDataChange({ ...data, keterampilan: value, keterampilanLainnya: "" });
+  //     }
+  //   }
   };
 
   return (
@@ -56,7 +56,7 @@ const InputDataKeterampilan = ({ data, onDataChange, nomorAnggota }) => {
         </div>
 
         {/* Inputan tambahan jika memilih "Lainnya" */}
-        {isLainnya && (
+        
           <div className="flex items-center gap-4 pb-4">
             <label className="text-xs w-1/3">Keterampilan Lainnya</label>
             <input
@@ -67,7 +67,7 @@ const InputDataKeterampilan = ({ data, onDataChange, nomorAnggota }) => {
               onChange={handleInputChange}
             />
           </div>
-        )}
+        
 
         {/* Deskripsi Keterampilan */}
         <div className="flex items-center gap-4 pb-4">
