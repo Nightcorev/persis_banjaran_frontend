@@ -85,7 +85,7 @@ const PesantrenTab = ({ masterJamaahId }) => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="4" className="text-center p-4">Loading...</td>
+                <td colSpan="4" className="text-center p-4">Memuat data...</td>
               </tr>
             ) : error ? (
               <tr>

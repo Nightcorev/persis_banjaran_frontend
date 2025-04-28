@@ -74,7 +74,15 @@ const DataMonografi = () => {
         </div>
       </div>
 
+      {loading && (
+        <div className="flex justify-center items-center my-4">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-green-500"></div>
+          <span className="ml-3 text-gray-600">Memuat data...</span>
+        </div>
+      )}
+      
       {/* Tabel Data */}
+      {!loading && (
       <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-sm">
         <table className="table-auto w-full border-collapse border border-gray-300 text-black">
           <thead className="bg-gray-200">
@@ -220,6 +228,7 @@ const DataMonografi = () => {
           </tbody>
         </table>
       </div>
+      )}
 
       {/* Pagination Buttons */}
       <div className="mt-4 flex justify-between items-center">

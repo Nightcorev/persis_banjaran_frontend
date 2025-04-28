@@ -119,14 +119,14 @@ const DetailMonografi = () => {
 };
 
 // Utility components for the stats and info rows
-const StatCard = ({ title, subtitle }) => (
+export const StatCard = ({ title, subtitle }) => (
   <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
     <span>{title}</span>
     <span>{subtitle}</span>
   </div>
 );
 
-const InfoRow = ({ label, value }) => (
+export const InfoRow = ({ label, value }) => (
   <div className="mb-4">
     <h2 className="text-lg font-bold">{label}</h2>
     <p>{value}</p>
