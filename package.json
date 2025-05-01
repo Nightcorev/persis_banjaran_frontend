@@ -16,6 +16,7 @@
     "react-chartjs": "^1.2.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.3.1",
+    "react-number-format": "^5.4.4",
     "react-router-dom": "^7.0.2",
     "react-select": "^5.10.1",
     "react-toastify": "^11.0.5",

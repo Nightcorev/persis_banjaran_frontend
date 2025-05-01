@@ -32,6 +32,8 @@ import DetailMonografi from "./pages/Jamiyah/DetailMonografi";
 import Login from "./pages/Login";
 import Unauthorized from "./components/Unauthorized";
 import ViewAnggota from "./pages/Anggota/ViewAnggota";
+import DataIuran from "./pages/Iuran/PembayaranIuran";
+import ReminderIuran from "./pages/Iuran/ReminderIuran";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -45,8 +47,14 @@ const router = createBrowserRouter(
             path="users/data-anggota/add-anggota"
             element={<AddAnggota />}
           />
-          <Route path="/users/data-anggota/view-anggota/:id" element={<ViewAnggota />} />
-          <Route path="/users/data-anggota/edit-anggota/:id" element={<AddAnggota />} />
+          <Route
+            path="/users/data-anggota/view-anggota/:id"
+            element={<ViewAnggota />}
+          />
+          <Route
+            path="/users/data-anggota/edit-anggota/:id"
+            element={<AddAnggota />}
+          />
           <Route path="users/statistik" element={<Statistik />} />
           <Route path="pendidikan/data-pesantren" element={<DataPesantren />} />
           <Route path="pendidikan/data-asatidz" element={<DataAsatidz />} />
@@ -69,6 +77,8 @@ const router = createBrowserRouter(
             path="jamiyah/detail-jamiyah/:id"
             element={<DetailMonografi />}
           />
+          <Route path="iuran/pembayaran" element={<DataIuran />} />
+          <Route path="iuran/reminder" element={<ReminderIuran />} />
 
           {/* Middleware Role: Hanya Super Admin bisa akses halaman ini */}
           <Route element={<RoleMiddleware allowedRoles={["Super Admin"]} />}>

@@ -7,6 +7,7 @@ const Sidebar = ({ isOpen }) => {
   const [isJamiyyahOpen, setIsJamiyyahOpen] = useState(false);
   const [isPendidikanOpen, setIsPendidikanOpen] = useState(false);
   const [isManageAuthOpen, setIsManageAuthOpen] = useState(false);
+  const [isIuranOpen, setIsIuranOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
@@ -31,15 +32,19 @@ const Sidebar = ({ isOpen }) => {
     setIsManageAuthOpen(!isManageAuthOpen);
   };
 
+  const toggleIuranMenu = () => {
+    setIsIuranOpen(!isIuranOpen);
+  };
+
   return (
     <div
-  className={`
+      className={`
     ${isOpen ? "md:static" : "absolute"} 
     top-0 left-0 h-full w-64 bg-gray-800 text-white 
     transition-transform duration-300 z-40 
     ${isOpen ? "translate-x-0" : "-translate-x-full"}
   `}
->
+    >
       <div className="p-3 text-sm bg-gray-900">Menu</div>
       <nav className="flex-1 text-sm">
         <ul>
@@ -260,7 +265,7 @@ const Sidebar = ({ isOpen }) => {
           </li>
 
           {/* Menu Pendidikan */}
-          <li>
+          {/* <li>
             <button
               onClick={togglePendidikanhMenu}
               className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
@@ -327,7 +332,63 @@ const Sidebar = ({ isOpen }) => {
                 </Link>
               </li>
             </ul>
-          </li>
+          </li> */}
+
+          {/* Menu manage data iuran */}
+          {user?.role === "Super Admin" && (
+            <li>
+              <button
+                onClick={toggleIuranMenu}
+                className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
+                  />
+                </svg>
+                Iuran Anggota
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className={`w-4 h-4 ml-auto transition-transform ${
+                    isIuranOpen ? "rotate-180" : ""
+                  }`}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              <ul
+                className={`transition-all overflow-hidden duration-300 ease-in-out ${
+                  isIuranOpen ? "max-h-40" : "max-h-0"
+                }`}
+              >
+                <li>
+                  <Link
+                    to="/iuran/pembayaran"
+                    className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                  >
+                    Kelola Pembayaran Iuran
+                  </Link>
+                </li>
+              </ul>
+            </li>
+          )}
 
           {/* Menu manage role dan akun */}
           {user?.role === "Super Admin" && (
