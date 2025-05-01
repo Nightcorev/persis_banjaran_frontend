@@ -10,6 +10,7 @@ import { ToastContainer } from "react-toastify";
 import AuthMiddleware from "./middleware/AuthMiddleware";
 import RoleMiddleware from "./middleware/RoleMiddleware";
 import { checkTokenExpiry } from "./utils/checkToken";
+
 import Home from "./pages/Dashboard";
 import AdminLayout from "./layouts/AdminLayout";
 import DataAnggota from "./pages/Anggota/DataAnggota";
@@ -32,10 +33,18 @@ import DetailMonografi from "./pages/Jamiyah/DetailMonografi";
 import Login from "./pages/Login";
 import Unauthorized from "./components/Unauthorized";
 import ViewAnggota from "./pages/Anggota/ViewAnggota";
-import DataMusyawarah from "./pages/Jamiyah/Musyawarah/DataMusyawarah"
-import MusyawarahDetail from "./pages/Jamiyah/Musyawarah/MusyawarahDetail"
-import AddMusyawarah from "./pages/Jamiyah/Musyawarah/AddMusyawarah"
-import AddDetailMusyawarah from "./pages/Jamiyah/Musyawarah/AddDetailMusyawarah"
+
+// Fitur Musyawarah
+import DataMusyawarah from "./pages/Jamiyah/Musyawarah/DataMusyawarah";
+import MusyawarahDetail from "./pages/Jamiyah/Musyawarah/MusyawarahDetail";
+import AddMusyawarah from "./pages/Jamiyah/Musyawarah/AddMusyawarah";
+import AddDetailMusyawarah from "./pages/Jamiyah/Musyawarah/AddDetailMusyawarah";
+
+// Fitur Iuran & Komunikasi
+import DataIuran from "./pages/Iuran/PembayaranIuran";
+import ReminderIuran from "./pages/Iuran/ReminderIuran";
+import KelolaChatbot from "./pages/KelolaChatbot/KelolaChatbot";
+import KelolaBroadcast from "./pages/KelolaBroadcast/KelolaBroadcast";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -45,49 +54,47 @@ const router = createBrowserRouter(
         <Route path="/" element={<AdminLayout />} errorElement={<ErrorPage />}>
           <Route index element={<Home />} />
           <Route path="users/data-anggota" element={<DataAnggota />} />
-          <Route
-            path="users/data-anggota/add-anggota"
-            element={<AddAnggota />}
-          />
-          <Route path="/users/data-anggota/view-anggota/:id" element={<ViewAnggota />} />
-          <Route path="/users/data-anggota/edit-anggota/:id" element={<AddAnggota />} />
+          <Route path="users/data-anggota/add-anggota" element={<AddAnggota />} />
+          <Route path="users/data-anggota/view-anggota/:id" element={<ViewAnggota />} />
+          <Route path="users/data-anggota/edit-anggota/:id" element={<AddAnggota />} />
           <Route path="users/statistik" element={<Statistik />} />
+
           <Route path="pendidikan/data-pesantren" element={<DataPesantren />} />
           <Route path="pendidikan/data-asatidz" element={<DataAsatidz />} />
-          <Route
-            path="pendidikan/statistik"
-            element={<StatistikPendidikan />}
-          />
-          <Route
-            path="pendidikan/detail-pesantren"
-            element={<DetailDataPesantren />}
-          />
-          <Route
-            path="pendidikan/detail-asatidz"
-            element={<DetailDataAsatidz />}
-          />
+          <Route path="pendidikan/statistik" element={<StatistikPendidikan />} />
+          <Route path="pendidikan/detail-pesantren" element={<DetailDataPesantren />} />
+          <Route path="pendidikan/detail-asatidz" element={<DetailDataAsatidz />} />
+
           <Route path="profil/tasykil" element={<Tasykil />} />
           <Route path="profil/fasilitas" element={<Fasilitas />} />
-          <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
-          <Route
-            path="jamiyah/detail-jamiyah/:id"
-            element={<DetailMonografi />}
-          />
-          <Route path="/jamiyah/musyawarah/data-musyawarah" element={<DataMusyawarah />} />
-          <Route path="/jamiyah/musyawarah/detail/:id" element={<MusyawarahDetail />} />
-          <Route path="jamiyah/musyawarah/data-musyawarah/add-musyawarah" element={<AddMusyawarah/>} />
-          <Route path="jamiyah/musyawarah/data-musyawarah/edit-musyawarah/:id" element={<AddMusyawarah/>} />
-          <Route path="jamiyah/musyawarah/detail/add/:id" element={<AddDetailMusyawarah/>} />
-          <Route path="/jamiyah/musyawarah/detail/edit/:id/:detailId" element={<AddDetailMusyawarah />} />
 
-          {/* Middleware Role: Hanya Super Admin bisa akses halaman ini */}
+          <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
+          <Route path="jamiyah/detail-jamiyah/:id" element={<DetailMonografi />} />
+
+          {/* Fitur Musyawarah */}
+          <Route path="jamiyah/musyawarah/data-musyawarah" element={<DataMusyawarah />} />
+          <Route path="jamiyah/musyawarah/detail/:id" element={<MusyawarahDetail />} />
+          <Route path="jamiyah/musyawarah/data-musyawarah/add-musyawarah" element={<AddMusyawarah />} />
+          <Route path="jamiyah/musyawarah/data-musyawarah/edit-musyawarah/:id" element={<AddMusyawarah />} />
+          <Route path="jamiyah/musyawarah/detail/add/:id" element={<AddDetailMusyawarah />} />
+          <Route path="jamiyah/musyawarah/detail/edit/:id/:detailId" element={<AddDetailMusyawarah />} />
+
+          {/* Fitur Iuran */}
+          <Route path="iuran/pembayaran" element={<DataIuran />} />
+          <Route path="iuran/reminder" element={<ReminderIuran />} />
+
+          {/* Kelola Chatbot & Broadcast */}
+          <Route path="/kelola_chatbot" element={<KelolaChatbot />} />
+          <Route path="/kelola_broadcast_informasi" element={<KelolaBroadcast />} />
+
+          {/* Middleware Role: Hanya Super Admin */}
           <Route element={<RoleMiddleware allowedRoles={["Super Admin"]} />}>
             <Route path="manageAuth/roles" element={<KelolaRole />} />
             <Route path="manageAuth/akun" element={<KelolaAkun />} />
             <Route path="manageAuth/izin" element={<KelolaPermission />} />
           </Route>
 
-          {/* Menangani 404 Not Found */}
+          {/* Menangani 404 dan Unauthorized */}
           <Route path="*" element={<NotFound />} />
           <Route path="unauthorized" element={<Unauthorized />} />
         </Route>
