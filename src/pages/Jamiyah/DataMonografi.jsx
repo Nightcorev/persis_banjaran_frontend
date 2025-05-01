@@ -37,6 +37,12 @@ const DataMonografi = () => {
     fetchData();
   }, [page, perPage, searchTerm]);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('id-ID', options);
+  };
+
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
       <h1 className="text-lg font-bold mb-4">Data Jamaah</h1>
@@ -125,102 +131,101 @@ const DataMonografi = () => {
           </thead>
           <tbody>
             {jamiyah.length > 0 ? (
-              jamiyah.map((data_jamiyah, index) => (
-                <tr
-                  key={data_jamiyah.id_master_jamaah}
-                  className="hover:bg-gray-100"
-                >
-                  <td className="border p-2 text-center">
-                    {(page - 1) * perPage + index + 1}
-                  </td>
+              jamiyah.map((data_jamiyah, index) => {
+                const currentMusyawarah = data_jamiyah.musyawarah?.find(m => m.aktif) || {};
+                const ketuaJamaah = currentMusyawarah?.musyawarah_detail?.find(d => d.jabatan === "Ketua")?.anggota?.nama_lengkap || "-";
+                const monografi = data_jamiyah.monografi || {};
 
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.nama_jamaah}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.nama_lengkap}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.tgl_pelaksanaan}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.tgl_akhir_jihad}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_persis}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_persistri}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_pemuda}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_pemudi}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_mubaligh}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_asatidz}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_ra}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_md}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_mi}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_tsn}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_smp}
-                  </td>
-                  <td className="border p-2 text-center">
-                    {data_jamiyah.jml_ma}
-                  </td>
-
-                  <td className="border p-2 text-center">
-                    {/* Tombol Detail, Edit & Delete */}
-                    <div className=" inline-block space-y-1">
-                      {/* Tombol Detail */}
-                      <button className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center">
-                        <Link
-                          to={`/jamiyah/detail-jamiyah/${data_jamiyah.id_master_jamaah}`}
-                          className="flex items-center gap-4"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="currentColor"
-                            className="size-5"
+                return (
+                  <tr key={data_jamiyah.id_master_jamaah} className="hover:bg-gray-100">
+                    <td className="border p-2 text-center">
+                      {(page - 1) * perPage + index + 1}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {data_jamiyah.nama_jamaah}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {ketuaJamaah}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {formatDate(currentMusyawarah.tgl_pelaksanaan)}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {formatDate(currentMusyawarah.tgl_akhir_jihad)}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {data_jamiyah.jml_persis || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_persistri || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_pemuda || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_pemudi || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_mubaligh || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_asatidz || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_santri_ra || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_santri_md || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_santri_mi || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_santri_tsn || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_santri_smp || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {monografi.jum_santri_ma || 0}
+                    </td>
+                    <td className="border p-2 text-center">
+                      <div className="inline-block space-y-1">
+                        <button className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center">
+                          <Link
+                            to={`/jamiyah/detail-jamiyah/${data_jamiyah.id_master_jamaah}`}
+                            className="flex items-center gap-4"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                            />
-                          </svg>
-                          Lihat
-                        </Link>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth="1.5"
+                              stroke="currentColor"
+                              className="size-5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                              />
+                            </svg>
+                            Lihat
+                          </Link>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan="5" className="text-center border p-4">
+                <td colSpan="17" className="text-center border p-4">
                   Tidak ada data Jamiyah.
                 </td>
               </tr>

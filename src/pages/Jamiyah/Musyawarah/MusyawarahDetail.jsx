@@ -9,7 +9,6 @@ const DetailMusyawarah = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [musyawarah, setMusyawarah] = useState([]);
-  const [anggotaMusyawarah, setAnggotaMusyawarah] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [total, setTotal] = useState(0);
@@ -201,8 +200,10 @@ const DetailMusyawarah = () => {
                 <thead className="bg-gray-200">
                   <tr>
                     <th className="border p-2">No</th>
+                    <th className="border p-2">Nomor-SK</th>
                     <th className="border p-2">Nama Anggota</th>
                     <th className="border p-2">Jabatan</th>
+                    <th className="border p-2">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -214,10 +215,36 @@ const DetailMusyawarah = () => {
                             {index + detailIndex + 1}
                           </td>
                           <td className="border p-2 text-center">
+                            {item.no_sk || "-"}
+                          </td>
+                          <td className="border p-2 text-center">
                             {item.anggota?.nama_lengkap || "-"}
                           </td>
                           <td className="border p-2 text-center">
-                              {item.jabatan || "Anggota"}
+                              {item.jabatan}
+                          </td>
+                          <td className="border p-2 text-center">
+                            <div className="flex justify-center gap-2">
+                              {/* Edit Button */}
+                              <Link to={`/jamiyah/musyawarah/detail/edit/${item.id_musyawarah}`}>
+                              <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 flex items-center justify-center">
+                                  <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth="1.5"
+                                  stroke="currentColor"
+                                  className="size-4"
+                                  >
+                                  <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                                  />
+                                  </svg>
+                              </button>
+                              </Link>
+                          </div>
                           </td>
                         </tr>
                       ))

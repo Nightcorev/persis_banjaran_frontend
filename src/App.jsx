@@ -34,6 +34,7 @@ import Unauthorized from "./components/Unauthorized";
 import ViewAnggota from "./pages/Anggota/ViewAnggota";
 import DataMusyawarah from "./pages/Jamiyah/Musyawarah/DataMusyawarah"
 import MusyawarahDetail from "./pages/Jamiyah/Musyawarah/MusyawarahDetail"
+import AddMusyawarah from "./pages/Jamiyah/Musyawarah/AddMusyawarah"
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -73,6 +74,7 @@ const router = createBrowserRouter(
           />
           <Route path="/jamiyah/musyawarah/data-musyawarah" element={<DataMusyawarah />} />
           <Route path="/jamiyah/musyawarah/detail/:id" element={<MusyawarahDetail />} />
+          <Route path="jamiyah/musyawarah/data-musyawarah/add-musyawarah" element={<AddMusyawarah/>} />
 
           {/* Middleware Role: Hanya Super Admin bisa akses halaman ini */}
           <Route element={<RoleMiddleware allowedRoles={["Super Admin"]} />}>
