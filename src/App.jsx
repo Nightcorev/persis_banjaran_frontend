@@ -32,6 +32,8 @@ import DetailMonografi from "./pages/Jamiyah/DetailMonografi";
 import Login from "./pages/Login";
 import Unauthorized from "./components/Unauthorized";
 import ViewAnggota from "./pages/Anggota/ViewAnggota";
+import KelolaChatbot from "./pages/KelolaChatbot/KelolaChatbot";
+import KelolaBroadcast from "./pages/KelolaBroadcast/KelolaBroadcast";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -76,6 +78,16 @@ const router = createBrowserRouter(
             <Route path="manageAuth/akun" element={<KelolaAkun />} />
             <Route path="manageAuth/izin" element={<KelolaPermission />} />
           </Route>
+
+          <Route
+            path="/kelola_chatbot"
+            element={<KelolaChatbot />}
+          />
+
+          <Route
+            path="/kelola_broadcast_informasi"
+            element={<KelolaBroadcast />}
+          />
 
           {/* Menangani 404 Not Found */}
           <Route path="*" element={<NotFound />} />
