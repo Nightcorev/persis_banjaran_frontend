@@ -240,7 +240,7 @@ export default function KelolaChatbot() {
           </h1>
           <button
             onClick={() => openModal()}
-            className="flex items-center gap-2 px-4 py-2 bg-geen-600 text-white rounded-md hover:bg-green-700 text-sm shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm shadow-sm"
             disabled={loading} // Disable saat loading
           >
             <Plus size={18} /> Tambah Item Chatbot
