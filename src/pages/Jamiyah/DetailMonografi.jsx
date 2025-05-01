@@ -60,6 +60,10 @@ const DetailMonografi = () => {
   if (error) return <div className="p-6 text-red-500">{error}</div>;
   if (!jamaah) return <div className="p-6">Data jamaah tidak ditemukan.</div>;
 
+  // Get current active musyawarah and its ketua
+  const currentMusyawarah = jamaah.musyawarah?.find(m => m.aktif);
+  const ketuaJamaah = currentMusyawarah?.musyawarah_detail?.find(d => d.jabatan === "Ketua")?.anggota;
+
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-6">
@@ -75,16 +79,24 @@ const DetailMonografi = () => {
         <div className="bg-gray-300 rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-xl font-bold">{jamaah.nama_lengkap}</h2>
+              <h2 className="text-xl font-bold">{ketuaJamaah?.nama_lengkap || "Belum ada ketua"}</h2>
               <p className="text-sm">KETUA</p>
             </div>
-            <div className="bg-gray-400 rounded-full h-20 w-20 mt-3"></div>
+            {ketuaJamaah?.foto && (
+              <div className="bg-gray-400 rounded-full h-20 w-20 mt-3">
+                <img 
+                  src={ketuaJamaah.foto} 
+                  alt="Foto Ketua"
+                  className="w-full h-full rounded-full object-cover"
+                />
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-4 gap-4">
-            <StatCard title={jamaah.jml_persis} subtitle="PERSIS" />
-            <StatCard title={jamaah.jml_persistri} subtitle="PERSISTRI" />
-            <StatCard title={jamaah.jml_pemuda} subtitle="PEMUDA" />
-            <StatCard title={jamaah.jml_pemudi} subtitle="PEMUDI" />
+            <StatCard title={jamaah.monografi?.jum_persis || 0} subtitle="PERSIS" />
+            <StatCard title={jamaah.monografi?.jum_persistri || 0} subtitle="PERSISTRI" />
+            <StatCard title={jamaah.monografi?.jum_pemuda || 0} subtitle="PEMUDA" />
+            <StatCard title={jamaah.monografi?.jum_pemudi || 0} subtitle="PEMUDI" />
           </div>
         </div>
         <div className="bg-gray-300 rounded-lg p-6">
@@ -119,14 +131,14 @@ const DetailMonografi = () => {
 };
 
 // Utility components for the stats and info rows
-const StatCard = ({ title, subtitle }) => (
+export const StatCard = ({ title, subtitle }) => (
   <div className="flex flex-col items-center justify-center bg-gray-500 h-16 rounded-lg text-white text-center">
     <span>{title}</span>
     <span>{subtitle}</span>
   </div>
 );
 
-const InfoRow = ({ label, value }) => (
+export const InfoRow = ({ label, value }) => (
   <div className="mb-4">
     <h2 className="text-lg font-bold">{label}</h2>
     <p>{value}</p>

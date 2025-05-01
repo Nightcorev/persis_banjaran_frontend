@@ -40,7 +40,7 @@ const FasilitasTab = ({ masterJamaahId = null}) => {
       <h2 className="text-2xl font-bold mb-4">Data Fasilitas</h2>
 
       {loading ? (
-        <p>Loading...</p>
+        <p>Memuat data...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : fasilitasData.length === 0 ? (

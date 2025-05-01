@@ -235,7 +235,7 @@ const Sidebar = ({ isOpen }) => {
                 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"
                 />
               </svg>
-              Jami'yyah
+              Jamaah
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -264,6 +264,14 @@ const Sidebar = ({ isOpen }) => {
                   className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
                 >
                   Data Jamaah
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/jamiyah/musyawarah/data-musyawarah"
+                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                >
+                  Musyawarah Jamaah
                 </Link>
               </li>
             </ul>
@@ -314,14 +322,6 @@ const Sidebar = ({ isOpen }) => {
             >
               <li>
                 <Link
-                  to="/pendidikan/statistik"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Statistik
-                </Link>
-              </li>
-              <li>
-                <Link
                   to="/pendidikan/data-pesantren"
                   className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
                 >
@@ -334,6 +334,14 @@ const Sidebar = ({ isOpen }) => {
                   className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
                 >
                   Data Asatidz
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/pendidikan/statistik"
+                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                >
+                  Statistik
                 </Link>
               </li>
             </ul>
