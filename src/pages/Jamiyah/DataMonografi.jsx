@@ -154,7 +154,7 @@ const DataMonografi = () => {
                       {formatDate(currentMusyawarah.tgl_akhir_jihad)}
                     </td>
                     <td className="border p-2 text-center">
-                      {data_jamiyah.jml_persis || 0}
+                      {data_jamiyah.jumlah_persis || 0}
                     </td>
                     <td className="border p-2 text-center">
                       {monografi.jum_persistri || 0}

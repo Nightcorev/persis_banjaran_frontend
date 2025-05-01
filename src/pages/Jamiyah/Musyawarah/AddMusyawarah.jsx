@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import FieldAlert from "../../../components/FieldAlert";
 
+// Import API_URL
+const API_URL = import.meta.env.VITE_API_BASE_URL;
+
 const AddMusyawarah = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -11,10 +14,12 @@ const AddMusyawarah = () => {
     id_master_jamaah: "",
     tgl_pelaksanaan: "",
     tgl_akhir_jihad: "",
-    aktif: "1",
+    aktif: true,
+    id_anggota: "", // Added new field
   });
 
   const [jamaahList, setJamaahList] = useState([]);
+  const [anggotaList, setAnggotaList] = useState([]); // New state for anggota list
   const [message, setMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,23 +38,69 @@ const AddMusyawarah = () => {
       .catch((err) => console.error("Gagal ambil data jamaah:", err));
   }, []);
 
-  // Fetch data musyawarah jika dalam mode edit
+  // Fetch anggota when jamaah is selected
+  useEffect(() => {
+    if (formData.id_master_jamaah) {
+      setIsLoading(true);
+      fetch(`http://localhost:8000/api/anggota/by-jamaah/${formData.id_master_jamaah}`)
+        .then((res) => res.json())
+        .then((response) => {
+          if (response.status === 200 && response.data) {
+            setAnggotaList(response.data.data || []);
+          } else {
+            console.error("Data Anggota tidak valid:", response);
+            setAnggotaList([]);
+          }
+        })
+        .catch((err) => {
+          console.error("Gagal ambil data anggota:", err);
+          setAnggotaList([]);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      setAnggotaList([]); // Reset anggota list when no jamaah is selected
+    }
+  }, [formData.id_master_jamaah]);
+
+  // Modify the useEffect for fetching musyawarah data in edit mode
   useEffect(() => {
     if (isEditMode) {
       setIsLoading(true);
-      fetch(`http://localhost:8000/api/get_musyawarah/${id}`)
+      fetch(`${API_URL}/detail_musyawarah/${id}`)
         .then((response) => response.json())
-        .then((data) => {
-          setFormData({
-            id_master_jamaah: data.id_master_jamaah || "",
-            tgl_pelaksanaan: data.tgl_pelaksanaan || "",
-            tgl_akhir_jihad: data.tgl_akhir_jihad || "",
-            aktif: data.aktif || "1",
-          });
-          setIsLoading(false);
+        .then((response) => {
+          if (response.status === 200 && response.data?.data?.[0]) {
+            // Get the first item from data array
+            const musyawarahData = response.data.data[0];
+            const ketuaData = musyawarahData.musyawarah_detail.anggota?.find(
+              detail => detail.jabatan === "Ketua"
+            );
+
+            setFormData({
+              id_master_jamaah: musyawarahData.id_master_jamaah || "",
+              tgl_pelaksanaan: musyawarahData.tgl_pelaksanaan || "",
+              tgl_akhir_jihad: musyawarahData.tgl_akhir_jihad || "", 
+              aktif: musyawarahData.aktif ?? true,
+              id_anggota: ketuaData?.id_anggota || "",
+            });
+
+            // Set ketua info for display
+            if (ketuaData?.anggota) {
+              setAnggotaList([ketuaData.anggota]);
+            }
+          } else {
+            setMessage("Data tidak ditemukan");
+            setIsModalOpen(true);
+          }
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
+          setMessage("Gagal mengambil data");
+          setIsModalOpen(true);
+        })
+        .finally(() => {
           setIsLoading(false);
         });
     }
@@ -64,8 +115,13 @@ const AddMusyawarah = () => {
   };
 
   const validateForm = () => {
-    if (!formData.id_master_jamaah) {
+    if (!isEditMode && !formData.id_master_jamaah) {
       setMessage("Harap pilih Jamaah.");
+      setIsModalOpen(true);
+      return false;
+    }
+    if (!isEditMode && !formData.id_anggota) {
+      setMessage("Harap pilih Ketua Jamaah.");
       setIsModalOpen(true);
       return false;
     }
@@ -82,6 +138,7 @@ const AddMusyawarah = () => {
     return true;
   };
 
+  // Modifikasi handleSubmit untuk menggunakan API_URL
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -89,8 +146,8 @@ const AddMusyawarah = () => {
     try {
       const response = await fetch(
         isEditMode
-          ? `http://localhost:8000/api/edit_musyawarah/${id}`
-          : "http://localhost:8000/api/add_musyawarah",
+          ? `${API_URL}/edit_musyawarah/${id}`
+          : `${API_URL}/add_musyawarah`,
         {
           method: isEditMode ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -98,20 +155,122 @@ const AddMusyawarah = () => {
         }
       );
 
+      const data = await response.json();
+      
       if (response.ok) {
         setMessage(isEditMode ? "Data berhasil diperbarui!" : "Data berhasil disimpan!");
         navigate("/jamiyah/musyawarah/data-musyawarah");
       } else {
-        const errorData = await response.json();
-        setMessage("Terjadi kesalahan: " + errorData.message);
-        setIsModalOpen(true);
+        throw new Error(data.message || "Terjadi kesalahan");
       }
     } catch (error) {
-      setMessage("Terjadi kesalahan saat menyimpan data.");
+      setMessage("Terjadi kesalahan: " + error.message);
       setIsModalOpen(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const renderKetuaJamaahField = () => {
+    if (isEditMode) {
+      return (
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-green-800">
+            Ketua Jamaah
+          </label>
+          <input
+            type="text"
+            value="" // Set empty value
+            disabled
+            className="border border-green-200 p-2 rounded-md w-full bg-gray-50"
+            placeholder="Data ketua tidak ditampilkan dalam mode edit"
+          />
+          <p className="text-xs text-gray-500">
+            Ketua jamaah tidak dapat diubah dalam mode edit
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-green-800">
+          Ketua Jamaah <span className="text-red-500">*</span>
+        </label>
+        <select
+          name="id_anggota"
+          value={formData.id_anggota}
+          onChange={handleChange}
+          className="border border-green-200 p-2 rounded-md w-full bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+          disabled={!formData.id_master_jamaah || isLoading}
+        >
+          <option value="">
+            {isLoading 
+              ? "Memuat data anggota..." 
+              : formData.id_master_jamaah 
+                ? "Pilih Ketua Jamaah"
+                : "Pilih Jamaah terlebih dahulu"
+            }
+          </option>
+          {Array.isArray(anggotaList) &&
+            anggotaList.map((anggota) => (
+              <option key={anggota.id_anggota} value={anggota.id_anggota}>
+                {anggota.nama_lengkap}
+              </option>
+            ))}
+        </select>
+        <p className="text-xs text-gray-500">
+          {!formData.id_master_jamaah 
+            ? "Pilih jamaah terlebih dahulu untuk melihat daftar anggota"
+            : "Pilih anggota yang akan menjadi ketua"
+  }</p>
+      </div>
+    );
+  };
+
+  const renderJamaahField = () => {
+    if (isEditMode) {
+      return (
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-green-800">
+            Nama Jamaah
+          </label>
+          <input
+            type="text"
+            value=""
+            disabled
+            className="border border-green-200 p-2 rounded-md w-full bg-gray-50"
+            placeholder="Data jamaah tidak dapat diubah dalam mode edit"
+          />
+          <p className="text-xs text-gray-500">
+            Nama jamaah tidak dapat diubah dalam mode edit
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-green-800">
+          Nama Jamaah <span className="text-red-500">*</span>
+        </label>
+        <select
+          name="id_master_jamaah"
+          value={formData.id_master_jamaah}
+          onChange={handleChange}
+          className="border border-green-200 p-2 rounded-md w-full bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+        >
+          <option value="">Pilih Jamaah</option>
+          {Array.isArray(jamaahList) &&
+            jamaahList.map((jamaah) => (
+              <option key={jamaah.id_master_jamaah} value={jamaah.id_master_jamaah}>
+                {jamaah.nama_jamaah}
+              </option>
+            ))}
+        </select>
+        <p className="text-xs text-gray-500">Pilih jamaah dari daftar yang tersedia</p>
+      </div>
+    );
   };
 
   return (
@@ -142,25 +301,11 @@ const AddMusyawarah = () => {
       {/* Form Content */}
       <div className="flex flex-col gap-6">
         {/* Nama Jamaah */}
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-green-800">Nama Jamaah <span className="text-red-500">*</span></label>
-          <select
-            name="id_master_jamaah"
-            value={formData.id_master_jamaah}
-            onChange={handleChange}
-            className="border border-green-200 p-2 rounded-md w-full bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-          >
-            <option value="">Pilih Jamaah</option>
-            {Array.isArray(jamaahList) &&
-              jamaahList.map((jamaah) => (
-                <option key={jamaah.id_master_jamaah} value={jamaah.id_master_jamaah}>
-                  {jamaah.nama_jamaah}
-                </option>
-              ))}
-          </select>
-          <p className="text-xs text-gray-500">Pilih jamaah dari daftar yang tersedia</p>
-        </div>
+        {renderJamaahField()}
 
+        {/* New Ketua Jamaah select */}
+        {renderKetuaJamaahField()}
+        
         {/* Tanggal (side by side) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
@@ -188,19 +333,28 @@ const AddMusyawarah = () => {
           </div>
         </div>
 
-        {/* Status Aktif */}
+        {/* Modified Status Aktif */}
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-green-800">Status Aktif</label>
+          <label className="block text-sm font-medium text-green-800">
+            Status Aktif
+          </label>
           <select
             name="aktif"
             value={formData.aktif}
-            onChange={handleChange}
+            onChange={(e) => handleChange({
+              target: {
+                name: 'aktif',
+                value: e.target.value === 'true'
+              }
+            })}
             className="border border-green-200 p-2 rounded-md w-full bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
           >
-            <option value="1">Aktif</option>
-            <option value="0">Tidak Aktif</option>
+            <option value={true}>Aktif</option>
+            <option value={false}>Tidak Aktif</option>
           </select>
-          <p className="text-xs text-gray-500">Tentukan status aktif untuk musyawarah ini</p>
+          <p className="text-xs text-gray-500">
+            Tentukan status aktif untuk musyawarah ini
+          </p>
         </div>
       </div>
 

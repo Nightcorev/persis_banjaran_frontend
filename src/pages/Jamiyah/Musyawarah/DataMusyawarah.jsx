@@ -177,7 +177,7 @@ const DataMusyawarah = () => {
                       </Link>
 
                       {/* Edit Button */}
-                      <Link to={`/jamiyah/musyawarah/data-musyawarah/add-musyawarah/${item.id_musyawarah}`}>
+                      <Link to={`/jamiyah/musyawarah/data-musyawarah/edit-musyawarah/${item.id_musyawarah}`}>
                         <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 flex items-center justify-center">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
