@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 // import { Link } from "react-router-dom"; // Mungkin tidak perlu Link di sini
 import { toast } from "react-toastify";
 import api from "../../utils/api"; // Instance Axios custom Anda
@@ -33,6 +33,8 @@ const ReminderIuran = () => {
   const [total, setTotal] = useState(0); // Mulai dengan 0
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedJamaahFilter, setSelectedJamaahFilter] = useState(null);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const searchTimeoutRef = useRef(null);
 
   // --- State untuk Seleksi ---
   const [selectedAnggotaIds, setSelectedAnggotaIds] = useState(new Set());
@@ -68,7 +70,8 @@ const ReminderIuran = () => {
       const params = {
         page,
         per_page: perPage,
-        search: searchTerm,
+        search: debouncedSearchTerm,
+
         jamaah_id: selectedJamaahFilter?.value,
         tahun: CURRENT_YEAR, // Kirim tahun relevan
       };
@@ -90,8 +93,22 @@ const ReminderIuran = () => {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, perPage, searchTerm, selectedJamaahFilter, CURRENT_YEAR]); // Tambahkan CURRENT_YEAR jika relevan
+  }, [page, perPage, debouncedSearchTerm, selectedJamaahFilter, CURRENT_YEAR]); // Tambahkan CURRENT_YEAR jika relevan
 
+  useEffect(() => {
+    /* ... (sama) ... */ if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      setPage(1);
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
   // --- Initial Data Load ---
   useEffect(() => {
     fetchJamaah(); // Ambil data jamaah saat komponen pertama kali dimuat

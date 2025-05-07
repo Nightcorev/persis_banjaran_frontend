@@ -1,1142 +1,1013 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { Link } from "react-router-dom";
-// import axios from "axios"; // Jika menggunakan axios langsung
 import { toast } from "react-toastify";
-import api from "../../utils/api"; // Instance Axios custom Anda
+import api from "../../utils/api"; // Sesuaikan path jika utils ada di level berbeda
 import Select from "react-select";
-import { NumericFormat } from "react-number-format"; // Untuk format Rupiah
+import { NumericFormat } from "react-number-format";
+import {
+  Upload,
+  History,
+  CalendarDays,
+  Settings,
+  CircleCheck,
+  CircleX,
+  Clock,
+  Info,
+  Trash2,
+  Plus,
+  Loader2,
+  Download,
+  Search,
+  Eye,
+  Edit,
+  ListChecks,
+  AlertTriangle,
+} from "lucide-react";
+
+// Impor komponen modal yang sudah dipisah
+import ImportModal from "../../components/KelolaIuran/ImportModal"; // Path relatif dari pages ke components
+import HistoryModal from "../../components/KelolaIuran/HistoryModal";
+import ValidationModal from "../../components/KelolaIuran/ValidationModal";
+import ManageTahunModal from "../../components/KelolaIuran/ManageTahunModal";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
-const CURRENT_YEAR = new Date().getFullYear(); // Asumsi iuran tahun berjalan
-const MONTHLY_FEE = 10000; // Biaya iuran per bulan
+const MONTHLY_FEE = 10000;
+const MONTH_NAMES = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mei",
+  "Jun",
+  "Jul",
+  "Ags",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Des",
+];
 
-// --- SIMULASI ROLE USER ---
-// Ganti ini dengan cara Anda mendapatkan role user asli (misal: dari context, props, hook)
-const USER_ROLES = {
-  PJ: "Pimpinan Jamaah",
-  BENDAHARA: "Bendahara",
-  SUPER_ADMIN: "Super Admin", // Jika ada
+// --- Helper ---
+const formatRupiah = (value) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(value || 0);
+const formatDateTime = (isoString) => {
+  if (!isoString) return "N/A";
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+  } catch (error) {
+    return "Invalid Date";
+  }
 };
-const account = JSON.parse(localStorage.getItem("user"));
 
-// Pilih role untuk testing:
-const currentUserRole = account?.role; // atau USER_ROLES.PJ
-
-// --- DATA DUMMY (Termasuk catatan verifikasi) ---
-
-const DataIuran = () => {
-  // State untuk data tabel utama & pagination
-  const [iuranSummary, setIuranSummary] = useState([]);
+// --- Komponen Utama Halaman ---
+const KelolaIuran = () => {
+  // --- State ---
+  const [iuranData, setIuranData] = useState([]);
+  const [selectedMonths, setSelectedMonths] = useState({});
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedJamaahFilter, setSelectedJamaahFilter] = useState(null); // Filter tabel
-
-  // State untuk loading & error
-  const [loading, setLoading] = useState(false); // Loading tabel utama
-  const [loadingModal, setLoadingModal] = useState(false); // Loading modal tambah/edit
-  const [loadingVerify, setLoadingVerify] = useState(false); // Loading modal verifikasi
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [selectedJamaahFilter, setSelectedJamaahFilter] = useState(null);
+  const [selectedTahun, setSelectedTahun] = useState(null);
+  const [tahunOptions, setTahunOptions] = useState([]);
+  const [jamaahOptions, setJamaahOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingTahun, setLoadingTahun] = useState(false);
+  const [loadingImport, setLoadingImport] = useState(false);
   const [error, setError] = useState("");
-
-  // State untuk data dropdown
-  const [jamaahs, setJamaah] = useState([]); // Pakai dummy
-  const [anggotasForModal, setAnggotasForModal] = useState([]);
-
-  // State Modal Tambah (Multi-Row)
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedJamaahModal, setSelectedJamaahModal] = useState(null);
-  const [paymentRows, setPaymentRows] = useState([
-    { key: Date.now(), anggota: null, nominal: "" },
-  ]);
-
-  // State Modal Edit (Single-Row)
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingPaymentId, setEditingPaymentId] = useState(null);
-  const [editNominal, setEditNominal] = useState("");
-  const [editAnggotaInfo, setEditAnggotaInfo] = useState({
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [tahunListManage, setTahunListManage] = useState(false);
+  const [isManageTahunModalOpen, setIsManageTahunModalOpen] = useState(false);
+  const [historyTarget, setHistoryTarget] = useState({
+    anggotaId: null,
     nama: "",
-    jamaah: "",
+    tahun: null,
   });
+  const [historyData, setHistoryData] = useState([]);
+  const [isInputMode, setIsInputMode] = useState(false);
+  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [pendingLogsData, setPendingLogsData] = useState([]);
+  const [loadingValidationLogs, setLoadingValidationLogs] = useState(false);
+  const [validationTarget, setValidationTarget] = useState({
+    anggotaId: null,
+    nama: "",
+    tahun: null,
+  });
+  const searchTimeoutRef = useRef(null);
+  const [grandTotalSudahDibayar, setGrandTotalSudahDibayar] = useState(0);
+  const [grandTotalBelumDibayar, setGrandTotalBelumDibayar] = useState(0);
 
-  const [editRejectionNote, setEditRejectionNote] = useState(null); // Untuk catatan di modal edit
+  // Data User & Role
+  const account = JSON.parse(localStorage.getItem("user")) || {
+    role: "Bendahara",
+  }; // Default role jika tidak ada
+  const isBendaharaOrAdmin = ["Bendahara", "Super Admin"].includes(
+    account?.role
+  );
+  const canInputIuran = [
+    "Pimpinan Jamaah",
+    "Bendahara",
+    "Super Admin",
+  ].includes(account?.role);
 
-  // --- State Modal Verifikasi/Tolak (BARU) ---
-  const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [verifyModalData, setVerifyModalData] = useState(null); // { id, nama, jamaah, nominal, tanggal }
-  const [rejectionNote, setRejectionNote] = useState(""); // Catatan penolakan
-
-  // State Modal Delete
-  const [showModalDelete, setShowModalDelete] = useState(null); // Menyimpan ID pembayaran
-
-  // --- Fungsi Fetch Data (Nonaktifkan jika pakai dummy) ---
+  // --- Fetch Data ---
+  const fetchTahunAktif = useCallback(async () => {
+    setLoadingTahun(true);
+    try {
+      const response = await api.get("/tahun-aktif");
+      const options = response.data.map((th) => ({
+        value: th.tahun,
+        label: th.tahun.toString(),
+      }));
+      setTahunOptions(options);
+      setTahunListManage(response.data);
+      if (!selectedTahun && options.length > 0) {
+        const tahunAktifDefault = response.data.find(
+          (th) => th.status === "Aktif"
+        );
+        setSelectedTahun(
+          tahunAktifDefault
+            ? {
+                value: tahunAktifDefault.tahun,
+                label: tahunAktifDefault.tahun.toString(),
+              }
+            : options[0]
+        );
+      }
+    } catch (err) {
+      toast.error("Gagal memuat data tahun.");
+      console.error("Fetch Tahun Error:", err);
+    } finally {
+      setLoadingTahun(false);
+    }
+  }, []); // selectedTahun dihapus dari dependency agar tidak re-fetch saat dipilih
 
   const fetchJamaah = useCallback(async () => {
-    // Aktifkan jika tidak pakai dummy
     try {
-      const response = await api.get(`${API_URL}/data_choice_jamaah`);
-      setJamaah(response.data.data);
+      const response = await api.get(`${API_URL}/data_choice_jamaah`); // Gunakan endpoint Anda
+      const options = (response.data.data || []).map((j) => ({
+        value: j.id_master_jamaah,
+        label: j.nama_jamaah,
+      }));
+      setJamaahOptions(options);
     } catch (error) {
-      setError("Gagal mengambil data Jamaah.");
-      console.error("Fetch Jamaah error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchAnggotaForModal = useCallback(async (jamaahId) => {
-    if (!jamaahId) {
-      setAnggotasForModal([]);
-      return;
-    }
-    setLoadingModal(true);
-    try {
-      // Jika pakai API:
-      const response = await api.get(
-        `${API_URL}/anggota/choice_by-jamaah/${jamaahId}`
-      );
-      setAnggotasForModal(response.data.data || []);
-      console.log(response.data.data);
-    } catch (error) {
-      toast.error("Gagal mengambil data Anggota.");
-      console.error("Fetch Anggota error:", error);
-      setAnggotasForModal([]);
-    } finally {
-      setLoadingModal(false);
+      console.error("Gagal mengambil data Jamaah:", error);
+      // toast.error("Gagal memuat pilihan Jamaah."); // Mungkin tidak perlu toast di sini
     }
   }, []);
 
   const fetchIuranSummary = useCallback(async () => {
+    if (!selectedTahun) return;
     setLoading(true);
     setError(null);
+    setSelectedMonths({});
     try {
       const params = {
         page,
         per_page: perPage,
-        search: searchTerm,
-        jamaah_id: selectedJamaahFilter?.value, // Kirim ID jika filter dipilih
-        tahun: CURRENT_YEAR, // Kirim tahun relevan
+        search: debouncedSearchTerm,
+        jamaah_id: selectedJamaahFilter?.value,
+        tahun: selectedTahun.value,
+        _t: Date.now(),
       };
-      const response = await api.get(`${API_URL}/iuran/summary`, { params });
-      setIuranSummary(response.data.data || []); // Sesuaikan path data
-      setTotal(response.data.total || 0); // Sesuaikan path total
-    } catch (error) {
-      setError("Gagal mengambil data iuran.");
-      toast.error("Gagal mengambil data iuran.");
-      console.error("Fetch Iuran Summary error:", error);
-      setIuranSummary([]);
+      const response = await api.get(`/iuran/summary`, { params });
+      console.log("Raw API response for summary:", response.data);
+      const items = response.data.data || [];
+      const totalItems = response.data.total || 0;
+      setIuranData(items);
+      setTotal(totalItems);
+    } catch (err) {
+      setError("Gagal memuat data iuran.");
+      setIuranData([]);
       setTotal(0);
+      console.error("Fetch Iuran Error:", err);
     } finally {
       setLoading(false);
     }
-  }, [page, perPage, searchTerm, selectedJamaahFilter]); // Dependensi fetch
+  }, [page, perPage, debouncedSearchTerm, selectedJamaahFilter, selectedTahun]);
 
-  // --- Initial Data Load (Nonaktifkan jika pakai dummy) ---
+  // --- Debounce Search ---
   useEffect(() => {
-    fetchJamaah();
-  }, [fetchJamaah]);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      setPage(1);
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
 
+  // Fetch data awal
+  useEffect(() => {
+    fetchTahunAktif();
+    fetchJamaah();
+  }, [fetchTahunAktif, fetchJamaah]);
   useEffect(() => {
     fetchIuranSummary();
   }, [fetchIuranSummary]);
 
-  // --- Options untuk React-Select ---
-  const jamaahOptions = jamaahs.map((jamaah) => ({
-    value: jamaah.id_master_jamaah,
-    label: jamaah.nama_jamaah,
-  }));
+  // --- Kalkulasi Grand Total ---
+  useEffect(() => {
+    let currentPageSudahDibayar = 0;
+    let currentPageBelumDibayar = 0;
+    const nominalHarusBayarSetahunPenuh = 12 * MONTHLY_FEE;
 
-  const getAvailableAnggotaOptions = (currentRowKey) => {
-    const selectedAnggotaIds = paymentRows
-      .filter((row) => row.key !== currentRowKey && row.anggota)
-      .map((row) => row.anggota.value);
-    return anggotasForModal
-      .filter((anggota) => !selectedAnggotaIds.includes(anggota.id_anggota))
-      .map((anggota) => ({
-        value: anggota.id_anggota,
-        label: `${anggota.nama_lengkap} (${anggota.no_telp || "N/A"})`,
-      }));
-  };
-
-  // --- Handler Modal Tambah (Multi-Row) ---
-  const openAddModal = () => {
-    /* ... (sama seperti sebelumnya) ... */
-    setSelectedJamaahModal(null);
-    setPaymentRows([{ key: Date.now(), anggota: null, nominal: "" }]);
-    setAnggotasForModal([]);
-    setShowAddModal(true);
-  };
-  const handleJamaahChangeModal = (selectedOption) => {
-    /* ... (sama seperti sebelumnya) ... */
-    setSelectedJamaahModal(selectedOption);
-    setPaymentRows([{ key: Date.now(), anggota: null, nominal: "" }]);
-    if (selectedOption) {
-      fetchAnggotaForModal(selectedOption.value);
-    } else {
-      setAnggotasForModal([]);
-    }
-  };
-  const handleRowChange = (key, field, value) => {
-    /* ... (sama seperti sebelumnya) ... */
-    setPaymentRows((prevRows) =>
-      prevRows.map((row) =>
-        row.key === key ? { ...row, [field]: value } : row
-      )
-    );
-  };
-  const addPaymentRow = () => {
-    /* ... (sama seperti sebelumnya) ... */
-    setPaymentRows((prevRows) => [
-      ...prevRows,
-      { key: Date.now(), anggota: null, nominal: "" },
-    ]);
-  };
-  const removePaymentRow = (key) => {
-    /* ... (sama seperti sebelumnya) ... */
-    setPaymentRows((prevRows) => prevRows.filter((row) => row.key !== key));
-  };
-  const handleSubmitAdd = async (e) => {
-    /* ... (sama seperti sebelumnya, pastikan API call benar) ... */
-    e.preventDefault();
-    const validRows = paymentRows.filter(
-      (row) => row.anggota && row.nominal > 0
-    );
-    if (!selectedJamaahModal) {
-      toast.warn("Silakan pilih Jamaah.");
-      return;
-    }
-    if (validRows.length === 0) {
-      toast.warn("Minimal tambahkan satu pembayaran valid.");
-      return;
-    }
-    const payload = validRows.map((row) => ({
-      anggota_id: row.anggota.value,
-      nominal: parseFloat(row.nominal) || 0,
-    }));
-    setLoadingModal(true);
-    try {
-      console.log(payload);
-      await api.post(`${API_URL}/iuran/pay`, { payments: payload }); // Kirim sbg object dg key 'payments'
-      toast.success(
-        `Pembayaran untuk ${payload.length} anggota berhasil dicatat (Pending)`
-      );
-      setShowAddModal(false);
-      console.log("API Add Success. Attempting to fetch summary...");
-      fetchIuranSummary(); // Pastikan baris ini tidak di-comment
-      console.log("fetchIuranSummary called.");
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Gagal menyimpan data pembayaran."
-      );
-      console.error("Submit Add error:", error);
-    } finally {
-      setLoadingModal(false);
-    }
-  };
-
-  // --- Handler Modal Edit ---
-  const openEditModal = async (paymentId) => {
-    if (!paymentId) {
-      toast.error("Tidak ada data pembayaran yang bisa diedit.");
-      return;
-    }
-    setEditingPaymentId(paymentId);
-    setEditRejectionNote(null); // Reset catatan saat modal dibuka
-    setLoadingModal(true);
-    setShowEditModal(true);
-    try {
-      // Fetch detail pembayaran spesifik (lebih baik daripada hanya dari summary)
-      const response = await api.get(`${API_URL}/iuran/payment/${paymentId}`);
-      const paymentData = response.data.data; // Sesuaikan path jika perlu
-
-      setEditNominal(paymentData.nominal);
-      setEditAnggotaInfo({
-        nama: paymentData.anggota?.nama_lengkap || "N/A",
-        jamaah: paymentData.anggota?.master_jamaah?.nama_jamaah || "N/A", // Akses melalui relasi anggota
-      });
-      console.log(paymentData);
-      // Simpan catatan verifikasi jika ada
-      if (paymentData.status === "Failed" && paymentData.catatan_verifikasi) {
-        setEditRejectionNote(paymentData.catatan_verifikasi);
+    iuranData.forEach((item) => {
+      let rowSudahDibayar = 0;
+      if (item.bulan_status) {
+        for (let i = 1; i <= 12; i++) {
+          if (item.bulan_status[i]?.status === "Verified") {
+            rowSudahDibayar += MONTHLY_FEE;
+          }
+        }
       }
-    } catch (error) {
-      toast.error("Gagal mengambil detail pembayaran untuk diedit.");
-      console.error("Open Edit Modal error:", error);
-      setShowEditModal(false); // Tutup modal jika gagal fetch
-    } finally {
-      setLoadingModal(false);
-    }
-  };
-
-  const handleSubmitEdit = async (e) => {
-    /* ... (sama seperti sebelumnya, pastikan API call benar) ... */
-    e.preventDefault();
-    if (!editNominal || editNominal <= 0) {
-      toast.warn("Nominal tidak valid.");
-      return;
-    }
-    setLoadingModal(true);
-    try {
-      const payload = { nominal: parseFloat(editNominal) || 0 };
-      await api.put(`${API_URL}/iuran/edit/${editingPaymentId}`, payload);
-      toast.success("Nominal berhasil diperbarui.");
-      setShowEditModal(false);
-      setEditingPaymentId(null);
-      fetchIuranSummary(); // Aktifkan jika tidak pakai dummy
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Gagal memperbarui nominal."
+      currentPageSudahDibayar += rowSudahDibayar;
+      const rowBelumDibayar = Math.max(
+        0,
+        nominalHarusBayarSetahunPenuh - rowSudahDibayar
       );
-      console.error("Submit Edit error:", error);
-    } finally {
-      setLoadingModal(false);
-    }
-  };
-
-  // --- Handler Modal Verifikasi/Tolak (BARU) ---
-  const handleOpenVerifyModal = (item) => {
-    setVerifyModalData({
-      id: item.id_pembayaran_terakhir_untuk_aksi,
-      nama: item.nama_lengkap,
-      jamaah: item.nama_jamaah,
-      nominal: item.nominal_terakhir, // Asumsi ada di summary
-      tanggal: item.tanggal_input_terakhir, // Asumsi ada di summary
+      currentPageBelumDibayar += rowBelumDibayar;
     });
-    setRejectionNote(""); // Reset catatan
-    setShowVerifyModal(true);
+    setGrandTotalSudahDibayar(currentPageSudahDibayar);
+    setGrandTotalBelumDibayar(currentPageBelumDibayar);
+  }, [iuranData, selectedTahun]);
+
+  // --- Handlers ---
+  const handleMonthCheckboxChange = (anggotaId, monthIndex) => {
+    setSelectedMonths((prev) => {
+      const currentSelection = prev[anggotaId]
+        ? new Set(prev[anggotaId])
+        : new Set();
+      const monthNumber = monthIndex + 1;
+      if (currentSelection.has(monthNumber)) {
+        currentSelection.delete(monthNumber);
+      } else {
+        currentSelection.add(monthNumber);
+      }
+      if (currentSelection.size === 0) {
+        const { [anggotaId]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [anggotaId]: currentSelection };
+    });
   };
 
-  const handleVerify = async () => {
-    if (!verifyModalData?.id) return;
-    setLoadingVerify(true);
-    try {
-      await api.put(`${API_URL}/iuran/verify/${verifyModalData.id}`);
-      toast.success("Pembayaran berhasil diverifikasi.");
-      setShowVerifyModal(false);
-      setVerifyModalData(null);
-      fetchIuranSummary(); // Aktifkan jika tidak pakai dummy
-      // Update dummy data secara manual jika testing
-      // setIuranSummary((prev) =>
-      //   prev.map((item) =>
-      //     item.id_pembayaran_terakhir_untuk_aksi === verifyModalData.id
-      //       ? {
-      //           ...item,
-      //           status_terakhir: "Verified",
-      //           id_pembayaran_terakhir_untuk_aksi: null,
-      //           catatan_verifikasi: null,
-      //         }
-      //       : item
-      //   )
-      // );
-    } catch (error) {
-      toast.error("Gagal verifikasi pembayaran.");
-      console.error("Verify error:", error);
-    } finally {
-      setLoadingVerify(false);
-    }
-  };
-
-  const handleReject = async () => {
-    if (!verifyModalData?.id) return;
-    if (!rejectionNote.trim()) {
-      toast.warn("Silakan masukkan alasan penolakan.");
+  const handleBayar = async (anggotaId) => {
+    const monthsToPay = selectedMonths[anggotaId];
+    if (!monthsToPay || monthsToPay.size === 0) {
+      toast.warn("Pilih bulan yang akan dibayar.");
       return;
     }
-    setLoadingVerify(true);
+    if (!selectedTahun) {
+      toast.error("Tahun iuran belum dipilih.");
+      return;
+    }
+    if (
+      !window.confirm(
+        `Anda akan mencatat pembayaran untuk ${monthsToPay.size} bulan. Lanjutkan?`
+      )
+    )
+      return;
+
+    setLoading(true); // Bisa juga loading spesifik per baris
     try {
-      const payload = { catatan: rejectionNote };
-      await api.put(`${API_URL}/iuran/reject/${verifyModalData.id}`, payload);
+      await api.post("/iuran/pay-months", {
+        anggota_id: anggotaId,
+        tahun: selectedTahun.value,
+        months: Array.from(monthsToPay),
+        role: account.role, // Kirim role user
+      });
+      toast.success("Pembayaran berhasil dicatat!");
+      fetchIuranSummary(); // Refresh data
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Gagal mencatat pembayaran.");
+      console.error("Pay Months Error:", err);
+      setLoading(false); // Matikan loading jika error
+    }
+    // setLoading akan dimatikan oleh fetchIuranSummary jika sukses
+  };
+
+  const handleImport = async (file) => {
+    if (!selectedTahun) {
+      toast.error("Pilih tahun iuran terlebih dahulu sebelum mengimpor.");
+      throw new Error("Tahun belum dipilih");
+    }
+    setLoadingImport(true);
+    const formData = new FormData();
+    formData.append("file_import", file);
+    formData.append("tahun", selectedTahun.value);
+    try {
+      const response = await api.post("/iuran/import", formData); // Tidak perlu set header Content-Type
+      toast.success(
+        response.data.message || "File sedang diproses untuk impor."
+      );
+      fetchIuranSummary();
+    } catch (err) {
+      if (
+        err.response &&
+        err.response.status === 422 &&
+        err.response.data.errors
+      ) {
+        const errorMessages = Array.isArray(err.response.data.errors)
+          ? err.response.data.errors.join("\n")
+          : JSON.stringify(err.response.data.errors);
+        toast.error(
+          <div>
+            Impor Gagal:
+            <br />
+            <pre className="text-xs whitespace-pre-wrap">{errorMessages}</pre>
+          </div>,
+          { autoClose: 10000 }
+        );
+      } else {
+        toast.error(err.response?.data?.message || "Gagal mengimpor file.");
+      }
+      console.error("Import Error:", err);
+      throw err;
+    } finally {
+      setLoadingImport(false);
+    }
+  };
+
+  const handleOpenHistory = async (anggotaId, namaLengkap) => {
+    if (!selectedTahun) {
+      toast.warn("Pilih tahun terlebih dahulu.");
+      return;
+    }
+    setIsHistoryModalOpen(true);
+    setLoadingHistory(true);
+    setHistoryTarget({
+      anggotaId,
+      nama: namaLengkap,
+      tahun: selectedTahun.value,
+    });
+    setHistoryData([]);
+    try {
+      const response = await api.get(`/iuran/history/${anggotaId}`, {
+        params: { tahun: selectedTahun.value },
+      });
+      setHistoryData(response.data || []);
+    } catch (err) {
+      toast.error("Gagal memuat riwayat pembayaran.");
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleOpenValidationModal = async (anggotaId, namaLengkap) => {
+    if (!selectedTahun) {
+      toast.warn("Pilih tahun terlebih dahulu.");
+      return;
+    }
+    setIsValidationModalOpen(true);
+    setLoadingValidationLogs(true);
+    setValidationTarget({
+      anggotaId,
+      nama: namaLengkap,
+      tahun: selectedTahun.value,
+    });
+    setPendingLogsData([]);
+    try {
+      const response = await api.get(`/iuran/pending-logs/${anggotaId}`, {
+        params: { tahun: selectedTahun.value },
+      });
+      setPendingLogsData(response.data || []);
+    } catch (err) {
+      toast.error("Gagal memuat data pending.");
+    } finally {
+      setLoadingValidationLogs(false);
+    }
+  };
+
+  const handleAddTahun = async (tahun) => {
+    setLoadingTahun(true);
+    try {
+      await api.post("/tahun-aktif", { tahun });
+      toast.success(`Tahun ${tahun} berhasil ditambahkan.`);
+      fetchTahunAktif();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Gagal menambah tahun.");
+    } finally {
+      setLoadingTahun(false);
+    }
+  };
+
+  const handleToggleTahunStatus = async (id, newStatus) => {
+    if (newStatus === "Aktif") {
+      const tahunAktifLain = tahunListManage.find(
+        (th) => th.id !== id && th.status === "Aktif"
+      );
+      if (
+        tahunAktifLain &&
+        !window.confirm(
+          `Tahun ${tahunAktifLain.tahun} sedang aktif. Apakah Anda yakin ingin mengaktifkan tahun ini? Tahun ${tahunAktifLain.tahun} akan otomatis tidak aktif.`
+        )
+      ) {
+        return;
+      }
+    }
+    setLoadingTahun(true);
+    try {
+      await api.put(`/tahun-aktif/${id}`, { status: newStatus });
+      toast.success(`Status tahun berhasil diubah.`);
+      await fetchTahunAktif(); // Tunggu fetchTahunAktif selesai
+      // Jika tahun yang diubah adalah tahun yang sedang difilter, refresh iuran
+      // Cek apakah selectedTahun perlu diupdate jika tahun aktif berubah
+      const updatedTahun = tahunListManage.find((th) => th.id === id);
+      if (
+        updatedTahun &&
+        selectedTahun &&
+        updatedTahun.tahun === selectedTahun.value
+      ) {
+        // Jika tahun yang statusnya diubah adalah tahun yang dipilih,
+        // dan status barunya 'Tidak Aktif', mungkin reset filter tahun atau pilih yg aktif baru
+        if (newStatus === "Tidak Aktif") {
+          const tahunAktifBaru = tahunOptions.find(
+            (th) =>
+              th.value !== selectedTahun.value &&
+              tahunListManage.find(
+                (tl) => tl.tahun === th.value && tl.status === "Aktif"
+              )
+          );
+          setSelectedTahun(
+            tahunAktifBaru || (tahunOptions.length > 0 ? tahunOptions[0] : null)
+          );
+        }
+      } else if (newStatus === "Aktif") {
+        // Jika tahun lain diaktifkan
+        setSelectedTahun({
+          value: updatedTahun.tahun,
+          label: updatedTahun.tahun.toString(),
+        });
+      }
+      // fetchIuranSummary(); // Akan ter-trigger oleh perubahan selectedTahun
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Gagal mengubah status tahun."
+      );
+    } finally {
+      setLoadingTahun(false);
+    }
+  };
+
+  const handleVerifyLog = async (logId) => {
+    if (!window.confirm("Verifikasi pembayaran ini?")) return;
+    setLoadingValidationLogs(true);
+    try {
+      await api.put(`/iuran/verify-log/${logId}`);
+      toast.success("Pembayaran diverifikasi!");
+      if (isValidationModalOpen) {
+        // Refresh modal validasi
+        handleOpenValidationModal(
+          validationTarget.anggotaId,
+          validationTarget.nama
+        );
+      }
+      fetchIuranSummary(); // Refresh tabel utama
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Gagal verifikasi.");
+    } finally {
+      setLoadingValidationLogs(false);
+    }
+  };
+
+  const handleRejectLog = async (logId, catatan) => {
+    setLoadingValidationLogs(true);
+    try {
+      await api.put(`/iuran/reject-log/${logId}`, { catatan });
       toast.warn("Pembayaran ditolak (Failed).");
-      setShowVerifyModal(false);
-      setVerifyModalData(null);
-      fetchIuranSummary(); // Refresh
-      // Update dummy data secara manual jika testing
-      setIuranSummary((prev) =>
-        prev.map((item) =>
-          item.id_pembayaran_terakhir_untuk_aksi === verifyModalData.id
-            ? {
-                ...item,
-                status_terakhir: "Failed",
-                catatan_verifikasi: rejectionNote,
-              } // ID aksi tetap ada
-            : item
-        )
-      );
-    } catch (error) {
-      toast.error("Gagal menolak pembayaran.");
-      console.error("Reject error:", error);
+      if (isValidationModalOpen) {
+        // Refresh modal validasi
+        handleOpenValidationModal(
+          validationTarget.anggotaId,
+          validationTarget.nama
+        );
+      }
+      fetchIuranSummary(); // Refresh tabel utama
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Gagal menolak.");
     } finally {
-      setLoadingVerify(false);
+      setLoadingValidationLogs(false);
     }
-  };
-
-  // --- Handler Delete ---
-  const handleDelete = async () => {
-    /* ... (sama seperti sebelumnya, pastikan API call benar) ... */
-    if (!showModalDelete) return;
-    setLoading(true); // Bisa pakai loading global atau spesifik modal delete
-    try {
-      await api.delete(`${API_URL}/iuran/${showModalDelete}`);
-      toast.success("Data pembayaran berhasil dihapus!");
-      setShowModalDelete(null);
-      fetchIuranSummary(); // Refresh
-      // Update dummy data secara manual jika testing
-      setIuranSummary((prev) =>
-        prev.filter(
-          (item) => item.id_pembayaran_terakhir_untuk_aksi !== showModalDelete
-        )
-      );
-      // Perlu update 'total' juga jika pakai dummy
-      setTotal((prev) => prev - 1);
-    } catch (error) {
-      toast.error("Gagal menghapus data pembayaran.");
-      console.error("Delete error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // --- Render Helper ---
-  const renderMonthCells = (totalPaid) => {
-    /* ... (sama seperti sebelumnya) ... */
-    const paidMonthsCount = Math.floor(totalPaid / MONTHLY_FEE);
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "Mei",
-      "Jun",
-      "Jul",
-      "Ags",
-      "Sep",
-      "Okt",
-      "Nov",
-      "Des",
-    ];
-    return months.map((month, monthIndex) => (
-      <td
-        key={`${month}-${monthIndex}`}
-        className="border p-1 text-center text-xs"
-      >
-        {monthIndex < paidMonthsCount ? (
-          <span
-            title={`Lunas s/d ${months[paidMonthsCount - 1]}`}
-            className="text-green-600 font-semibold"
-          >
-            ✓
-          </span>
-        ) : (
-          <span title="Belum Lunas" className="text-gray-400">
-            ✗
-          </span>
-        )}
-      </td>
-    ));
-  };
-
-  const getStatusBadge = (status, note) => {
-    // Tambah parameter note
-    let badge;
-    switch (status?.toLowerCase()) {
-      case "verified":
-        badge = (
-          <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded border border-green-400">
-            Verified
-          </span>
-        );
-        break;
-      case "pending":
-        badge = (
-          <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded border border-yellow-300">
-            Pending
-          </span>
-        );
-        break;
-      case "failed":
-        badge = (
-          <span className="relative group bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded border border-red-400">
-            Failed
-            {/* Tooltip untuk catatan penolakan */}
-            {note && (
-              <span className="absolute hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs bg-gray-700 text-white text-xs rounded py-1 px-2 z-10 break-words shadow-lg">
-                {note}
-              </span>
-            )}
-          </span>
-        );
-        break;
-      default:
-        badge = (
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded border border-gray-500">
-            N/A
-          </span>
-        );
-    }
-    return badge;
   };
 
   return (
-    <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg">
-      {/* Header & Tombol Aksi Utama */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
-        <h1 className="text-xl font-bold text-gray-800">
-          Kelola Data Iuran ({CURRENT_YEAR})
-        </h1>
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Tombol Reminder (tampil untuk semua?) */}
-          <button className="px-3 py-2 bg-sky-600 text-white text-sm rounded-lg hover:bg-sky-700 whitespace-nowrap">
-            <Link to="/iuran/reminder">Kirim Reminder Iuran</Link>
-          </button>
-          {/* Tombol Tambah Pembayaran (hanya PJ) */}
-          {(currentUserRole === USER_ROLES.PJ ||
-            currentUserRole === USER_ROLES.SUPER_ADMIN) && (
-            <button
-              className="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 whitespace-nowrap"
-              onClick={openAddModal}
+    <div className="p-2 sm:p-4 md:p-6 bg-gray-50 min-h-screen w-full">
+           {" "}
+      <div className="max-w-full mx-auto bg-white p-5 sm:p-6 rounded-lg shadow-md flex flex-col">
+        {/* Header & Tombol Aksi Utama */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 pb-4 border-b gap-2 flex-shrink-0">
+          <h1 className="text-xl font-bold text-gray-800">
+            Kelola Pembayaran Iuran
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/iuran/reminder">
+              <button className="flex items-center gap-1 px-3 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm shadow-sm">
+                <CalendarDays size={16} /> Reminder Iuran
+              </button>
+            </Link>
+            {canInputIuran && (
+              <button
+                onClick={() => setIsInputMode((prev) => !prev)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm shadow-sm ${
+                  isInputMode
+                    ? "bg-red-100 text-red-700 hover:bg-red-200"
+                    : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                }`}
+                title={
+                  isInputMode
+                    ? "Batal Input Pembayaran"
+                    : "Aktifkan Mode Input Pembayaran"
+                }
+              >
+                {isInputMode ? <CircleX size={16} /> : <Plus size={16} />}
+                {isInputMode ? "Batal Input" : "Input Pembayaran"}
+              </button>
+            )}
+            {isBendaharaOrAdmin && (
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 text-sm shadow-sm disabled:opacity-50"
+                disabled={loading || loadingImport}
+              >
+                <Upload size={16} /> Impor Excel
+              </button>
+            )}
+            {isBendaharaOrAdmin && (
+              <button
+                onClick={() => setIsManageTahunModalOpen(true)}
+                className="flex items-center gap-1 px-3 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm shadow-sm disabled:opacity-50"
+                disabled={loading || loadingTahun}
+              >
+                <Settings size={16} /> Kelola Tahun
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filter */}
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-end flex-shrink-0">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tahun Iuran
+            </label>
+            <Select
+              options={tahunOptions}
+              value={selectedTahun}
+              onChange={setSelectedTahun}
+              placeholder="Pilih Tahun..."
+              isLoading={loadingTahun}
+              isDisabled={loading || loadingTahun}
+              className="text-sm z-30"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Jamaah
+            </label>
+            <Select
+              options={jamaahOptions}
+              value={selectedJamaahFilter}
+              onChange={setSelectedJamaahFilter}
+              isClearable
+              isSearchable
+              placeholder="Semua Jamaah..."
+              isDisabled={loading}
+              className="text-sm z-20"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tampilkan
+            </label>
+            <select
+              value={perPage}
+              onChange={(e) => {
+                setPage(1);
+                setPerPage(Number(e.target.value));
+              }}
+              className="border border-gray-300 p-2 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm w-full"
+              disabled={loading}
             >
-              + Pembayaran Iuran
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="search"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Cari Anggota
+            </label>
+            <div className="relative">
+              <input
+                id="search"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Nama anggota..."
+                className="border border-gray-300 p-2 pl-8 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm w-full"
+                disabled={loading}
+              />
+              <Search
+                size={16}
+                className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Alert Error */}
+        {error && !loading && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300 text-sm flex-shrink-0">
+            {error}{" "}
+            <button
+              onClick={fetchIuranSummary}
+              className="ml-2 font-semibold underline"
+            >
+              Coba lagi
             </button>
+          </div>
+        )}
+
+        {/* Tabel Data dengan Scroll */}
+        <div className="flex-grow overflow-auto border border-gray-200 rounded-lg relative">
+          {loading && (
+            <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-20">
+              <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
+            </div>
+          )}
+           
+          <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-sm">
+                       {" "}
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th
+                    rowSpan="2"
+                    className="px-2 py-3 text-left font-medium  uppercase tracking-wider w-10 sticky left-0 bg-gray-50 z-10 border-r"
+                  >
+                    No
+                  </th>
+                  <th
+                    rowSpan="2"
+                    className="px-3 py-3 text-left font-medium  uppercase tracking-wider min-w-[150px] sticky left-10 bg-gray-50 z-10 border-r"
+                  >
+                    Nama Anggota
+                  </th>
+                  <th
+                    rowSpan="2"
+                    className="px-3 py-3 text-left font-medium  uppercase tracking-wider min-w-[120px]"
+                  >
+                    Jamaah
+                  </th>
+                  <th
+                    colSpan={MONTH_NAMES.length}
+                    className="px-3 py-2 text-center font-medium  uppercase tracking-wider border-b"
+                  >
+                    Bulan Pembayaran ({selectedTahun?.value || "..."})
+                  </th>
+                  <th
+                    colSpan="2"
+                    className="px-3 py-2 text-center font-medium  uppercase tracking-wider border-b"
+                  >
+                    Rincian Pembayaran ({selectedTahun?.value || "..."})
+                  </th>
+                  <th
+                    rowSpan="2"
+                    className="px-3 py-3 text-center font-medium  uppercase tracking-wider min-w-[100px]"
+                  >
+                    Action
+                  </th>
+                </tr>
+                <tr>
+                  {MONTH_NAMES.map((month, index) => (
+                    <th
+                      key={index}
+                      className="px-1 py-1 text-center font-medium  border-l w-[50px]"
+                    >
+                      {month}
+                    </th>
+                  ))}
+                  {/* Sub-header untuk Rincian */}
+                  <th className="px-3 py-2 text-right font-medium  border-l uppercase tracking-wider">
+                    Sudah Dibayar
+                  </th>
+                  <th className="px-3 py-2 text-right font-medium  border-l uppercase tracking-wider">
+                    Belum Dibayar
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {!loading && iuranData.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={3 + MONTH_NAMES.length + 2 + 1}
+                      className="text-center p-5 text-gray-500 italic"
+                    >
+                      {searchTerm || selectedJamaahFilter
+                        ? "Tidak ada data iuran yang cocok."
+                        : "Tidak ada data iuran untuk tahun ini."}
+                    </td>
+                  </tr>
+                )}
+                {!loading &&
+                  iuranData.map((item, index) => {
+                    const currentSelection =
+                      selectedMonths[item.anggota_id] || new Set();
+                    let nominalSudahDibayar = 0;
+                    if (item.bulan_status) {
+                      for (let i = 1; i <= 12; i++) {
+                        if (item.bulan_status[i]?.status === "Verified") {
+                          nominalSudahDibayar += MONTHLY_FEE;
+                        }
+                      }
+                    }
+                    const nominalHarusBayarSetahunPenuh = 12 * MONTHLY_FEE;
+                    const nominalBelumDibayar = Math.max(
+                      0,
+                      nominalHarusBayarSetahunPenuh - nominalSudahDibayar
+                    );
+                    let hasPendingMonth = false;
+                    if (item.bulan_status) {
+                      for (let i = 1; i <= 12; i++) {
+                        if (item.bulan_status[i]?.status === "Pending") {
+                          hasPendingMonth = true;
+                          break;
+                        }
+                      }
+                    }
+
+                    return (
+                      <tr key={item.anggota_id} className="hover:bg-gray-50">
+                        <td className="px-2 py-2 whitespace-nowrap text-center text-gray-500 sticky left-0 bg-white hover:bg-gray-50 border-r">
+                          {(page - 1) * perPage + index + 1}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap font-medium text-gray-900 sticky left-10 bg-white hover:bg-gray-50 border-r">
+                          {item.nama_lengkap}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-gray-700">
+                          {item.nama_jamaah}
+                        </td>
+                        {MONTH_NAMES.map((_, monthIndex) => {
+                          const monthNumber = monthIndex + 1;
+                          const monthInfo = item.bulan_status?.[
+                            monthNumber
+                          ] || {
+                            status: "Belum Lunas",
+                            catatan: null,
+                          };
+                          const status = monthInfo.status;
+                          const catatan = monthInfo.catatan;
+                          const isChecked = currentSelection.has(monthNumber);
+                          const canCheck =
+                            status === "Belum Lunas" || status === "Failed";
+                          const isDisabled =
+                            status === "Verified" || status === "Pending";
+                          let cellContent;
+                          if (isInputMode && canCheck) {
+                            cellContent = (
+                              <input
+                                type="checkbox"
+                                className="form-checkbox h-3.5 w-3.5 text-blue-600 rounded focus:ring-blue-500 mx-auto block disabled:opacity-50 disabled:cursor-not-allowed"
+                                checked={isChecked}
+                                onChange={() =>
+                                  handleMonthCheckboxChange(
+                                    item.anggota_id,
+                                    monthIndex
+                                  )
+                                }
+                                disabled={loading}
+                                title={
+                                  status === "Failed"
+                                    ? `Gagal: ${
+                                        catatan || "Klik History u/ detail"
+                                      }. Centang untuk input ulang.`
+                                    : "Pilih untuk bayar"
+                                }
+                              />
+                            );
+                          } else {
+                            if (status === "Verified") {
+                              cellContent = (
+                                <CircleCheck
+                                  size={14}
+                                  className="text-green-500 mx-auto"
+                                  title={`Lunas - Verified`}
+                                />
+                              );
+                            } else if (status === "Pending") {
+                              cellContent = (
+                                <Clock
+                                  size={14}
+                                  className="text-yellow-500 mx-auto"
+                                  title={`Pending Verifikasi`}
+                                />
+                              );
+                            } else if (status === "Failed") {
+                              cellContent = (
+                                <div className="relative flex justify-center group">
+                                  <AlertTriangle
+                                    size={14}
+                                    className="text-red-500 mx-auto"
+                                  />
+                                  {catatan && (
+                                    <span className="absolute hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-[200px] bg-gray-700 text-white text-xs rounded py-1 px-2 z-10 break-words shadow-lg text-center">
+                                      Gagal: {catatan}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            } else {
+                              cellContent = (
+                                <CircleX
+                                  size={14}
+                                  className="text-gray-400 mx-auto"
+                                  title={`Belum Lunas`}
+                                />
+                              );
+                            }
+                          }
+                          return (
+                            <td
+                              key={monthIndex}
+                              className={`px-1 py-1 text-center border-l ${
+                                isInputMode && canCheck
+                                  ? "cursor-pointer hover:bg-blue-50"
+                                  : ""
+                              }`}
+                            >
+                              {cellContent}
+                            </td>
+                          );
+                        })}
+                        <td className="px-3 py-2 whitespace-nowrap text-right text-green-600 font-medium">
+                          {formatRupiah(nominalSudahDibayar)}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-right text-red-600 font-medium">
+                          {formatRupiah(nominalBelumDibayar)}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-center">
+                          <div className="flex justify-center items-center gap-1">
+                            {isInputMode && (
+                              <button
+                                onClick={() => handleBayar(item.anggota_id)}
+                                className="p-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={
+                                  !selectedMonths[item.anggota_id] ||
+                                  selectedMonths[item.anggota_id].size === 0 ||
+                                  loading
+                                }
+                                title="Catat Pembayaran"
+                              >
+                                <CircleCheck size={14} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() =>
+                                handleOpenHistory(
+                                  item.anggota_id,
+                                  item.nama_lengkap
+                                )
+                              }
+                              className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                              title="Lihat Riwayat (Lunas & Gagal)"
+                            >
+                              <History size={14} />
+                            </button>
+                            {isBendaharaOrAdmin && hasPendingMonth && (
+                              <button
+                                onClick={() =>
+                                  handleOpenValidationModal(
+                                    item.anggota_id,
+                                    item.nama_lengkap
+                                  )
+                                }
+                                className="p-1 bg-orange-500 text-white rounded hover:bg-orange-600"
+                                title="Validasi Pembayaran Pending"
+                              >
+                                <ListChecks size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+              {!loading && iuranData.length > 0 && (
+                <tfoot className="bg-gray-100 font-semibold">
+                  <tr>
+                    <td
+                      colSpan={3 + MONTH_NAMES.length}
+                      className="px-3 py-3 text-right text-gray-700 uppercase"
+                    >
+                      Total Halaman Ini:
+                    </td>
+                    <td className="px-3 py-3 text-right text-green-700">
+                      {formatRupiah(grandTotalSudahDibayar)}
+                    </td>
+                    <td className="px-3 py-3 text-right text-red-700">
+                      {formatRupiah(grandTotalBelumDibayar)}
+                    </td>
+                    <td className="px-3 py-3"></td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>{" "}
+          </div>
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-4 flex-shrink-0">
+          {!loading && total > 0 && Math.ceil(total / perPage) > 1 && (
+            <div className="flex justify-between items-center text-sm">
+              <button
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                disabled={page === 1}
+                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300"
+              >
+                Prev
+              </button>
+              <span>
+                Halaman {page} dari {Math.ceil(total / perPage)} (Total: {total}
+                )
+              </span>
+              <button
+                onClick={() => setPage((prev) => prev + 1)}
+                disabled={page >= Math.ceil(total / perPage)}
+                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300"
+              >
+                Next
+              </button>
+            </div>
           )}
         </div>
       </div>
-
-      {/* Filter & Pencarian */}
-      <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-        {/* ... (Filter sama seperti sebelumnya) ... */}
-        <div className="flex items-center gap-2 text-sm flex-wrap">
-          <label>Tampilkan:</label>
-          <select
-            value={perPage}
-            onChange={(e) => {
-              setPage(1);
-              setPerPage(Number(e.target.value));
-            }}
-            className="border p-2 rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-            style={{ maxWidth: "70px" }}
-          >
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-          <label>Jamaah:</label>
-          <Select
-            options={jamaahOptions}
-            value={selectedJamaahFilter}
-            onChange={(option) => {
-              setPage(1);
-              setSelectedJamaahFilter(option);
-            }}
-            isClearable
-            isSearchable
-            placeholder="Semua Jamaah..."
-            className="w-48 z-20"
-            styles={{ control: (base) => ({ ...base, minHeight: "42px" }) }}
-          />
-        </div>
-        <div className="flex items-center text-sm">
-          <label htmlFor="search" className="mr-2">
-            Cari:
-          </label>
-          <input
-            id="search"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => {
-              setPage(1);
-              setSearchTerm(e.target.value);
-            }}
-            placeholder="Cari Nama Anggota..."
-            className="border p-2 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-
-      {/* Alert Error */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300">
-          {error}
-        </div>
-      )}
-
-      {/* Tabel Data */}
-      <div className="overflow-x-auto border rounded-lg text-sm">
-        <table className="table-auto w-full border-collapse border border-gray-300 text-black">
-          {/* ... (thead sama seperti sebelumnya) ... */}
-          <thead className="bg-gray-100 sticky top-0 z-10">
-            <tr>
-              <th className="border p-2 w-10" rowSpan="2">
-                No
-              </th>
-              <th className="border p-2 min-w-[150px]" rowSpan="2">
-                Nama Anggota
-              </th>
-              <th className="border p-2 min-w-[120px]" rowSpan="2">
-                Nama Jamaah
-              </th>
-              <th className="border p-2 text-center" colSpan="12">
-                Status Pembayaran Bulan ({CURRENT_YEAR})
-              </th>
-              <th className="border p-2 min-w-[100px]" rowSpan="2">
-                Total Bayar ({CURRENT_YEAR})
-              </th>
-              <th className="border p-2 min-w-[90px]" rowSpan="2">
-                Status Terakhir
-              </th>
-              <th className="border p-2 min-w-[120px]" rowSpan="2">
-                Action
-              </th>
-            </tr>
-            <tr>
-              <th className="border p-1 font-normal text-xs w-[35px]">Jan</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Feb</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Mar</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Apr</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Mei</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Jun</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Jul</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Ags</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Sep</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Okt</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Nov</th>
-              <th className="border p-1 font-normal text-xs w-[35px]">Des</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading /* ... (Loading state sama) ... */ ? (
-              <tr>
-                <td colSpan="17" className="text-center border p-4">
-                  <div className="flex justify-center items-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Memuat data...
-                  </div>
-                </td>
-              </tr>
-            ) : iuranSummary.length > 0 ? (
-              iuranSummary.map((item, index) => (
-                <tr
-                  key={item.anggota_id}
-                  className="hover:bg-gray-50 transition duration-150 ease-in-out"
-                >
-                  {/* Kolom Nomor, Nama, Jamaah, Bulan, Total */}
-                  <td className="border p-2 text-center">
-                    {(page - 1) * perPage + index + 1}
-                  </td>
-                  <td className="border p-2">{item.nama_lengkap}</td>
-                  <td className="border p-2">{item.nama_jamaah}</td>
-                  {renderMonthCells(item.total_nominal_bayar_tahun_ini)}
-                  <td className="border p-2 text-right">
-                    <NumericFormat
-                      value={item.total_nominal_bayar_tahun_ini}
-                      displayType={"text"}
-                      thousandSeparator={"."}
-                      decimalSeparator={","}
-                      prefix={"Rp "}
-                    />
-                  </td>
-                  {/* Kolom Status (dengan tooltip catatan) */}
-                  <td className="border p-2 text-center">
-                    {getStatusBadge(
-                      item.status_terakhir,
-                      item.catatan_verifikasi
-                    )}
-                  </td>
-                  {/* Kolom Action (berdasarkan role) */}
-                  <td className="border p-2 text-center">
-                    <div className="flex justify-center items-center gap-1 flex-wrap">
-                      {/* Tombol Review (hanya Bendahara, jika status Pending) */}
-                      {(currentUserRole === USER_ROLES.BENDAHARA ||
-                        currentUserRole === USER_ROLES.SUPER_ADMIN) &&
-                        item.id_pembayaran_terakhir_untuk_aksi &&
-                        item.status_terakhir?.toLowerCase() === "pending" && (
-                          <button
-                            title="Review Pembayaran"
-                            className="bg-blue-500 text-white p-1 rounded hover:bg-blue-600"
-                            onClick={() => handleOpenVerifyModal(item)} // Buka modal verifikasi
-                          >
-                            {/* Icon Review/Eye */}
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              className="w-4 h-4"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                              />
-                            </svg>
-                          </button>
-                        )}
-                      {/* Tombol Edit (hanya PJ/Super Admin, jika status Pending/Failed) */}
-                      {(currentUserRole === USER_ROLES.PJ ||
-                        currentUserRole === USER_ROLES.SUPER_ADMIN) &&
-                        item.id_pembayaran_terakhir_untuk_aksi &&
-                        ["pending", "failed"].includes(
-                          item.status_terakhir?.toLowerCase()
-                        ) && (
-                          <button
-                            title="Edit Nominal Pembayaran"
-                            className="bg-yellow-500 text-white p-1 rounded hover:bg-yellow-600"
-                            onClick={() =>
-                              openEditModal(
-                                item.id_pembayaran_terakhir_untuk_aksi
-                              )
-                            }
-                          >
-                            {/* Icon Edit */}
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              className="w-4 h-4"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                              />
-                            </svg>
-                          </button>
-                        )}
-                      {/* Tombol Delete (hanya PJ/Super Admin, jika status Pending/Failed) */}
-                      {(currentUserRole === USER_ROLES.PJ ||
-                        currentUserRole === USER_ROLES.SUPER_ADMIN) &&
-                        item.id_pembayaran_terakhir_untuk_aksi &&
-                        ["pending", "failed"].includes(
-                          item.status_terakhir?.toLowerCase()
-                        ) && (
-                          <button
-                            title="Hapus Pembayaran"
-                            className="bg-red-500 text-white p-1 rounded hover:bg-red-600"
-                            onClick={() =>
-                              setShowModalDelete(
-                                item.id_pembayaran_terakhir_untuk_aksi
-                              )
-                            }
-                          >
-                            {/* Icon Delete */}
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              className="w-4 h-4"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                              />
-                            </svg>
-                          </button>
-                        )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              /* ... (Pesan tidak ada data sama) ... */
-              <tr>
-                <td colSpan="17" className="text-center border p-4">
-                  {searchTerm || selectedJamaahFilter
-                    ? "Tidak ada data yang cocok."
-                    : "Tidak ada data iuran."}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination Buttons */}
-      <div className="mt-4 flex justify-between items-center text-sm">
-        {" "}
-        {/* ... (Sama seperti sebelumnya) ... */}
-        <button
-          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          disabled={page === 1 || loading}
-          className="bg-gray-200 px-4 py-2 rounded disabled:opacity-50 hover:bg-gray-300"
-        >
-          Prev
-        </button>
-        <span>
-          Halaman {page} dari {Math.ceil(total / perPage)} (Total: {total} data)
-        </span>
-        <button
-          onClick={() => setPage((prev) => prev + 1)}
-          disabled={page >= Math.ceil(total / perPage) || loading}
-          className="bg-gray-200 px-4 py-2 rounded disabled:opacity-50 hover:bg-gray-300"
-        >
-          Next
-        </button>
-      </div>
-
       {/* --- Modals --- */}
-
-      {/* Modal Tambah Pembayaran (Multi-Row) */}
-      {showAddModal /* ... (JSX Modal Tambah sama seperti sebelumnya) ... */ && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-30">
-          <div className="bg-white p-5 rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">
-              Tambah Pembayaran Iuran
-            </h2>
-            <form onSubmit={handleSubmitAdd}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Pilih Jamaah:
-                </label>
-                <Select
-                  options={jamaahOptions}
-                  value={selectedJamaahModal}
-                  onChange={handleJamaahChangeModal}
-                  isClearable
-                  isSearchable
-                  placeholder="Pilih Jamaah untuk filter Anggota..."
-                  className="w-full"
-                  isDisabled={loadingModal}
-                />
-              </div>
-              <div className="space-y-3 mb-4 border-t pt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Detail Pembayaran Anggota:
-                </label>
-                {paymentRows.map((row, index) => (
-                  <div
-                    key={row.key}
-                    className="flex items-center gap-2 border p-2 rounded bg-gray-50"
-                  >
-                    <div className="flex-1">
-                      <Select
-                        options={getAvailableAnggotaOptions(row.key)}
-                        value={row.anggota}
-                        onChange={(option) =>
-                          handleRowChange(row.key, "anggota", option)
-                        }
-                        isSearchable
-                        placeholder={`Anggota ${index + 1}...`}
-                        className="text-sm"
-                        isDisabled={!selectedJamaahModal || loadingModal}
-                        isLoading={loadingModal && index === 0}
-                      />
-                    </div>
-                    <NumericFormat
-                      value={row.nominal}
-                      onValueChange={(values) => {
-                        const { floatValue } = values;
-                        handleRowChange(row.key, "nominal", floatValue);
-                      }}
-                      thousandSeparator={"."}
-                      decimalSeparator={","}
-                      prefix="Rp "
-                      placeholder="Nominal..."
-                      className="border p-2 rounded w-36 text-sm text-right"
-                      disabled={!selectedJamaahModal}
-                    />
-                    {paymentRows.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removePaymentRow(row.key)}
-                        className="p-1 text-red-500 hover:text-red-700"
-                        title="Hapus Baris Ini"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="w-5 h-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                          />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addPaymentRow}
-                  className="text-sm text-blue-600 hover:text-blue-800 mt-2 disabled:opacity-50"
-                  disabled={!selectedJamaahModal || loadingModal}
-                >
-                  + Tambah Anggota Lain
-                </button>
-              </div>
-              <div className="mt-5 flex justify-end space-x-3 border-t pt-4">
-                <button
-                  type="button"
-                  className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 text-sm"
-                  onClick={() => setShowAddModal(false)}
-                  disabled={loadingModal}
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm disabled:opacity-50"
-                  disabled={loadingModal}
-                >
-                  {loadingModal ? "Menyimpan..." : "Simpan Pembayaran"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Edit Pembayaran (Single-Row) */}
-      {showEditModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-30">
-          <div className="bg-white p-5 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">
-              Edit Nominal Pembayaran
-            </h2>
-            {loadingModal ? (
-              <div className="text-center p-5">Memuat detail...</div>
-            ) : (
-              <form onSubmit={handleSubmitEdit}>
-                {/* --- TAMPILKAN CATATAN JIKA ADA --- */}
-                {editRejectionNote && (
-                  <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded text-sm text-red-800">
-                    <p className="font-semibold mb-1">
-                      Catatan Verifikasi Sebelumnya:
-                    </p>
-                    <p>{editRejectionNote}</p>
-                  </div>
-                )}
-                {/* --- AKHIR BAGIAN CATATAN --- */}
-
-                <div className="mb-3">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Anggota:
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900 font-semibold">
-                    {editAnggotaInfo.nama}
-                  </p>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Jamaah:
-                  </label>
-                  <p className="mt-1 text-sm text-gray-600">
-                    {editAnggotaInfo.jamaah}
-                  </p>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Edit Nominal: <span className="text-red-500">*</span>
-                  </label>
-                  <NumericFormat
-                    value={editNominal}
-                    onValueChange={(values) =>
-                      setEditNominal(values.floatValue)
-                    }
-                    thousandSeparator={"."}
-                    decimalSeparator={","}
-                    prefix="Rp "
-                    placeholder="Masukkan nominal yang benar..."
-                    className="border p-2 rounded w-full text-sm focus:outline-none focus:ring-1 focus:ring-yellow-500"
-                    required // Tambahkan validasi dasar
-                  />
-                </div>
-                {/* Tombol Aksi Modal Edit */}
-                <div className="mt-5 flex justify-end space-x-3 border-t pt-4">
-                  <button
-                    type="button"
-                    className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 text-sm"
-                    onClick={() => {
-                      setShowEditModal(false);
-                      setEditingPaymentId(null);
-                      setEditRejectionNote(null);
-                    }} // Reset catatan juga
-                    disabled={loadingModal}
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 text-sm disabled:opacity-50"
-                    disabled={loadingModal || !editNominal || editNominal <= 0} // Disable jika nominal tidak valid
-                  >
-                    {loadingModal ? "Menyimpan..." : "Update Nominal"}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* --- Modal Verifikasi/Tolak (BARU) --- */}
-      {showVerifyModal && verifyModalData && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-40">
-          <div className="bg-white p-5 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">
-              Review Pembayaran Iuran
-            </h2>
-
-            {/* Detail Pembayaran */}
-            <div className="space-y-2 mb-4 text-sm">
-              <p>
-                <span className="font-semibold w-24 inline-block">
-                  Anggota:
-                </span>{" "}
-                {verifyModalData.nama}
-              </p>
-              <p>
-                <span className="font-semibold w-24 inline-block">Jamaah:</span>{" "}
-                {verifyModalData.jamaah}
-              </p>
-              <p>
-                <span className="font-semibold w-24 inline-block">
-                  Nominal:
-                </span>
-                <NumericFormat
-                  value={verifyModalData.nominal}
-                  displayType={"text"}
-                  thousandSeparator={"."}
-                  decimalSeparator={","}
-                  prefix={"Rp "}
-                />
-              </p>
-              <p>
-                <span className="font-semibold w-24 inline-block">
-                  Tgl. Input:
-                </span>{" "}
-                {verifyModalData.tanggal
-                  ? new Date(verifyModalData.tanggal).toLocaleDateString(
-                      "id-ID"
-                    )
-                  : "N/A"}
-              </p>
-            </div>
-
-            {/* Input Alasan Penolakan */}
-            <div className="mb-4">
-              <label
-                htmlFor="rejectionNote"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Alasan Penolakan (jika ditolak):
-              </label>
-              <textarea
-                id="rejectionNote"
-                rows="3"
-                className="w-full p-2 border rounded focus:outline-none focus:ring-1 focus:ring-red-500 text-sm"
-                placeholder="Masukkan alasan jika pembayaran ini ditolak..."
-                value={rejectionNote}
-                onChange={(e) => setRejectionNote(e.target.value)}
-                disabled={loadingVerify}
-              ></textarea>
-            </div>
-
-            {/* Tombol Aksi Modal Verifikasi */}
-            <div className="mt-5 flex justify-end space-x-3 border-t pt-4">
-              <button
-                type="button"
-                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 text-sm"
-                onClick={() => {
-                  setShowVerifyModal(false);
-                  setVerifyModalData(null);
-                }}
-                disabled={loadingVerify}
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm disabled:opacity-50"
-                onClick={handleReject}
-                disabled={loadingVerify || !rejectionNote.trim()} // Disable jika loading atau catatan kosong
-                title={
-                  !rejectionNote.trim()
-                    ? "Masukkan alasan untuk menolak"
-                    : "Tolak pembayaran"
-                }
-              >
-                {loadingVerify ? "Memproses..." : "Tolak"}
-              </button>
-              <button
-                type="button"
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm disabled:opacity-50"
-                onClick={handleVerify}
-                disabled={loadingVerify}
-              >
-                {loadingVerify ? "Memproses..." : "Verifikasi"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Konfirmasi Hapus */}
-      {showModalDelete /* ... (JSX Modal Delete sama seperti sebelumnya) ... */ && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-40">
-          <div className="bg-white p-6 rounded shadow-lg w-96">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Konfirmasi Hapus
-            </h2>
-            <p className=" text-gray-600 mt-2">
-              Apakah Anda yakin ingin menghapus data pembayaran ini (ID:{" "}
-              {showModalDelete})? Tindakan ini tidak dapat dibatalkan.
-            </p>
-            <div className="mt-4 flex justify-end space-x-3">
-              <button
-                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-                onClick={() => setShowModalDelete(null)}
-                disabled={loading}
-              >
-                Batal
-              </button>
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:opacity-50"
-                onClick={handleDelete}
-                disabled={loading}
-              >
-                {loading ? "Menghapus..." : "Hapus"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div> // Penutup div utama
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImport}
+        loading={loadingImport}
+      />
+      <HistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        historyData={historyData}
+        loading={loadingHistory}
+        target={historyTarget}
+      />
+      <ValidationModal
+        isOpen={isValidationModalOpen}
+        onClose={() => setIsValidationModalOpen(false)}
+        pendingLogs={pendingLogsData}
+        loading={loadingValidationLogs}
+        target={validationTarget}
+        onVerify={handleVerifyLog}
+        onReject={handleRejectLog}
+      />
+      <ManageTahunModal
+        isOpen={isManageTahunModalOpen}
+        onClose={() => setIsManageTahunModalOpen(false)}
+        tahunList={tahunListManage}
+        onAddTahun={handleAddTahun}
+        onToggleStatus={handleToggleTahunStatus}
+        loading={loadingTahun}
+      />
+    </div>
   );
 };
 
-export default DataIuran;
+export default KelolaIuran;
