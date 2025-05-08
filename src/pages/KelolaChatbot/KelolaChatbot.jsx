@@ -235,8 +235,8 @@ export default function KelolaChatbot() {
       <div className="mx-auto bg-white p-5 sm:p-6 rounded-lg shadow-md">
         {/* Header Halaman */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-200">
-          <h1 className="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
-            KELOLA INTERAKSI CHATBOT
+          <h1 className="text-xl font-bold text-gray-800">
+            Kelola Interaksi Chatbot
           </h1>
           <button
             onClick={() => openModal()}
@@ -290,6 +290,7 @@ export default function KelolaChatbot() {
         )}
 
         {/* Daftar Item Chatbot */}
+        {/* Daftar Item Chatbot */}
         {!loading && !error && (
           <div className="space-y-3">
             {chatbotItems.length === 0 && (
@@ -297,25 +298,38 @@ export default function KelolaChatbot() {
                 Belum ada item chatbot. Silakan tambahkan item baru.
               </p>
             )}
-            {chatbotItems.map((item) => (
+            {chatbotItems.map((item, index) => (
               <div
                 key={item.id}
-                className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                className="p-2 border border-gray-200 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <p className="text-sm font-medium text-gray-800 break-words pr-2">
-                    {/* Sesuaikan nama field jika berbeda */}
-                    <span className="font-semibold text-blue-700">P:</span>{" "}
-                    {item.pesan}
-                  </p>
-                  <div className="flex items-center space-x-2 flex-shrink-0">
+                <div className="grid grid-cols-12 gap-1 items-start">
+                  {/* Nomor */}
+                  <div className="col-span-1 flex justify-center items-center text-center text-3xl font-semibold text-gray-700 h-full">
+                    <div className="flex items-center justify-center h-full">
+                      {index + 1}.
+                    </div>
+                  </div>
+                  {/* Pesan dan Jawaban */}
+                  <div className="col-span-10 space-y-2">
+                    <div className="text-gray-800 break-words">
+                      <span className="font-semibold text-blue-700">P:</span>{" "}
+                      {item.pesan}
+                    </div>
+                    <div className="text-gray-600 break-words">
+                      <span className="font-semibold text-green-700">J:</span>{" "}
+                      {item.jawaban}
+                    </div>
+                  </div>
+                  {/* Aksi */}
+                  <div className="col-span-1 flex flex-col items-center space-y-2">
                     <button
                       onClick={() => openModal(item)}
                       className="p-1 text-yellow-600 hover:text-yellow-800"
                       title="Edit Item"
                       disabled={loading} // Disable saat loading
                     >
-                      <Edit size={16} />
+                      <Edit size={18} />
                     </button>
                     <button
                       onClick={() => handleDeleteItem(item.id)}
@@ -323,20 +337,14 @@ export default function KelolaChatbot() {
                       title="Hapus Item"
                       disabled={loading} // Disable saat loading
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 break-words border-t border-gray-100 pt-2">
-                  <span className="font-semibold text-green-700">J:</span>{" "}
-                  {item.jawaban}
-                </p>
               </div>
             ))}
           </div>
         )}
-
-        {/* Tambahkan pagination controls jika API menggunakannya */}
         {!loading && pagination.last_page > 1 && (
           <div className="mt-4 flex justify-between items-center">
             <button

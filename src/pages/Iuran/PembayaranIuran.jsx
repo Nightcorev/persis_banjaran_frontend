@@ -28,6 +28,8 @@ import {
   Edit,
   ListChecks,
   AlertTriangle,
+  Send,
+  PenBox,
 } from "lucide-react";
 
 // Impor komponen modal yang sudah dipisah
@@ -521,7 +523,7 @@ const KelolaIuran = () => {
 
   return (
     <div className="p-2 sm:p-4 md:p-6 bg-gray-50 min-h-screen w-full">
-           {" "}
+      {" "}
       <div className="max-w-full mx-auto bg-white p-5 sm:p-6 rounded-lg shadow-md flex flex-col">
         {/* Header & Tombol Aksi Utama */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 pb-4 border-b gap-2 flex-shrink-0">
@@ -529,30 +531,23 @@ const KelolaIuran = () => {
             Kelola Pembayaran Iuran
           </h1>
           <div className="flex flex-wrap gap-2">
-            <Link to="/iuran/reminder">
-              <button className="flex items-center gap-1 px-3 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm shadow-sm">
-                <CalendarDays size={16} /> Reminder Iuran
-              </button>
-            </Link>
-            {canInputIuran && (
+            {!isInputMode && (
+              <Link to="/iuran/reminder">
+                <button className="flex items-center gap-1 px-3 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm shadow-sm">
+                  <Send size={16} /> Kirim Reminder Iuran
+                </button>
+              </Link>
+            )}
+            {isBendaharaOrAdmin && isInputMode && (
               <button
-                onClick={() => setIsInputMode((prev) => !prev)}
-                className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm shadow-sm ${
-                  isInputMode
-                    ? "bg-red-100 text-red-700 hover:bg-red-200"
-                    : "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                }`}
-                title={
-                  isInputMode
-                    ? "Batal Input Pembayaran"
-                    : "Aktifkan Mode Input Pembayaran"
-                }
+                onClick={() => setIsManageTahunModalOpen(true)}
+                className="flex items-center gap-1 px-3 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm shadow-sm disabled:opacity-50"
+                disabled={loading || loadingTahun}
               >
-                {isInputMode ? <CircleX size={16} /> : <Plus size={16} />}
-                {isInputMode ? "Batal Input" : "Input Pembayaran"}
+                <Settings size={16} /> Kelola Tahun
               </button>
             )}
-            {isBendaharaOrAdmin && (
+            {isInputMode && (
               <button
                 onClick={() => setIsImportModalOpen(true)}
                 className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 text-sm shadow-sm disabled:opacity-50"
@@ -561,13 +556,22 @@ const KelolaIuran = () => {
                 <Upload size={16} /> Impor Excel
               </button>
             )}
-            {isBendaharaOrAdmin && (
+            {canInputIuran && (
               <button
-                onClick={() => setIsManageTahunModalOpen(true)}
-                className="flex items-center gap-1 px-3 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm shadow-sm disabled:opacity-50"
-                disabled={loading || loadingTahun}
+                onClick={() => setIsInputMode((prev) => !prev)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm shadow-sm ${
+                  isInputMode
+                    ? "bg-orange-500 text-white hover:bg-orange-600"
+                    : "bg-green-600 text-white hover:bg-green-800"
+                }`}
+                title={
+                  isInputMode
+                    ? "Batal Input Pembayaran"
+                    : "Aktifkan Mode Input Pembayaran"
+                }
               >
-                <Settings size={16} /> Kelola Tahun
+                {isInputMode ? <Eye size={16} /> : <PenBox size={16} />}
+                {isInputMode ? "Mode View" : "Mode Edit"}
               </button>
             )}
           </div>

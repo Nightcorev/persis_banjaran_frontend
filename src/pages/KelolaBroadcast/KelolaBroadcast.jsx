@@ -623,7 +623,7 @@ const KelolaBroadcast = () => {
       <div className=" mx-auto bg-white p-5 sm:p-6 rounded-lg shadow-md">
         {/* Header Halaman (Sama) */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-200">
-          <h1 className="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
+          <h1 className="text-xl font-bold text-gray-800">
             Kelola Informasi Broadcast
           </h1>
           {(account?.role === "Super Admin" ||
@@ -689,9 +689,9 @@ const KelolaBroadcast = () => {
         )}
 
         {/* Tabel Data */}
-        <div className="overflow-x-auto border border-gray-200 rounded-lg">
+        <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-sm">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 {/* ... (Header tabel sama) ... */}
                 <th
