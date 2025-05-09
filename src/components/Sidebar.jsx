@@ -266,14 +266,6 @@ const Sidebar = ({ isOpen }) => {
                   Data Jamaah
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/jamiyah/musyawarah/data-musyawarah"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Musyawarah Jamaah
-                </Link>
-              </li>
             </ul>
           </li>
 

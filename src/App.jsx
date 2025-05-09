@@ -32,7 +32,6 @@ import DetailMonografi from "./pages/Jamiyah/DetailMonografi";
 import Login from "./pages/Login";
 import Unauthorized from "./components/Unauthorized";
 import ViewAnggota from "./pages/Anggota/ViewAnggota";
-import DataMusyawarah from "./pages/Jamiyah/Musyawarah/DataMusyawarah";
 import MusyawarahDetail from "./pages/Jamiyah/Musyawarah/MusyawarahDetail";
 import AddMusyawarah from "./pages/Jamiyah/Musyawarah/AddMusyawarah";
 import AddDetailMusyawarah from "./pages/Jamiyah/Musyawarah/AddDetailMusyawarah";
@@ -40,6 +39,7 @@ import DataIuran from "./pages/Iuran/PembayaranIuran";
 import ReminderIuran from "./pages/Iuran/ReminderIuran";
 import KelolaChatbot from "./pages/KelolaChatbot/KelolaChatbot";
 import KelolaBroadcast from "./pages/KelolaBroadcast/KelolaBroadcast";
+import AddJamaah from "./pages/Jamiyah/Addjamaah";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -79,13 +79,14 @@ const router = createBrowserRouter(
           <Route path="profil/tasykil" element={<Tasykil />} />
           <Route path="profil/fasilitas" element={<Fasilitas />} />
           <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
+          <Route path="jamiyah/add-jamiyah" element={<AddJamaah />} />
+          <Route path="jamiyah/edit-jamiyah/:id" element={<AddJamaah />} />
           <Route
             path="jamiyah/detail-jamiyah/:id"
             element={<DetailMonografi />}
           />
           
           {/* Musyawarah Routes */}
-          <Route path="/jamiyah/musyawarah/data-musyawarah" element={<DataMusyawarah />} />
           <Route path="/jamiyah/musyawarah/detail/:id" element={<MusyawarahDetail />} />
           <Route path="jamiyah/detail-jamiyah/data-musyawarah/add-musyawarah" element={<AddMusyawarah/>} />
           <Route path="jamiyah/musyawarah/data-musyawarah/edit-musyawarah/:id" element={<AddMusyawarah/>} />
