@@ -84,11 +84,6 @@ const AddDetailMusyawarah = () => {
       setMessageType("error");
       return false;
     }
-    if (!formData.no_sk) {
-      setMessage("Harap isi Nomor SK");
-      setMessageType("error");
-      return false;
-    }
     return true;
   };
 
@@ -213,7 +208,7 @@ const AddDetailMusyawarah = () => {
         {/* Nomor SK */}
         <div className="space-y-1">
           <label className="block text-sm font-medium text-green-800">
-            Nomor SK <span className="text-red-500">*</span>
+            Nomor SK <span className="text-red-500"></span>
           </label>
           <input
             type="text"

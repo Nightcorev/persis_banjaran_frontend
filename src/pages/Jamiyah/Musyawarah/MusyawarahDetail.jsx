@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import api from "../../../utils/api";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const DetailMusyawarah = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -65,6 +66,16 @@ const DetailMusyawarah = () => {
     return new Date(tanggal).toLocaleDateString("id-ID", options);
   };
 
+  const handleBack = () => {
+    // Get the id_master_jamaah from musyawarah data
+    const id_master_jamaah = musyawarah[0]?.id_master_jamaah;
+    if (id_master_jamaah) {
+      navigate(`/jamiyah/detail-jamiyah/${id_master_jamaah}`);
+    } else {
+      navigate(-1); // Fallback if id_master_jamaah is not available
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 w-full">
@@ -105,15 +116,15 @@ const DetailMusyawarah = () => {
           <div className="bg-green-800 p-4 md:p-6">
             <div className="flex justify-between items-center flex-wrap gap-4">
               <h1 className="text-xl md:text-2xl font-bold text-white">Detail Musyawarah</h1>
-              <Link
-                to="/jamiyah/musyawarah/data-musyawarah"
+              <button
+                onClick={handleBack}
                 className="bg-white text-green-800 px-3 py-1.5 md:px-4 md:py-2 rounded-md hover:bg-green-100 transition flex items-center text-sm md:text-base"
               >
                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
                 Kembali
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -137,7 +148,7 @@ const DetailMusyawarah = () => {
                         { label: "Tanggal Akhir Jihad", value: formatTanggal(item.tgl_akhir_jihad) },
                         { 
                           label: "Status", 
-                          value: item.master_jamaah?.aktif ? (
+                          value: item.aktif ? (
                             <span className="inline-flex items-center px-3 py-1 text-sm font-semibold bg-green-100 text-green-800 rounded-full">
                               <span className="w-2 h-2 mr-1 bg-green-500 rounded-full"></span>
                               Aktif

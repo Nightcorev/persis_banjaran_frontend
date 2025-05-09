@@ -87,7 +87,7 @@ const router = createBrowserRouter(
           {/* Musyawarah Routes */}
           <Route path="/jamiyah/musyawarah/data-musyawarah" element={<DataMusyawarah />} />
           <Route path="/jamiyah/musyawarah/detail/:id" element={<MusyawarahDetail />} />
-          <Route path="jamiyah/musyawarah/data-musyawarah/add-musyawarah" element={<AddMusyawarah/>} />
+          <Route path="jamiyah/detail-jamiyah/data-musyawarah/add-musyawarah" element={<AddMusyawarah/>} />
           <Route path="jamiyah/musyawarah/data-musyawarah/edit-musyawarah/:id" element={<AddMusyawarah/>} />
           <Route path="jamiyah/musyawarah/detail/add/:id" element={<AddDetailMusyawarah/>} />
           <Route path="/jamiyah/musyawarah/detail/edit/:id/:detailId" element={<AddDetailMusyawarah />} />
