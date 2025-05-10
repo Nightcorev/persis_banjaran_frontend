@@ -2,6 +2,17 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../../../utils/api";
 
+const JABATAN_OPTIONS = [
+  "Penasehat",
+  "Ketua",
+  "Wakil Ketua",
+  "Sekretaris",
+  "Wakil Sekretaris", 
+  "Bendahara",
+  "Wakil Bendahara",
+  "Pembantu Umum"
+];
+
 const AddDetailMusyawarah = () => {
   const { id, detailId } = useParams(); // Add detailId for edit mode
   const navigate = useNavigate();
@@ -24,20 +35,22 @@ const AddDetailMusyawarah = () => {
 
   // Fetch anggota data
   useEffect(() => {
-    setIsLoading(true);
-    api.get('/anggota/all')
-      .then((response) => {
-        if (response.data.status === 200) {
-          setAnggotaList(response.data.data || []);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching anggota:", error);
-        setMessage("Gagal mengambil data anggota");
-        setMessageType("error");
-      })
-      .finally(() => setIsLoading(false));
-  }, []);
+    if (id_master_jamaah) {
+      setIsLoading(true);
+      api.get(`/anggota/choice_by-jamaah/${id_master_jamaah}`)
+        .then((response) => {
+          if (response.data.status === 200) {
+            setAnggotaList(response.data.data || []);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching anggota:", error);
+          setMessage("Gagal mengambil data anggota");
+          setMessageType("error");
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [id_master_jamaah]);
 
   // Fetch detail data in edit mode
   useEffect(() => {
@@ -185,7 +198,9 @@ const AddDetailMusyawarah = () => {
               ? "Anggota tidak dapat diubah dalam mode edit"
               : isLoading 
                 ? "Memuat data..." 
-                : `${anggotaList.length} anggota tersedia`
+                : anggotaList.length > 0
+                  ? `${anggotaList.length} anggota tersedia untuk jamaah ini`
+                  : "Tidak ada data anggota untuk jamaah ini"
             }
           </p>
         </div>
@@ -195,14 +210,19 @@ const AddDetailMusyawarah = () => {
           <label className="block text-sm font-medium text-green-800">
             Jabatan <span className="text-red-500">*</span>
           </label>
-          <input
-            type="text"
+          <select
             name="jabatan"
             value={formData.jabatan}
             onChange={handleChange}
-            className="border border-green-200 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-green-400"
-            placeholder="Masukkan jabatan"
-          />
+            className="border border-green-200 p-2 rounded-md w-full bg-white focus:outline-none focus:ring-2 focus:ring-green-400"
+          >
+            <option value="">Pilih Jabatan</option>
+            {JABATAN_OPTIONS.map((jabatan) => (
+              <option key={jabatan} value={jabatan}>
+                {jabatan}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Nomor SK */}

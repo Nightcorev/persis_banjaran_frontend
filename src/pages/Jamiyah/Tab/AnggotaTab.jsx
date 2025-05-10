@@ -94,7 +94,6 @@ const AnggotaTab = ({ masterJamaahId }) => {
           <thead className="bg-gray-100">
             <tr>
               <th className="border p-2">No</th>
-              <th className="border p-2">Foto</th>
               <th className="border p-2">NIK</th>
               <th className="border p-2">Nama Lengkap</th>
               <th className="border p-2">Tanggal Lahir</th>
@@ -115,13 +114,6 @@ const AnggotaTab = ({ masterJamaahId }) => {
                 <tr key={index}>
                   <td className="border p-2 text-center">
                     {(page - 1) * perPage + index + 1}
-                  </td>
-                  <td className="border p-2 text-center">
-                    <img
-                      src={`$/public/uploads/${anggota.foto}`}
-                      alt="Foto User"
-                      className="w-12 h-12 object-cover rounded-full mx-auto"
-                    />
                   </td>
                   <td className="border p-2">{anggota.nik}</td>
                   <td className="border p-2">{anggota.nama_lengkap}</td>

@@ -226,7 +226,8 @@ const DetailMusyawarah = () => {
           <div className="p-6 bg-white rounded-lg shadow-lg">
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-lg font-bold">Daftar Anggota Musyawarah</h1>
-              <Link to={`/jamiyah/musyawarah/detail/add/${musyawarah[0]?.id_musyawarah}`}>
+              <Link to={`/jamiyah/musyawarah/detail/add/${musyawarah[0]?.id_musyawarah}`}
+              state={{ id_master_jamaah: musyawarah[0]?.id_master_jamaah }}>
                 <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
