@@ -1,4 +1,9 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import api from "../../utils/api"; // Instance Axios Anda
+import axios from "axios"; // Tetap untuk upload file jika endpoint terpisah
+import Select from "react-select"; // Untuk dropdown multi-select
 import {
   Plus,
   Search,
@@ -9,19 +14,17 @@ import {
   FileText,
   Image as ImageIcon,
   Loader2,
+  Users,
+  UserCheck,
 } from "lucide-react";
-import { toast } from "react-toastify";
-import api from "../../utils/api";
-import axios from "axios";
 
-// --- Helper Functions (Sama) ---
+// --- Helper Functions (Sama seperti sebelumnya) ---
 const formatDateTime = (isoString) => {
-  /* ... */
   if (!isoString) return "N/A";
   try {
     const date = new Date(isoString);
     return date.toLocaleString("id-ID", {
-      day: "numeric",
+      day: "2-digit",
       month: "long",
       year: "numeric",
       hour: "2-digit",
@@ -33,7 +36,6 @@ const formatDateTime = (isoString) => {
   }
 };
 const getFileIcon = (filename) => {
-  /* ... */
   if (!filename) return <Paperclip size={18} className="text-gray-500" />;
   const extension = filename.split(".").pop()?.toLowerCase();
   if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(extension)) {
@@ -45,117 +47,205 @@ const getFileIcon = (filename) => {
   return <Paperclip size={18} className="text-gray-600" />;
 };
 
-// --- Modal Component: Tambah Broadcast (Sama) ---
+// --- Modal Component: Tambah Broadcast (Dimodifikasi) ---
 function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
-  /* ... (Kode modal tambah tidak berubah) ... */
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     deskripsi: "",
-    nama_file: null,
+    nama_file_server: null, // Nama file dari server setelah upload
     status_pengiriman: "",
     waktu_pengiriman: "",
-    tujuan: "",
+    tujuan: "", // Pilihan: 'semua', 'PJ', 'nomor_tertentu'
+    target_ids: [], // Array ID anggota jika tujuan 'nomor_tertentu'
   });
-  const [uploadedFileName, setUploadedFileName] = useState("");
+  const [fileObject, setFileObject] = useState(null); // Untuk menyimpan objek File sementara
+  const [uploadedFileNameDisplay, setUploadedFileNameDisplay] = useState(""); // Untuk tampilan nama file
 
+  // State untuk dropdown anggota
+  const [allAnggotaOptions, setAllAnggotaOptions] = useState([]);
+  const [selectedAnggotaForBroadcast, setSelectedAnggotaForBroadcast] =
+    useState([]); // Untuk react-select
+  const [loadingAnggota, setLoadingAnggota] = useState(false);
+
+  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
-      /* Reset form */ setForm({
+      setForm({
         deskripsi: "",
-        nama_file: null,
+        nama_file_server: null,
         status_pengiriman: "",
         waktu_pengiriman: "",
         tujuan: "",
+        target_ids: [],
       });
-      setUploadedFileName("");
+      setFileObject(null);
+      setUploadedFileNameDisplay("");
+      setSelectedAnggotaForBroadcast([]);
       setIsSubmitting(false);
     }
   }, [isOpen]);
 
+  // Fetch daftar anggota jika 'nomor_tertentu' dipilih
+  useEffect(() => {
+    const fetchAllAnggota = async () => {
+      if (form.tujuan === "nomor_tertentu" && isOpen) {
+        setLoadingAnggota(true);
+        try {
+          // Ganti dengan endpoint API Anda untuk mengambil semua anggota
+          // Asumsi response: [{ id_anggota: 1, nama_lengkap: 'Nama A' }, ...]
+          const response = await api.get(`/anggota/all`); // Contoh endpoint
+          const options = (response.data.data || response.data || []).map(
+            (anggota) => ({
+              value: anggota.id_anggota, // ID tetap sebagai value internal react-select
+              label: `${anggota.nama_lengkap}  `, // Tampilkan no_telp di label
+              no_telp: anggota.no_telp, // Simpan no_telp di objek opsi
+            })
+          );
+          setAllAnggotaOptions(options);
+        } catch (error) {
+          console.error("Error fetching all anggota:", error);
+          toast.error("Gagal memuat daftar anggota.");
+          setAllAnggotaOptions([]);
+        } finally {
+          setLoadingAnggota(false);
+        }
+      } else {
+        // Reset jika pilihan tujuan berubah dari 'nomor_tertentu'
+        setAllAnggotaOptions([]);
+        setSelectedAnggotaForBroadcast([]);
+      }
+    };
+    fetchAllAnggota();
+  }, [form.tujuan, isOpen]);
+
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
-    if (!file) return;
-    setForm((prev) => ({ ...prev, nama_file: file }));
-    setUploadedFileName(`Mengunggah ${file.name}...`);
+    if (!file) {
+      setFileObject(null);
+      setUploadedFileNameDisplay("");
+      setForm((prev) => ({ ...prev, nama_file_server: null }));
+      return;
+    }
+
+    setFileObject(file);
+    setUploadedFileNameDisplay(`Mengunggah ${file.name}...`);
+
     const data = new FormData();
     data.append("file", file);
     data.append("namaFile", file.name);
+
     try {
+      // Ganti URL ini dengan endpoint upload Anda
       const res = await axios.post(
         "http://localhost:3000/upload-attachment",
         data,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      ); // Ganti URL Upload
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
       if (res.data.success) {
-        setUploadedFileName(res.data.filename);
+        setForm((prev) => ({ ...prev, nama_file_server: res.data.filename }));
+        setUploadedFileNameDisplay(res.data.filename);
         toast.success("Lampiran berhasil diunggah.");
       } else {
-        setUploadedFileName("Upload Gagal");
-        toast.error("Upload lampiran gagal.");
-        setForm((prev) => ({ ...prev, nama_file: null }));
+        setUploadedFileNameDisplay("Upload Gagal");
+        toast.error(res.data.message || "Upload lampiran gagal.");
+        setFileObject(null);
+        setForm((prev) => ({ ...prev, nama_file_server: null }));
       }
     } catch (error) {
       console.error("Upload error:", error);
-      setUploadedFileName("Upload Gagal");
+      setUploadedFileNameDisplay("Upload Gagal");
       toast.error("Upload lampiran gagal.");
-      setForm((prev) => ({ ...prev, nama_file: null }));
+      setFileObject(null);
+      setForm((prev) => ({ ...prev, nama_file_server: null }));
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newFormState = { ...form, [name]: value };
-    if (name === "status_pengiriman" && value === "Langsung") {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const formattedNow = `${year}-${month}-${day}T${hours}:${minutes}`;
-      newFormState = { ...newFormState, waktu_pengiriman: formattedNow };
+
+    if (name === "status_pengiriman") {
+      if (value === "Langsung") {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        const formattedNow = `${year}-${month}-${day}T${hours}:${minutes}`;
+        newFormState = { ...newFormState, waktu_pengiriman: formattedNow };
+      }
+    }
+    // Jika tujuan diubah, reset target_ids dan selectedAnggotaForBroadcast
+    if (name === "tujuan" && value !== "nomor_tertentu") {
+      newFormState.target_ids = [];
+      setSelectedAnggotaForBroadcast([]);
     }
     setForm(newFormState);
+  };
+
+  const handleAnggotaSelectChange = (selectedOptions) => {
+    setSelectedAnggotaForBroadcast(selectedOptions || []);
+    setForm((prev) => ({
+      ...prev,
+      // Ambil no_telp dari setiap opsi yang dipilih
+      target_ids: (selectedOptions || [])
+        .map((opt) => opt.no_telp)
+        .filter(Boolean), // Filter null/undefined no_telp
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.deskripsi || !form.tujuan || !form.status_pengiriman) {
-      toast.warn("Harap isi field wajib.");
+      toast.warn(
+        "Harap isi semua field yang wajib diisi (Penerima, Pesan, Status Pengiriman)."
+      );
       return;
     }
     if (form.status_pengiriman === "Terjadwal" && !form.waktu_pengiriman) {
-      toast.warn("Harap tentukan waktu untuk broadcast terjadwal.");
+      toast.warn("Harap tentukan waktu pengiriman untuk broadcast terjadwal.");
       return;
     }
+    if (form.tujuan === "nomor_tertentu" && form.target_ids.length === 0) {
+      toast.warn('Pilih minimal satu anggota untuk penerima "Nomor Tertentu".');
+      return;
+    }
+
     setIsSubmitting(true);
     const dataToSend = new FormData();
     dataToSend.append("deskripsi", form.deskripsi);
     dataToSend.append("tujuan", form.tujuan);
     dataToSend.append("status_pengiriman", form.status_pengiriman);
+
     if (form.status_pengiriman === "Terjadwal") {
       dataToSend.append("waktu_pengiriman", form.waktu_pengiriman);
     }
-    if (
-      uploadedFileName &&
-      uploadedFileName !== "Upload Gagal" &&
-      !uploadedFileName.startsWith("Mengunggah")
-    ) {
-      dataToSend.append("nama_file", uploadedFileName);
+    if (form.nama_file_server) {
+      // Kirim nama file dari server
+      dataToSend.append("nama_file", form.nama_file_server);
     }
+    if (form.tujuan === "nomor_tertentu") {
+      // Kirim array ID sebagai string JSON atau biarkan Laravel handle array
+      form.target_ids.forEach((id) => dataToSend.append("target_ids[]", id));
+    }
+
     try {
       await onSubmit(dataToSend);
       onClose();
     } catch (error) {
-      /* Handled in parent */
+      // Error handling sudah di parent onSubmit
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (!isOpen) return null;
+
   return (
-    /* ... JSX Modal Tambah (Sama) ... */
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-xl p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-200">
@@ -170,6 +260,7 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Penerima */}
           <div>
             <label
               htmlFor="tujuan"
@@ -188,11 +279,49 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
               <option value="" disabled>
                 -- Pilih Penerima --
               </option>
-              <option value="semua">Semua Anggota</option>
-              <option value="PJ">Semua Pimpinan Jamaah (PJ)</option>
-              <option value="test">Test (Nomor Tertentu)</option>
+              <option value="semua_anggota">Semua Anggota</option>
+              <option value="semua_pj">Semua Pimpinan Jamaah (PJ)</option>
+              <option value="nomor_tertentu">
+                Nomor Tertentu (Pilih Anggota)
+              </option>
+              {/* <option value="test">Test (Nomor Tertentu)</option> */}
             </select>
           </div>
+
+          {/* Dropdown Anggota (jika 'nomor_tertentu' dipilih) */}
+          {form.tujuan === "nomor_tertentu" && (
+            <div>
+              <label
+                htmlFor="anggota_select"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Pilih Anggota Penerima <span className="text-red-500">*</span>
+              </label>
+              <Select
+                id="anggota_select"
+                isMulti
+                options={allAnggotaOptions}
+                value={selectedAnggotaForBroadcast}
+                onChange={handleAnggotaSelectChange}
+                isLoading={loadingAnggota}
+                placeholder={
+                  loadingAnggota
+                    ? "Memuat anggota..."
+                    : "Ketik untuk mencari anggota..."
+                }
+                className="text-sm"
+                classNamePrefix="react-select"
+                noOptionsMessage={() => "Tidak ada anggota ditemukan"}
+              />
+              {selectedAnggotaForBroadcast.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {selectedAnggotaForBroadcast.length} anggota terpilih.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Pesan */}
           <div>
             <label
               htmlFor="deskripsi"
@@ -211,9 +340,11 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
               required
             ></textarea>
           </div>
+
+          {/* Lampiran */}
           <div>
             <label
-              htmlFor="nama_file"
+              htmlFor="nama_file_input"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Lampiran (Opsional - Gambar/PDF)
@@ -229,7 +360,7 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
                     <span>Unggah file</span>
                     <input
                       id="nama_file_input"
-                      name="nama_file"
+                      name="nama_file_obj"
                       type="file"
                       className="sr-only"
                       onChange={handleFileChange}
@@ -241,14 +372,16 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
                 <p className="text-xs text-gray-500">
                   PNG, JPG, GIF, PDF maksimal 5MB
                 </p>
-                {form.nama_file && (
+                {uploadedFileNameDisplay && (
                   <p className="text-xs text-gray-700 mt-2 truncate">
-                    {uploadedFileName || form.nama_file.name}
+                    {uploadedFileNameDisplay}
                   </p>
                 )}
               </div>
             </div>
           </div>
+
+          {/* Status & Waktu Pengiriman */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label
@@ -302,6 +435,8 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
                 )}
             </div>
           </div>
+
+          {/* Tombol Aksi */}
           <div className="flex justify-end space-x-3 pt-5 border-t border-gray-200 mt-6">
             <button
               type="button"
