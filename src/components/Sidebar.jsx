@@ -103,7 +103,7 @@ const Sidebar = ({ isOpen }) => {
                  0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
                 />
               </svg>
-              Profil
+              Pimpinan Cabang
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -126,14 +126,12 @@ const Sidebar = ({ isOpen }) => {
                 isProfilOpen ? "max-h-40" : "max-h-0"
               }`}
             >
-              <li>
-                <Link
-                  to="/profil/tasykil"
+              <Link
+                  to="/profil/data-tasykil"
                   className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
                 >
-                  Tasykil
+                  Data Tasykil
                 </Link>
-              </li>
               <li>
                 <Link
                   to="/profil/fasilitas"
@@ -265,6 +263,8 @@ const Sidebar = ({ isOpen }) => {
                 >
                   Data Jamaah
                 </Link>
+                <li>
+              </li>
               </li>
             </ul>
           </li>
