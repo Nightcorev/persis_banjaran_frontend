@@ -17,6 +17,8 @@ const AddMusyawarah = () => {
     tgl_pelaksanaan: "",
     tgl_akhir_jihad: "",
     aktif: true,
+    tingkat_musyawarah: "jamaah", // Add default value
+    no_sk: "", // Add new field
     id_anggota: "",
   });
 
@@ -65,11 +67,14 @@ const AddMusyawarah = () => {
               detail => detail.jabatan === "Ketua"
             );
   
+            // Update to include all fields
             setFormData({
               id_master_jamaah: musyawarahData.id_master_jamaah || "",
               tgl_pelaksanaan: musyawarahData.tgl_pelaksanaan || "",
-              tgl_akhir_jihad: musyawarahData.tgl_akhir_jihad || "", 
+              tgl_akhir_jihad: musyawarahData.tgl_akhir_jihad || "",
               aktif: musyawarahData.aktif ?? true,
+              tingkat_musyawarah: musyawarahData.tingkat_musyawarah || "jamaah",
+              no_sk: musyawarahData.no_sk || "",
               id_anggota: ketuaData?.id_anggota || "",
             });
   
@@ -123,6 +128,7 @@ const AddMusyawarah = () => {
       setIsModalOpen(true);
       return false;
     }
+    // No validation for optional fields tingkat_musyawarah and no_sk
     return true;
   };
 
@@ -268,6 +274,23 @@ const AddMusyawarah = () => {
           </div>
         </div>
 
+        {/* New fields */}
+        <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-green-800">Nomor SK</label>
+            <input
+              type="text"
+              name="no_sk"
+              value={formData.no_sk}
+              onChange={handleChange}
+              maxLength={100}
+              className="border border-green-200 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+              placeholder="Masukkan nomor SK"
+            />
+            <p className="text-xs text-gray-500">Opsional, maksimal 100 karakter</p>
+          </div>
+        </div>
+
         {/* Modified Status Aktif */}
         <div className="space-y-1">
           <label className="block text-sm font-medium text-green-800">
@@ -288,7 +311,7 @@ const AddMusyawarah = () => {
             <option value={false}>Tidak Aktif</option>
           </select>
           <p className="text-xs text-gray-500">
-            Tentukan status aktif untuk musyawarah ini
+            Jika diset aktif, musyawarah lain akan dinonaktifkan secara otomatis
           </p>
         </div>
       </div>

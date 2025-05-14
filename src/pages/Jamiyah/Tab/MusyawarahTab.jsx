@@ -87,6 +87,7 @@ const MusyawarahTab = ({ jamaahId }) => {
           <thead className="bg-gray-200">
             <tr>
               <th className="border p-2">No</th>
+              <th className="border p-2">Nomor SK</th>  {/* Add this column */}
               <th className="border p-2">Tanggal Pelaksanaan</th>
               <th className="border p-2">Tanggal Akhir Jihad</th>
               <th className="border p-2">Ketua Terpilih</th>
@@ -97,13 +98,13 @@ const MusyawarahTab = ({ jamaahId }) => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="6" className="text-center border p-4">
+                <td colSpan="7" className="text-center border p-4">
                   Memuat data...
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan="6" className="text-center border p-4 text-red-500">
+                <td colSpan="7" className="text-center border p-4 text-red-500">
                   {error}
                 </td>
               </tr>
@@ -116,6 +117,9 @@ const MusyawarahTab = ({ jamaahId }) => {
                   <tr key={musyawarah.id_musyawarah} className="hover:bg-gray-100">
                     <td className="border p-2 text-center">
                       {startIndex + index + 1}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {musyawarah.no_sk || "-"}
                     </td>
                     <td className="border p-2 text-center">
                       {formatTanggal(musyawarah.tgl_pelaksanaan)}
@@ -174,7 +178,7 @@ const MusyawarahTab = ({ jamaahId }) => {
               })
             ) : (
               <tr>
-                <td colSpan="6" className="text-center border p-4">
+                <td colSpan="7" className="text-center border p-4">
                   Tidak ada data musyawarah.
                 </td>
               </tr>

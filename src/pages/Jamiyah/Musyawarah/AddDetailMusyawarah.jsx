@@ -18,13 +18,13 @@ const AddDetailMusyawarah = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const id_master_jamaah = location.state?.id_master_jamaah || "";
+  const isPimpinanCabang = location.state?.isPimpinanCabang; // Add isPimpinanCabang from location state
   const isEditMode = Boolean(detailId); // Check if we're in edit mode
 
   const [formData, setFormData] = useState({
     id_master_jamaah: id_master_jamaah,
     id_anggota: "",
     jabatan: "",
-    no_sk: "",
     aktif: true,
   });
 
@@ -35,22 +35,33 @@ const AddDetailMusyawarah = () => {
 
   // Fetch anggota data
   useEffect(() => {
-    if (id_master_jamaah) {
+    const fetchAnggota = async () => {
       setIsLoading(true);
-      api.get(`/anggota/choice_by-jamaah/${id_master_jamaah}`)
-        .then((response) => {
-          if (response.data.status === 200) {
-            setAnggotaList(response.data.data || []);
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching anggota:", error);
-          setMessage("Gagal mengambil data anggota");
-          setMessageType("error");
-        })
-        .finally(() => setIsLoading(false));
+      try {
+        // Use anggota/all endpoint for both add and edit when isPimpinanCabang is true
+        const endpoint = isPimpinanCabang 
+          ? '/anggota/all'
+          : `/anggota/choice_by-jamaah/${id_master_jamaah}`;
+        
+        const response = await api.get(endpoint);
+        if (response.data?.data) {
+          setAnggotaList(response.data.data);
+        }
+      } catch (err) {
+        console.error("Gagal ambil data anggota:", err);
+        setMessage("Gagal mengambil data anggota");
+        setMessageType("error");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Only fetch if we have id_master_jamaah for regular jamaah
+    // or if it's pimpinan cabang (regardless of id_master_jamaah)
+    if (isPimpinanCabang || id_master_jamaah) {
+      fetchAnggota();
     }
-  }, [id_master_jamaah]);
+  }, [id_master_jamaah, isPimpinanCabang]);
 
   // Fetch detail data in edit mode
   useEffect(() => {
@@ -64,7 +75,6 @@ const AddDetailMusyawarah = () => {
               id_master_jamaah: detailData.id_master_jamaah || id_master_jamaah,
               id_anggota: detailData.id_anggota || "",
               jabatan: detailData.jabatan || "",
-              no_sk: detailData.no_sk || "",
               aktif: detailData.aktif ?? true,
             });
           }
@@ -137,7 +147,9 @@ const AddDetailMusyawarah = () => {
       <div className="border-b border-green-100 pb-4 mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <h2 className="text-xl md:text-2xl font-bold text-green-800">
-            {isEditMode ? "Edit Detail Musyawarah" : "Tambah Detail Musyawarah"}
+            {isEditMode 
+              ? `Edit ${isPimpinanCabang ? 'Anggota Tasykil' : 'Anggota Musyawarah'}`
+              : `Tambah ${isPimpinanCabang ? 'Anggota Tasykil' : 'Anggota Musyawarah'}`}
           </h2>
           <div className="flex gap-3">
             <button
@@ -223,21 +235,6 @@ const AddDetailMusyawarah = () => {
               </option>
             ))}
           </select>
-        </div>
-
-        {/* Nomor SK */}
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-green-800">
-            Nomor SK <span className="text-red-500"></span>
-          </label>
-          <input
-            type="text"
-            name="no_sk"
-            value={formData.no_sk}
-            onChange={handleChange}
-            className="border border-green-200 p-2 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-green-400"
-            placeholder="Masukkan nomor SK"
-          />
         </div>
 
         {/* Status Aktif */}
