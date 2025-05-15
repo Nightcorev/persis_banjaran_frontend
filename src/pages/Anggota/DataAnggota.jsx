@@ -7,12 +7,19 @@ const DataAnggota = () => {
   const account = JSON.parse(localStorage.getItem("user"));
 
   const [users, setUsers] = useState([]);
-
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Create a function to handle search term changes
+  const handleSearchChange = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    // Reset to page 1 when search term changes
+    setPage(1);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,7 +27,7 @@ const DataAnggota = () => {
       try {
         // Memanggil API dengan parameter pencarian dan pagination
         const response = await api.get(
-          `/anggota?page=${page}&perPage=${perPage}&search=${searchTerm}`
+          `/anggota?page=${page}&perPage=${perPage}&searchTerm=${searchTerm}`
         );
         setUsers(response.data.data.data);
         setTotal(response.data.data.total);
@@ -34,6 +41,7 @@ const DataAnggota = () => {
     fetchData();
   }, [page, perPage, searchTerm]); // Menambahkan searchTerm sebagai dependensi
 
+  // Also update the delete handler to use the api utility for consistency
   const handleDelete = async (id_anggota) => {
     const confirmDelete = window.confirm(
       "Apakah Anda yakin ingin menghapus anggota ini?"
@@ -41,9 +49,8 @@ const DataAnggota = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(
-        `http://127.0.0.1:8000/api/delete_anggota/${id_anggota}`
-      );
+      // Use the api utility instead of axios directly
+      await api.delete(`/delete_anggota/${id_anggota}`);
       setUsers(users.filter((user) => user.id_anggota !== id_anggota));
       alert("Data anggota berhasil dihapus!");
     } catch (error) {
@@ -88,7 +95,7 @@ const DataAnggota = () => {
           <span className="ml-2">data per halaman</span>
         </div>
 
-        {/* Input Pencarian */}
+        {/* Input Pencarian - update to use the new handler */}
         <div className="flex items-center text-sm">
           <label htmlFor="search" className="mr-2">
             Cari:
@@ -97,7 +104,7 @@ const DataAnggota = () => {
             id="search"
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} // Update search term on change
+            onChange={handleSearchChange} // Use the new handler
             placeholder="Cari anggota..."
             className="border p-2 rounded"
           />
@@ -144,7 +151,7 @@ const DataAnggota = () => {
                         className="w-12 h-12 object-cover mx-auto"
                         onError={(e) => {
                           console.error("Gambar tidak ditemukan:", e.target.src);
-                          e.target.src = "https://via.placeholder.com/50";
+                          e.target.src = "http://localhost:8000/storage/uploads/persis_default.jpeg";
                         }}
                       />
                     </td>
