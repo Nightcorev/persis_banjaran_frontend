@@ -391,6 +391,14 @@ const Sidebar = ({ isOpen }) => {
                   Kelola Pembayaran Iuran
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/iuran/rekap"
+                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                >
+                  Rekap Iuran
+                </Link>
+              </li>
             </ul>
           </li>
 

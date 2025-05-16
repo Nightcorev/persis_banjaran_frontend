@@ -40,6 +40,7 @@ import ReminderIuran from "./pages/Iuran/ReminderIuran";
 import KelolaChatbot from "./pages/KelolaChatbot/KelolaChatbot";
 import KelolaBroadcast from "./pages/KelolaBroadcast/KelolaBroadcast";
 import AddJamaah from "./pages/Jamiyah/Addjamaah";
+import RekapIuran from "./pages/Iuran/RekapIuran";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -85,17 +86,33 @@ const router = createBrowserRouter(
             path="jamiyah/detail-jamiyah/:id"
             element={<DetailMonografi />}
           />
-          
+
           {/* Musyawarah Routes */}
-          <Route path="/jamiyah/musyawarah/detail/:id" element={<MusyawarahDetail />} />
-          <Route path="jamiyah/detail-jamiyah/data-musyawarah/add-musyawarah" element={<AddMusyawarah/>} />
-          <Route path="jamiyah/musyawarah/data-musyawarah/edit-musyawarah/:id" element={<AddMusyawarah/>} />
-          <Route path="jamiyah/musyawarah/detail/add/:id" element={<AddDetailMusyawarah/>} />
-          <Route path="/jamiyah/musyawarah/detail/edit/:id/:detailId" element={<AddDetailMusyawarah />} />
-          
+          <Route
+            path="/jamiyah/musyawarah/detail/:id"
+            element={<MusyawarahDetail />}
+          />
+          <Route
+            path="jamiyah/detail-jamiyah/data-musyawarah/add-musyawarah"
+            element={<AddMusyawarah />}
+          />
+          <Route
+            path="jamiyah/musyawarah/data-musyawarah/edit-musyawarah/:id"
+            element={<AddMusyawarah />}
+          />
+          <Route
+            path="jamiyah/musyawarah/detail/add/:id"
+            element={<AddDetailMusyawarah />}
+          />
+          <Route
+            path="/jamiyah/musyawarah/detail/edit/:id/:detailId"
+            element={<AddDetailMusyawarah />}
+          />
+
           {/* Iuran Routes */}
           <Route path="iuran/pembayaran" element={<DataIuran />} />
           <Route path="iuran/reminder" element={<ReminderIuran />} />
+          <Route path="iuran/rekap" element={<RekapIuran />} />
 
           {/* Middleware Role: Hanya Super Admin bisa akses halaman ini */}
           <Route element={<RoleMiddleware allowedRoles={["Super Admin"]} />}>
