@@ -20,7 +20,7 @@ const DataMonografi = () => {
     setError(null);
     try {
       const response = await api.get(
-        `/data_jamaah?page=${page}&perPage=${perPage}&search=${searchTerm}`
+        `/data_jamaah?page=${page}&perPage=${perPage}&searchTerm=${searchTerm}`
       );
       setJamiyah(response.data.data.data); // Update state dengan data dari API
       setTotal(response.data.data.total);
