@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import api from "../../utils/api";
+import ExportExcelModal from "../../components/ExportExcelModal";
 
 const DataAnggota = () => {
   const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
@@ -12,6 +13,7 @@ const DataAnggota = () => {
   const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Create a function to handle search term changes
   const handleSearchChange = (e) => {
@@ -69,15 +71,55 @@ const DataAnggota = () => {
     <div className="p-6 bg-white rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-lg font-bold">Data Anggota</h1>
-        {(account?.role === "Super Admin" ||
-          permissions.includes("add_data_anggota")) && (
-          <a href="/users/data-anggota/add-anggota">
-            <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-gray-500">
-              + Tambah Anggota
-            </button>
-          </a>
-        )}
+        <div className="flex space-x-2">
+          {/* Export Button */}
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            Export Excel
+          </button>
+
+          {/* Add Anggota Button */}
+          {(account?.role === "Super Admin" ||
+            permissions.includes("add_data_anggota")) && (
+            <a href="/users/data-anggota/add-anggota">
+              <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Tambah Anggota
+              </button>
+            </a>
+          )}
+        </div>
       </div>
+
       {/* Pencarian dan Dropdown untuk memilih perPage */}
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center text-sm">
@@ -283,6 +325,12 @@ const DataAnggota = () => {
           Next
         </button>
       </div>
+
+      {/* Export Excel Modal */}
+      <ExportExcelModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+      />
     </div>
   );
 };
