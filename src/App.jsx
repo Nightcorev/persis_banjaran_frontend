@@ -39,12 +39,9 @@ import ReminderIuran from "./pages/Iuran/ReminderIuran";
 import KelolaChatbot from "./pages/KelolaChatbot/KelolaChatbot";
 import KelolaBroadcast from "./pages/KelolaBroadcast/KelolaBroadcast";
 import AddJamaah from "./pages/Jamiyah/Addjamaah";
-<<<<<<< HEAD
 import RekapIuran from "./pages/Iuran/RekapIuran";
-=======
 import DataTasykil from "./pages/Profil/DataTasykil";
 import AddTasykil from "./pages/Profil/AddTasykil";
->>>>>>> ec725ee27e724f340253deb755242e15e8459e71
 
 const router = createBrowserRouter(
   createRoutesFromElements(
