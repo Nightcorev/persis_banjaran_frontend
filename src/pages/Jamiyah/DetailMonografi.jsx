@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
 import MusyawarahTab from "../Jamiyah/Tab/MusyawarahTab";
 import AnggotaTab from "../Jamiyah/Tab/AnggotaTab";
 import PesantrenTab from "../Jamiyah/Tab/PesantrenTab";

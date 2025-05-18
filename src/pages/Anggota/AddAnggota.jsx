@@ -42,11 +42,10 @@ const AddAnggota = () => {
 
   useEffect(() => {
     if (isEditMode) {
-      fetch(`http://127.0.0.1:8000/api/get_anggota/${id}`)
-        .then((response) => response.json())
-        .then((data) => {
-          setFormData(data);
-          console.log(JSON.stringify(data))
+      api.get(`/get_anggota/${id}`)
+        .then((response) => {
+          setFormData(response.data);
+          console.log(JSON.stringify(response.data));
         })
         .catch((error) => console.error("Error fetching data:", error));
     }
@@ -150,27 +149,21 @@ const AddAnggota = () => {
     }
     
     try {
-      const response = await fetch(
-        isEditMode
-          ? `http://127.0.0.1:8000/api/edit_anggota/${id}`
-          : "http://127.0.0.1:8000/api/add_anggota",
-        {
-          method: isEditMode ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
-      );
-  
-      if (response.ok) {
-        setMessage(isEditMode ? "Data berhasil diperbarui!" : "Data berhasil disimpan!");
+      let response;
+      if (isEditMode) {
+        response = await api.put(`/edit_anggota/${id}`, formData);
       } else {
-        const errorData = await response.json();
-        setMessage("Terjadi kesalahan: " + errorData.message);
+        response = await api.post("/add_anggota", formData);
       }
+  
+      setMessage(isEditMode ? "Data berhasil diperbarui!" : "Data berhasil disimpan!");
+      setIsModalOpen(true);
     } catch (error) {
-      setMessage("Terjadi kesalahan saat menyimpan data.");
+      console.error("Error saving data:", error);
+      const errorMessage = error.response?.data?.message || "Terjadi kesalahan saat menyimpan data.";
+      setMessage("Terjadi kesalahan: " + errorMessage);
+      setIsModalOpen(true);
     }
-    setIsModalOpen(true);
   };
   
   return (
