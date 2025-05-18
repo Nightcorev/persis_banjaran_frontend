@@ -3,9 +3,6 @@ import { useParams, useNavigate, useLocation } from "react-router-dom"; // Tamba
 import FieldAlert from "../../../components/FieldAlert";
 import api from "../../../utils/api";
 
-// Import API_URL
-const API_URL = import.meta.env.VITE_API_BASE_URL;
-
 const AddMusyawarah = () => {
   const { id } = useParams();
   const navigate = useNavigate();

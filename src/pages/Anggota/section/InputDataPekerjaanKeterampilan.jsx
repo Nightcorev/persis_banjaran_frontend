@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../../../components/Modal";
+import api from "../../../utils/api"; // Import the API utility
 
 const InputDataPekerjaanKeterampilan = ({ data, onDataChange, nomorAnggota }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -41,11 +42,10 @@ const InputDataPekerjaanKeterampilan = ({ data, onDataChange, nomorAnggota }) =>
   };
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/data_choice_pekerjaan_keterampilan")
-      .then((response) => response.json())
-      .then((data) => {
-        setPekerjaanChoice(data.pekerjaan);
-        setKeterampilanChoice(data.keterampilan);
+    api.get("/data_choice_pekerjaan_keterampilan")
+      .then((response) => {
+        setPekerjaanChoice(response.data.pekerjaan);
+        setKeterampilanChoice(response.data.keterampilan);
       })
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
