@@ -19,7 +19,6 @@ import DataPesantren from "./pages/Pendidikan/DataPesantren";
 import ErrorPage from "./components/ErrorPage";
 import NotFound from "./components/404NotFound";
 import DetailDataPesantren from "./pages/Pendidikan/DetailDataPesantren";
-import Tasykil from "./pages/Profil/Tasykil";
 import Fasilitas from "./pages/Profil/Fasilitas";
 import DataAsatidz from "./pages/Pendidikan/DataAsatidz";
 import StatistikPendidikan from "./pages/Pendidikan/StatistikPendidikan";
@@ -40,6 +39,9 @@ import ReminderIuran from "./pages/Iuran/ReminderIuran";
 import KelolaChatbot from "./pages/KelolaChatbot/KelolaChatbot";
 import KelolaBroadcast from "./pages/KelolaBroadcast/KelolaBroadcast";
 import AddJamaah from "./pages/Jamiyah/Addjamaah";
+import RekapIuran from "./pages/Iuran/RekapIuran";
+import DataTasykil from "./pages/Profil/DataTasykil";
+import AddTasykil from "./pages/Profil/AddTasykil";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -76,7 +78,6 @@ const router = createBrowserRouter(
             path="pendidikan/detail-asatidz"
             element={<DetailDataAsatidz />}
           />
-          <Route path="profil/tasykil" element={<Tasykil />} />
           <Route path="profil/fasilitas" element={<Fasilitas />} />
           <Route path="jamiyah/data-jamiyah" element={<DataMonografi />} />
           <Route path="jamiyah/add-jamiyah" element={<AddJamaah />} />
@@ -85,8 +86,12 @@ const router = createBrowserRouter(
             path="jamiyah/detail-jamiyah/:id"
             element={<DetailMonografi />}
           />
-          
+
           {/* Musyawarah Routes */}
+          <Route path="/profil/data-tasykil" element={<DataTasykil />} />
+          <Route path="/profil/data-tasykil/add-tasykil" element={<AddTasykil />} />
+          <Route path="/profil/data-tasykil/edit/:id" element={<AddTasykil />} />
+          <Route path="/profil/data-tasykil/detail/:id" element={<MusyawarahDetail />} />
           <Route path="/jamiyah/musyawarah/detail/:id" element={<MusyawarahDetail />} />
           <Route path="jamiyah/detail-jamiyah/data-musyawarah/add-musyawarah" element={<AddMusyawarah/>} />
           <Route path="jamiyah/musyawarah/data-musyawarah/edit-musyawarah/:id" element={<AddMusyawarah/>} />
@@ -96,6 +101,7 @@ const router = createBrowserRouter(
           {/* Iuran Routes */}
           <Route path="iuran/pembayaran" element={<DataIuran />} />
           <Route path="iuran/reminder" element={<ReminderIuran />} />
+          <Route path="iuran/rekap" element={<RekapIuran />} />
 
           {/* Middleware Role: Hanya Super Admin bisa akses halaman ini */}
           <Route element={<RoleMiddleware allowedRoles={["Super Admin"]} />}>

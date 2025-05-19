@@ -14,6 +14,7 @@ const DetailMusyawarah = () => {
   const [error, setError] = useState(null);
   const [total, setTotal] = useState(0);
   const { id } = useParams();
+  const [isPimpinanCabang, setIsPimpinanCabang] = useState(false);
 
   useEffect(() => {
     const fetchMusyawarahData = async () => {
@@ -28,6 +29,7 @@ const DetailMusyawarah = () => {
 
         setMusyawarah(fetchedMusyawarah);
         setTotal(totalData);
+        setIsPimpinanCabang(fetchedMusyawarah[0]?.tingkat_musyawarah === 'pimpinan_cabang');
       } catch (error) {
         console.error("Error fetching musyawarah data:", error);
         setError("Gagal mengambil data musyawarah. Silakan coba lagi nanti.");
@@ -67,12 +69,16 @@ const DetailMusyawarah = () => {
   };
 
   const handleBack = () => {
-    // Get the id_master_jamaah from musyawarah data
+    if (musyawarah[0]?.tingkat_musyawarah === 'pimpinan_cabang') {
+      navigate('/profil/data-tasykil');
+      return;
+    }
+
     const id_master_jamaah = musyawarah[0]?.id_master_jamaah;
     if (id_master_jamaah) {
       navigate(`/jamiyah/detail-jamiyah/${id_master_jamaah}`);
     } else {
-      navigate(-1); // Fallback if id_master_jamaah is not available
+      navigate(-1);
     }
   };
 
@@ -115,7 +121,9 @@ const DetailMusyawarah = () => {
           {/* Header */}
           <div className="bg-green-800 p-4 md:p-6">
             <div className="flex justify-between items-center flex-wrap gap-4">
-              <h1 className="text-xl md:text-2xl font-bold text-white">Detail Musyawarah</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-white">
+                Detail {isPimpinanCabang ? 'Tasykil Pimpinan Cabang' : 'Musyawarah'}
+              </h1>
               <button
                 onClick={handleBack}
                 className="bg-white text-green-800 px-3 py-1.5 md:px-4 md:py-2 rounded-md hover:bg-green-100 transition flex items-center text-sm md:text-base"
@@ -134,16 +142,23 @@ const DetailMusyawarah = () => {
               musyawarah.map((item, index) => (
                 <div key={item.id_musyawarah || index} className="mb-6 last:mb-0">
                   <div className="bg-green-700 p-3 md:p-4 rounded-t-lg text-white">
-                    <h2 className="text-lg md:text-xl font-bold">Musyawarah #{item.id_musyawarah}</h2>
-                    <p className="text-xs md:text-sm">{item.master_jamaah?.nama_jamaah || "Tidak ada data nama jamaah"}</p>
+                    <h2 className="text-lg md:text-xl font-bold">
+                      {isPimpinanCabang ? `Tasykil #${item.id_musyawarah}` : `Musyawarah #${item.id_musyawarah}`}
+                    </h2>
+                    {!isPimpinanCabang && (
+                      <p className="text-xs md:text-sm">
+                        {item.master_jamaah?.nama_jamaah || "Tidak ada data nama jamaah"}
+                      </p>
+                    )}
                   </div>
 
                   <div className="bg-white border border-gray-200 rounded-b-lg divide-y">
                     {/* Display on medium screens and above */}
                     <div className="hidden md:block">
                       {[
-                        { label: "Nama Jamaah", value: item.master_jamaah?.nama_jamaah },
+                        ...(!isPimpinanCabang ? [{ label: "Nama Jamaah", value: item.master_jamaah?.nama_jamaah }] : []),
                         { label: "Nomor Musyawarah", value: item.id_musyawarah },
+                        { label: "No SK", value: item.no_sk },
                         { label: "Tanggal Pelaksanaan", value: formatTanggal(item.tgl_pelaksanaan) },
                         { label: "Tanggal Akhir Jihad", value: formatTanggal(item.tgl_akhir_jihad) },
                         { 
@@ -173,7 +188,7 @@ const DetailMusyawarah = () => {
                     {/* Display on small screens */}
                     <div className="md:hidden divide-y">
                       {[
-                        { label: "Nama Jamaah", value: item.master_jamaah?.nama_jamaah },
+                        ...(!isPimpinanCabang ? [{ label: "Nama Jamaah", value: item.master_jamaah?.nama_jamaah }] : []),
                         { label: "Nomor Musyawarah", value: item.id_musyawarah },
                         { label: "Tanggal Pelaksanaan", value: formatTanggal(item.tgl_pelaksanaan) },
                         { label: "Tanggal Akhir Jihad", value: formatTanggal(item.tgl_akhir_jihad) },
@@ -211,10 +226,10 @@ const DetailMusyawarah = () => {
                 <h3 className="mt-4 text-base md:text-lg font-semibold text-gray-700">Tidak ada data musyawarah</h3>
                 <p className="text-gray-500 mt-2 text-sm md:text-base">Tidak ditemukan data musyawarah yang sesuai.</p>
                 <Link
-                  to="/jamiyah/musyawarah/data-musyawarah"
+                  to={isPimpinanCabang ? "/profil/data-tasykil" : "/"}
                   className="inline-block mt-4 md:mt-6 px-4 py-2 bg-green-700 text-white rounded-md hover:bg-green-800 transition"
                 >
-                  Kembali ke Daftar Musyawarah
+                  {isPimpinanCabang ? 'Kembali ke Data Tasykil' : 'Kembali ke Beranda'}
                 </Link>
               </div>
             )}
@@ -225,9 +240,16 @@ const DetailMusyawarah = () => {
         {musyawarah.length > 0 && (
           <div className="p-6 bg-white rounded-lg shadow-lg">
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-lg font-bold">Daftar Anggota Musyawarah</h1>
-              <Link to={`/jamiyah/musyawarah/detail/add/${musyawarah[0]?.id_musyawarah}`}
-              state={{ id_master_jamaah: musyawarah[0]?.id_master_jamaah }}>
+              <h1 className="text-lg font-bold">
+                Daftar {isPimpinanCabang ? 'Anggota Tasykil' : 'Anggota Musyawarah'}
+              </h1>
+              <Link 
+                to={`/jamiyah/musyawarah/detail/add/${musyawarah[0]?.id_musyawarah}`}
+                state={{ 
+                  id_master_jamaah: musyawarah[0]?.id_master_jamaah,
+                  isPimpinanCabang: isPimpinanCabang 
+                }}
+              >
                 <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -243,7 +265,7 @@ const DetailMusyawarah = () => {
                       d="M12 4.5v15m7.5-7.5h-15"
                     />
                   </svg>
-                  Tambah Anggota
+                  Tambah {isPimpinanCabang ? 'Anggota Tasykil' : 'Anggota'}
                 </button>
               </Link>
             </div>
@@ -254,7 +276,6 @@ const DetailMusyawarah = () => {
                 <thead className="bg-gray-200">
                   <tr>
                     <th className="border p-2">No</th>
-                    <th className="border p-2">Nomor-SK</th>
                     <th className="border p-2">Nama Anggota</th>
                     <th className="border p-2">Jabatan</th>
                     <th className="border p-2">Action</th>
@@ -267,9 +288,6 @@ const DetailMusyawarah = () => {
                         <tr key={`${anggota.id}-${detailIndex}`} className="hover:bg-gray-100">
                           <td className="border p-2 text-center">
                             {index + detailIndex + 1}
-                          </td>
-                          <td className="border p-2 text-center">
-                            {item.no_sk || "-"}
                           </td>
                           <td className="border p-2 text-center">
                             {item.anggota?.nama_lengkap || "-"}
@@ -325,7 +343,7 @@ const DetailMusyawarah = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="3" className="text-center border p-4">
+                      <td colSpan="5" className="text-center border p-4">
                         Tidak ada data anggota musyawarah.
                       </td>
                     </tr>
