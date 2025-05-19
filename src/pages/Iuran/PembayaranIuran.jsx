@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../utils/api"; // Sesuaikan path jika utils ada di level berbeda
 import Select from "react-select";
@@ -30,6 +30,7 @@ import {
   AlertTriangle,
   Send,
   PenBox,
+  Bell,
 } from "lucide-react";
 
 // Impor komponen modal yang sudah dipisah
@@ -53,6 +54,14 @@ const MONTH_NAMES = [
   "Okt",
   "Nov",
   "Des",
+];
+
+const statusFilterOptions = [
+  { value: "", label: "Semua Status Pembayaran" },
+  { value: "Pending", label: "Pending" },
+  { value: "Verified", label: "Verified (Lunas)" },
+  { value: "Failed", label: "Failed (Gagal)" },
+  // Opsi 'Belum Lunas' bisa lebih kompleks karena melibatkan ketiadaan data
 ];
 
 // --- Helper ---
@@ -103,11 +112,13 @@ const KelolaIuran = () => {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [tahunListManage, setTahunListManage] = useState(false);
   const [isManageTahunModalOpen, setIsManageTahunModalOpen] = useState(false);
+  const [loadingTemplatePj, setLoadingTemplatePj] = useState(false);
   const [historyTarget, setHistoryTarget] = useState({
     anggotaId: null,
     nama: "",
     tahun: null,
   });
+  const [searchParams, setSearchParams] = useSearchParams();
   const [historyData, setHistoryData] = useState([]);
   const [isInputMode, setIsInputMode] = useState(false);
   const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
@@ -121,6 +132,9 @@ const KelolaIuran = () => {
   const searchTimeoutRef = useRef(null);
   const [grandTotalSudahDibayar, setGrandTotalSudahDibayar] = useState(0);
   const [grandTotalBelumDibayar, setGrandTotalBelumDibayar] = useState(0);
+  // Di dalam KelolaIuran.jsx
+  const [pendingCount, setPendingCount] = useState(0);
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState(null); // Untuk filter status
 
   // Data User & Role
   const account = JSON.parse(localStorage.getItem("user")) || {
@@ -129,6 +143,13 @@ const KelolaIuran = () => {
   const isBendaharaOrAdmin = ["Bendahara", "Super Admin"].includes(
     account?.role
   );
+  const isPjUser = account?.role === "Pimpinan Jamaah";
+
+  const pjJamaahId = isPjUser ? account?.id_master_jamaah : null;
+  const [pjJamaahName, setPjJamaahName] = useState("");
+
+  // console.log(pjJamaahId);
+
   const canInputIuran = [
     "Pimpinan Jamaah",
     "Bendahara",
@@ -136,53 +157,122 @@ const KelolaIuran = () => {
   ].includes(account?.role);
 
   // --- Fetch Data ---
-  const fetchTahunAktif = useCallback(async () => {
-    setLoadingTahun(true);
-    try {
-      const response = await api.get("/tahun-aktif");
-      const options = response.data.map((th) => ({
-        value: th.tahun,
-        label: th.tahun.toString(),
-      }));
-      setTahunOptions(options);
-      setTahunListManage(response.data);
-      if (!selectedTahun && options.length > 0) {
-        const tahunAktifDefault = response.data.find(
-          (th) => th.status === "Aktif"
-        );
-        setSelectedTahun(
-          tahunAktifDefault
-            ? {
-                value: tahunAktifDefault.tahun,
-                label: tahunAktifDefault.tahun.toString(),
-              }
-            : options[0]
-        );
-      }
-    } catch (err) {
-      toast.error("Gagal memuat data tahun.");
-      console.error("Fetch Tahun Error:", err);
-    } finally {
-      setLoadingTahun(false);
-    }
-  }, []); // selectedTahun dihapus dari dependency agar tidak re-fetch saat dipilih
+  const fetchTahunAktif = useCallback(
+    async (tahunFromUrl = null) => {
+      setLoadingTahun(true);
+      try {
+        const response = await api.get("/tahun-aktif");
+        const options = (response.data || []).map((th) => ({
+          value: th.tahun,
+          label: th.tahun.toString(),
+        }));
+        setTahunOptions(options);
 
-  const fetchJamaah = useCallback(async () => {
-    try {
-      const response = await api.get(`${API_URL}/data_choice_jamaah`); // Gunakan endpoint Anda
-      const options = (response.data.data || []).map((j) => ({
-        value: j.id_master_jamaah,
-        label: j.nama_jamaah,
-      }));
-      setJamaahOptions(options);
-    } catch (error) {
-      console.error("Gagal mengambil data Jamaah:", error);
-      // toast.error("Gagal memuat pilihan Jamaah."); // Mungkin tidak perlu toast di sini
+        if (tahunFromUrl) {
+          // Jika ada tahun dari URL, prioritaskan itu
+          const tahunObjFromUrl = options.find(
+            (opt) => opt.value === parseInt(tahunFromUrl)
+          );
+          if (tahunObjFromUrl) {
+            setSelectedTahun(tahunObjFromUrl);
+          } else if (options.length > 0) {
+            // Jika tahun dari URL tidak valid, fallback
+            setSelectedTahun(options[0]);
+            toast.warn(
+              `Tahun ${tahunFromUrl} tidak ditemukan, menampilkan tahun ${options[0].value}.`
+            );
+          } else {
+            setSelectedTahun(null);
+          }
+        } else if (!selectedTahun && options.length > 0) {
+          // Jika tidak ada dari URL & belum ada yg dipilih
+          const tahunAktifDefault = response.data.find(
+            (th) => th.status === "Aktif"
+          );
+          setSelectedTahun(
+            tahunAktifDefault
+              ? {
+                  value: tahunAktifDefault.tahun,
+                  label: tahunAktifDefault.tahun.toString(),
+                }
+              : options[0]
+          );
+        } else if (options.length === 0) {
+          setSelectedTahun(null);
+        }
+        // Jika selectedTahun sudah ada dan valid, biarkan saja (tidak di-override)
+      } catch (err) {
+        toast.error("Gagal memuat data tahun.");
+        console.error("Fetch Tahun Error:", err);
+      } finally {
+        setLoadingTahun(false);
+      }
+    },
+    [selectedTahun]
+  ); // selectedTahun dihapus dari dependency agar tidak re-fetch saat dipilih
+
+  const fetchJamaah = useCallback(
+    async (jamaahIdFromUrl = null) => {
+      try {
+        const response = await api.get(`${API_URL}/data_choice_jamaah`);
+        const options = (response.data.data || []).map((j) => ({
+          value: j.id_master_jamaah,
+          label: j.nama_jamaah,
+        }));
+        setJamaahOptions(options);
+
+        let initialJamaahFilter = null;
+        if (isPjUser && pjJamaahId) {
+          // Jika PJ, set filter otomatis
+          initialJamaahFilter = options.find((opt) => opt.value === pjJamaahId);
+          //console.log("Initial Jamaah Filter:", initialJamaahFilter.label);
+          if (initialJamaahFilter) {
+            setPjJamaahName(initialJamaahFilter.label); // Simpan nama jamaah PJ
+          } else {
+            console.warn(
+              `Jamaah PJ dengan ID ${pjJamaahId} tidak ditemukan di options.`
+            );
+          }
+        } else if (jamaahIdFromUrl) {
+          // Jika ada dari URL (untuk non-PJ)
+          initialJamaahFilter = options.find(
+            (opt) => opt.value === parseInt(jamaahIdFromUrl)
+          );
+          if (!initialJamaahFilter) {
+            toast.warn(`Jamaah dengan ID ${jamaahIdFromUrl} tidak ditemukan.`);
+          }
+        }
+
+        setSelectedJamaahFilter(initialJamaahFilter);
+      } catch (error) {
+        console.error("Gagal mengambil data Jamaah:", error);
+      }
+    },
+    [isPjUser, pjJamaahId]
+  );
+
+  const fetchPendingCount = useCallback(async () => {
+    if (!selectedTahun?.value || !isBendaharaOrAdmin) {
+      setPendingCount(0); // Reset jika tidak relevan
+      return;
     }
-  }, []);
+    try {
+      const response = await api.get("/iuran/pending-count", {
+        params: { tahun: selectedTahun.value },
+      });
+      setPendingCount(response.data.pending_count || 0);
+    } catch (error) {
+      console.error("Error fetching pending count:", error);
+      setPendingCount(0); // Set 0 jika error
+    }
+  }, [selectedTahun, isBendaharaOrAdmin]);
 
   const fetchIuranSummary = useCallback(async () => {
-    if (!selectedTahun) return;
+    if (!selectedTahun?.value) {
+      setIuranData([]);
+      setTotal(0);
+      return;
+    }
     setLoading(true);
     setError(null);
     setSelectedMonths({});
@@ -194,13 +284,15 @@ const KelolaIuran = () => {
         jamaah_id: selectedJamaahFilter?.value,
         tahun: selectedTahun.value,
         _t: Date.now(),
+        filter_status_bulan: selectedStatusFilter?.value, // <-- Kirim filter status
       };
       const response = await api.get(`/iuran/summary`, { params });
-      console.log("Raw API response for summary:", response.data);
       const items = response.data.data || [];
       const totalItems = response.data.total || 0;
       setIuranData(items);
       setTotal(totalItems);
+      // Setelah fetch summary, update juga pending count
+      if (isBendaharaOrAdmin) fetchPendingCount();
     } catch (err) {
       setError("Gagal memuat data iuran.");
       setIuranData([]);
@@ -209,7 +301,16 @@ const KelolaIuran = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, perPage, debouncedSearchTerm, selectedJamaahFilter, selectedTahun]);
+  }, [
+    page,
+    perPage,
+    debouncedSearchTerm,
+    selectedJamaahFilter,
+    selectedTahun,
+    selectedStatusFilter,
+    fetchPendingCount,
+    isBendaharaOrAdmin,
+  ]); // Tambah selectedStatusFilter & fetchPendingCount
 
   // --- Debounce Search ---
   useEffect(() => {
@@ -229,11 +330,30 @@ const KelolaIuran = () => {
 
   // Fetch data awal
   useEffect(() => {
-    fetchTahunAktif();
-    fetchJamaah();
-  }, [fetchTahunAktif, fetchJamaah]);
+    const jamaahIdFromUrl = searchParams.get("jamaah_id");
+    const tahunFromUrl = searchParams.get("tahun");
+
+    //console.log("URL Params:", { jamaahIdFromUrl, tahunFromUrl });
+    //console.log("Pj jamaah : ", pjJamaahName);
+
+    // Fetch tahun dulu, lalu set selectedTahun (termasuk dari URL jika ada)
+    // Kemudian fetch jamaah, lalu set selectedJamaahFilter (termasuk dari URL jika ada)
+    // fetchIuranSummary akan terpicu oleh perubahan selectedTahun atau selectedJamaahFilter
+    fetchTahunAktif(tahunFromUrl).then(() => {
+      fetchJamaah(jamaahIdFromUrl);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Hanya dijalankan sekali saat mount untuk membaca URL params
+
+  // Fetch data iuran ketika filter atau halaman berubah
   useEffect(() => {
-    fetchIuranSummary();
+    if (selectedTahun && (selectedJamaahFilter || isPjUser)) {
+      // Fetch jika tahun dan jamaah (atau PJ) sudah ada
+      fetchIuranSummary();
+    } else if (selectedTahun && !isPjUser && !selectedJamaahFilter) {
+      // Jika bukan PJ dan filter jamaah dihapus, fetch semua
+      fetchIuranSummary();
+    }
   }, [fetchIuranSummary]);
 
   // --- Kalkulasi Grand Total ---
@@ -481,43 +601,85 @@ const KelolaIuran = () => {
   };
 
   const handleVerifyLog = async (logId) => {
-    if (!window.confirm("Verifikasi pembayaran ini?")) return;
+    /* ... (sama, panggil fetchPendingCount setelahnya) ... */ if (
+      !window.confirm("Verifikasi pembayaran ini?")
+    )
+      return;
     setLoadingValidationLogs(true);
     try {
       await api.put(`/iuran/verify-log/${logId}`);
       toast.success("Pembayaran diverifikasi!");
       if (isValidationModalOpen) {
-        // Refresh modal validasi
         handleOpenValidationModal(
           validationTarget.anggotaId,
           validationTarget.nama
         );
       }
-      fetchIuranSummary(); // Refresh tabel utama
+      fetchIuranSummary();
+      fetchPendingCount();
+      setIsValidationModalOpen(false);
     } catch (err) {
       toast.error(err.response?.data?.message || "Gagal verifikasi.");
     } finally {
       setLoadingValidationLogs(false);
     }
   };
-
   const handleRejectLog = async (logId, catatan) => {
-    setLoadingValidationLogs(true);
+    /* ... (sama, panggil fetchPendingCount setelahnya) ... */ setLoadingValidationLogs(
+      true
+    );
     try {
       await api.put(`/iuran/reject-log/${logId}`, { catatan });
       toast.warn("Pembayaran ditolak (Failed).");
       if (isValidationModalOpen) {
-        // Refresh modal validasi
         handleOpenValidationModal(
           validationTarget.anggotaId,
           validationTarget.nama
         );
       }
-      fetchIuranSummary(); // Refresh tabel utama
+      fetchIuranSummary();
+      fetchPendingCount();
+      setIsValidationModalOpen(false);
+      n;
     } catch (err) {
       toast.error(err.response?.data?.message || "Gagal menolak.");
     } finally {
       setLoadingValidationLogs(false);
+    }
+  };
+
+  const handleDownloadPjTemplate = async () => {
+    if (!pjJamaahId || !selectedTahun?.value) {
+      toast.warn("Informasi jamaah atau tahun tidak lengkap.");
+      return;
+    }
+    setLoadingTemplatePj(true);
+    toast.info(`Mempersiapkan template untuk jamaah Anda...`);
+    try {
+      const response = await api.get(
+        `/iuran/template-pembayaran/${pjJamaahId}`,
+        {
+          params: { tahun: selectedTahun.value },
+          responseType: "blob",
+        }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      const filename = `template_pembayaran_${(
+        pjJamaahName || `jamaah_${pjJamaahId}`
+      ).replace(/\s+/g, "_")}_${selectedTahun.value}.xlsx`;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success(`Template berhasil diunduh.`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || `Gagal mengunduh template.`);
+      console.error("Download PJ template error:", error);
+    } finally {
+      setLoadingTemplatePj(false);
     }
   };
 
@@ -547,7 +709,7 @@ const KelolaIuran = () => {
                 <Settings size={16} /> Kelola Tahun
               </button>
             )}
-            {isInputMode && (
+            {isInputMode && (isBendaharaOrAdmin || isPjUser) && (
               <button
                 onClick={() => setIsImportModalOpen(true)}
                 className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 text-sm shadow-sm disabled:opacity-50"
@@ -577,8 +739,32 @@ const KelolaIuran = () => {
           </div>
         </div>
 
+        {/* Notifikasi Pending (BARU) */}
+        {isBendaharaOrAdmin && pendingCount > 0 && !loading && (
+          <div className="mb-4 p-3 bg-orange-100 border-l-4 border-orange-500 rounded text-orange-700 flex items-center justify-between flex-wrap gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <Bell size={18} />
+              <span>
+                Ada <strong>{pendingCount} anggota</strong> dengan iuran
+                menunggu validasi untuk tahun {selectedTahun?.label || ""}.
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                setSelectedStatusFilter(
+                  statusFilterOptions.find((opt) => opt.value === "Pending")
+                );
+                // Scroll ke tabel jika perlu: document.getElementById('tabel-iuran').scrollIntoView();
+              }}
+              className="px-3 py-2 bg-orange-500 text-white text-sm rounded hover:bg-orange-600 shadow-sm"
+            >
+              Lihat Data Pending
+            </button>
+          </div>
+        )}
+
         {/* Filter */}
-        <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-end flex-shrink-0">
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-5 gap-4 items-end flex-shrink-0">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Tahun Iuran
@@ -601,11 +787,32 @@ const KelolaIuran = () => {
               options={jamaahOptions}
               value={selectedJamaahFilter}
               onChange={setSelectedJamaahFilter}
-              isClearable
-              isSearchable
-              placeholder="Semua Jamaah..."
-              isDisabled={loading}
+              isClearable={!isPjUser} // Tidak bisa clear jika PJ
+              isSearchable={!isPjUser}
+              placeholder={isPjUser ? pjJamaahName : "Semua Jamaah..."}
+              isDisabled={loading || isPjUser} // Disable jika PJ
               className="text-sm z-20"
+              styles={{ menuPortal: (base) => ({ ...base, zIndex: 9998 }) }}
+              menuPortalTarget={document.body}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status Bayar
+            </label>
+            <Select
+              options={statusFilterOptions}
+              value={selectedStatusFilter}
+              onChange={(option) => {
+                setPage(1);
+                setSelectedStatusFilter(option);
+              }}
+              placeholder="Filter Status..."
+              isClearable={false} // Biasanya filter status tidak perlu clear, pilih "Semua"
+              isDisabled={loading}
+              className="text-sm z-10"
+              styles={{ menuPortal: (base) => ({ ...base, zIndex: 9997 }) }}
+              menuPortalTarget={document.body}
             />
           </div>
           <div>
@@ -985,6 +1192,19 @@ const KelolaIuran = () => {
         onClose={() => setIsImportModalOpen(false)}
         onImport={handleImport}
         loading={loadingImport}
+        // Props BARU untuk PJ
+        isPjUser={isPjUser}
+        pjJamaahInfo={
+          isPjUser
+            ? {
+                id: pjJamaahId,
+                nama: pjJamaahName,
+                tahun: selectedTahun?.value,
+              }
+            : null
+        }
+        onDownloadPjTemplate={handleDownloadPjTemplate}
+        loadingTemplatePj={loadingTemplatePj}
       />
       <HistoryModal
         isOpen={isHistoryModalOpen}

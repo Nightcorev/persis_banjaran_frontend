@@ -1,14 +1,21 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom"; // useNavigate untuk tombol detail
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../../utils/api"; // Sesuaikan path jika perlu
+import api from "../../utils/api"; // Sesuaikan path jika utils ada di level berbeda
 import Select from "react-select";
 import { NumericFormat } from "react-number-format";
-import { Download, Eye, CalendarDays, Loader2, ListFilter } from "lucide-react";
+import {
+  Download,
+  Eye,
+  CalendarDays,
+  Loader2,
+  ListFilter,
+  ServerCrash,
+} from "lucide-react"; // Tambah ServerCrash
 import * as XLSX from "xlsx"; // Untuk export rekap ke Excel di frontend
 
-const API_URL = import.meta.env.VITE_API_BASE_URL;
-const MONTHLY_FEE = 10000; // Biaya iuran per bulan
+const API_URL = import.meta.env.VITE_API_BASE_URL; // Pastikan VITE_API_BASE_URL sudah ada di .env
+const MONTHLY_FEE = 10000;
 
 // --- Helper ---
 const formatRupiah = (value) =>
@@ -26,62 +33,44 @@ const RekapIuran = () => {
   const [tahunOptions, setTahunOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingTahun, setLoadingTahun] = useState(false);
+  const [loadingExport, setLoadingExport] = useState(false);
+  const [loadingTemplate, setLoadingTemplate] = useState(null); // Menyimpan ID jamaah yg sedang di-load templatenya
   const [error, setError] = useState("");
 
   const [grandTotalSudahDibayar, setGrandTotalSudahDibayar] = useState(0);
   const [grandTotalBelumDibayar, setGrandTotalBelumDibayar] = useState(0);
 
-  const navigate = useNavigate(); // Untuk tombol "Lihat Detail"
+  const navigate = useNavigate();
 
-  // --- Data Dummy (Ganti dengan API call nanti) ---
-  const dummyRekapData = [
-    {
-      id_jamaah: 1,
-      nama_jamaah: "Jamaah Al-Ikhlas",
-      total_sudah_dibayar: 1500000,
-      total_belum_dibayar: 300000,
-      jumlah_anggota: 15,
-    },
-    {
-      id_jamaah: 2,
-      nama_jamaah: "Jamaah An-Nur",
-      total_sudah_dibayar: 2000000,
-      total_belum_dibayar: 400000,
-      jumlah_anggota: 20,
-    },
-    {
-      id_jamaah: 3,
-      nama_jamaah: "Jamaah Ar-Rahman",
-      total_sudah_dibayar: 1200000,
-      total_belum_dibayar: 600000,
-      jumlah_anggota: 15,
-    },
-  ];
-
-  const dummyTahunOptions = [
-    { value: 2025, label: "2025" },
-    { value: 2024, label: "2024" },
-  ];
-
-  // --- Fetch Data ---
   const fetchTahunAktif = useCallback(async () => {
     setLoadingTahun(true);
     try {
-      // Ganti dengan API call ke backend Anda: GET /api/tahun-aktif
-      // const response = await api.get('/tahun-aktif');
-      // const options = response.data.map(th => ({ value: th.tahun, label: th.tahun.toString() }));
-      // setTahunOptions(options);
-      // if (options.length > 0) {
-      //     const tahunAktifDefault = response.data.find(th => th.status === 'Aktif');
-      //     setSelectedTahun(tahunAktifDefault ? { value: tahunAktifDefault.tahun, label: tahunAktifDefault.tahun.toString() } : options[0]);
-      // }
-      setTahunOptions(dummyTahunOptions); // Pakai dummy
-      if (dummyTahunOptions.length > 0) {
+      const response = await api.get("/tahun-aktif"); // Panggil GET /api/tahun-aktif
+      const options = (response.data || []).map((th) => ({
+        value: th.tahun,
+        label: th.tahun.toString(),
+      }));
+      setTahunOptions(options);
+      if (!selectedTahun && options.length > 0) {
+        const tahunAktifDefault = response.data.find(
+          (th) => th.status === "Aktif"
+        );
         setSelectedTahun(
-          dummyTahunOptions.find(
-            (th) => th.value === new Date().getFullYear()
-          ) || dummyTahunOptions[0]
-        ); // Default ke tahun ini atau pertama
+          tahunAktifDefault
+            ? {
+                value: tahunAktifDefault.tahun,
+                label: tahunAktifDefault.tahun.toString(),
+              }
+            : options[0]
+        );
+      } else if (
+        options.length > 0 &&
+        !options.find((opt) => opt.value === selectedTahun?.value)
+      ) {
+        // Jika tahun yg dipilih sebelumnya tidak ada lagi, pilih yg pertama
+        setSelectedTahun(options[0]);
+      } else if (options.length === 0) {
+        setSelectedTahun(null); // Tidak ada tahun, kosongkan pilihan
       }
     } catch (err) {
       toast.error("Gagal memuat data tahun.");
@@ -89,25 +78,30 @@ const RekapIuran = () => {
     } finally {
       setLoadingTahun(false);
     }
-  }, []); // selectedTahun dihapus agar tidak re-fetch terus
+  }, []); // selectedTahun dihapus dari dependency agar tidak re-fetch terus saat dipilih
 
   const fetchRekapData = useCallback(async () => {
-    if (!selectedTahun) return;
+    if (!selectedTahun?.value) {
+      // Pastikan ada value tahun yg dipilih
+      setRekapData([]); // Kosongkan data jika tidak ada tahun
+      setGrandTotalSudahDibayar(0);
+      setGrandTotalBelumDibayar(0);
+      return;
+    }
     setLoading(true);
     setError(null);
     console.log("Fetching rekap data untuk tahun:", selectedTahun.value);
     try {
-      // Ganti dengan API call ke backend Anda: GET /api/iuran/rekap-jamaah?tahun={selectedTahun.value}
-      // const response = await api.get(`/iuran/rekap-jamaah`, { params: { tahun: selectedTahun.value } });
-      // setRekapData(response.data || []);
-
-      // Simulasi API call dengan dummy data
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      // Filter dummy data berdasarkan tahun (jika ada logika filter di dummy)
-      setRekapData(dummyRekapData); // Untuk sekarang selalu tampilkan semua dummy
+      const response = await api.get(`/iuran/rekap-jamaah`, {
+        params: { tahun: selectedTahun.value },
+      });
+      console.log("DATA REKAP DITERIMA DARI API:", response.data);
+      setRekapData(response.data || []);
     } catch (err) {
-      setError("Gagal memuat data rekap iuran.");
-      toast.error("Gagal memuat data rekap iuran.");
+      const errorMessage =
+        err.response?.data?.message || "Gagal memuat data rekap iuran.";
+      setError(errorMessage);
+      // toast.error(errorMessage); // Mungkin terlalu banyak toast
       console.error("Fetch Rekap Error:", err);
       setRekapData([]);
     } finally {
@@ -122,18 +116,17 @@ const RekapIuran = () => {
 
   useEffect(() => {
     if (selectedTahun) {
-      // Hanya fetch jika tahun sudah dipilih
       fetchRekapData();
     }
-  }, [fetchRekapData, selectedTahun]); // Tambahkan selectedTahun sebagai dependency
+  }, [fetchRekapData, selectedTahun]);
 
   // --- Kalkulasi Grand Total ---
   useEffect(() => {
     let totalSudah = 0;
     let totalBelum = 0;
     rekapData.forEach((item) => {
-      totalSudah += item.total_sudah_dibayar || 0;
-      totalBelum += item.total_belum_dibayar || 0;
+      totalSudah += Number(item.total_sudah_dibayar) || 0;
+      totalBelum += Number(item.total_belum_dibayar) || 0;
     });
     setGrandTotalSudahDibayar(totalSudah);
     setGrandTotalBelumDibayar(totalBelum);
@@ -141,75 +134,86 @@ const RekapIuran = () => {
 
   // --- Handlers ---
   const handleDownloadTemplate = async (jamaahId, namaJamaah) => {
-    toast.info(`Memulai unduh template untuk ${namaJamaah}...`);
+    if (!selectedTahun?.value) {
+      toast.warn("Pilih tahun terlebih dahulu.");
+      return;
+    }
+    setLoadingTemplate(jamaahId); // Set loading untuk tombol spesifik ini
+    toast.info(`Mempersiapkan template untuk ${namaJamaah}...`);
     try {
-      // Panggil API GET /api/iuran/template-pembayaran/{jamaah_id}?tahun={selectedTahun.value}
-      // Backend akan menghasilkan file Excel dan mengirimkannya sebagai download
-      // const response = await api.get(`/iuran/template-pembayaran/${jamaahId}`, {
-      //     params: { tahun: selectedTahun.value },
-      //     responseType: 'blob', // Penting untuk download file
-      // });
-      // const url = window.URL.createObjectURL(new Blob([response.data]));
-      // const link = document.createElement('a');
-      // link.href = url;
-      // link.setAttribute('download', `template_pembayaran_${namaJamaah.replace(/\s+/g, '_')}_${selectedTahun.value}.xlsx`);
-      // document.body.appendChild(link);
-      // link.click();
-      // link.parentNode.removeChild(link);
-      // window.URL.revokeObjectURL(url);
-
-      // Simulasi download
-      console.log(
-        `Simulasi download template untuk Jamaah ID: ${jamaahId}, Tahun: ${selectedTahun?.value}`
-      );
-      alert(
-        `Simulasi: Unduh template Excel untuk ${namaJamaah} tahun ${selectedTahun?.value}.\nFitur ini memerlukan implementasi backend.`
-      );
+      const response = await api.get(`/iuran/template-pembayaran/${jamaahId}`, {
+        params: { tahun: selectedTahun.value },
+        responseType: "blob", // Penting untuk download file
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      const filename = `template_pembayaran_${namaJamaah.replace(
+        /\s+/g,
+        "_"
+      )}_${selectedTahun.value}.xlsx`;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success(`Template untuk ${namaJamaah} berhasil diunduh.`);
     } catch (error) {
-      toast.error("Gagal mengunduh template.");
+      toast.error(
+        error.response?.data?.message ||
+          `Gagal mengunduh template untuk ${namaJamaah}.`
+      );
       console.error("Download template error:", error);
+    } finally {
+      setLoadingTemplate(null);
     }
   };
 
-  const handleLihatDetail = (jamaahId, tahun) => {
+  const handleLihatDetail = (jamaahId) => {
+    if (!selectedTahun?.value) {
+      toast.warn("Pilih tahun terlebih dahulu untuk melihat detail.");
+      return;
+    }
     // Navigasi ke halaman KelolaIuran dengan parameter
-    navigate(`/kelola-iuran?jamaah_id=${jamaahId}&tahun=${tahun}`);
+    navigate(
+      `/iuran/pembayaran?jamaah_id=${jamaahId}&tahun=${selectedTahun.value}`
+    );
   };
 
-  const handleExportRekap = () => {
+  const handleExportRekap = async () => {
     if (rekapData.length === 0) {
       toast.warn("Tidak ada data untuk diekspor.");
       return;
     }
+    if (!selectedTahun?.value) {
+      toast.warn("Pilih tahun terlebih dahulu.");
+      return;
+    }
+    setLoadingExport(true);
     toast.info("Mempersiapkan data rekap untuk diunduh...");
-    // Data yang akan diekspor (sesuaikan dengan kolom tabel)
-    const dataToExport = rekapData.map((item) => ({
-      "Nama Jamaah": item.nama_jamaah,
-      "Sudah Dibayar (Rp)": item.total_sudah_dibayar,
-      "Belum Dibayar (Rp)": item.total_belum_dibayar,
-      "Jumlah Anggota": item.jumlah_anggota, // Tambahkan jika perlu
-    }));
-    // Tambahkan baris total
-    dataToExport.push({}); // Baris kosong
-    dataToExport.push({
-      "Nama Jamaah": "TOTAL KESELURUHAN",
-      "Sudah Dibayar (Rp)": grandTotalSudahDibayar,
-      "Belum Dibayar (Rp)": grandTotalBelumDibayar,
-    });
 
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      `Rekap Iuran ${selectedTahun?.value || ""}`
-    );
-    // Atur lebar kolom (opsional)
-    // worksheet['!cols'] = [ {wch:25}, {wch:20}, {wch:20}, {wch:15} ];
-    XLSX.writeFile(
-      workbook,
-      `Rekap_Iuran_Tahun_${selectedTahun?.value || "Semua"}.xlsx`
-    );
+    try {
+      // Panggil API backend untuk export
+      const response = await api.get(`/iuran/rekap-jamaah/export`, {
+        params: { tahun: selectedTahun.value },
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      const filename = `Rekap_Iuran_Jamaah_Tahun_${selectedTahun.value}.xlsx`;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("File rekap berhasil diunduh.");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Gagal mengekspor rekap.");
+      console.error("Export rekap error:", error);
+    } finally {
+      setLoadingExport(false);
+    }
   };
 
   return (
@@ -225,7 +229,11 @@ const RekapIuran = () => {
           </h1>
           <div className="flex items-center gap-2">
             <div className="w-48">
+              <label htmlFor="tahunFilterRekap" className="sr-only">
+                Filter Tahun
+              </label>
               <Select
+                id="tahunFilterRekap"
                 options={tahunOptions}
                 value={selectedTahun}
                 onChange={setSelectedTahun}
@@ -240,20 +248,25 @@ const RekapIuran = () => {
             <button
               onClick={handleExportRekap}
               className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm shadow-sm disabled:opacity-50"
-              disabled={loading || rekapData.length === 0}
+              disabled={loading || loadingExport || rekapData.length === 0}
             >
-              <Download size={16} /> Export Rekap
+              {loadingExport ? (
+                <Loader2 size={16} className="animate-spin mr-1" />
+              ) : (
+                <Download size={16} />
+              )}
+              Export Rekap
             </button>
           </div>
         </div>
 
         {/* Alert Error */}
         {error && !loading && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300 text-sm flex-shrink-0">
-            {error}{" "}
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300 text-sm flex-shrink-0 flex items-center gap-2">
+            <ServerCrash size={18} /> {error}
             <button
               onClick={fetchRekapData}
-              className="ml-2 font-semibold underline"
+              className="ml-auto font-semibold underline hover:text-red-900"
             >
               Coba lagi
             </button>
@@ -294,6 +307,7 @@ const RekapIuran = () => {
                 >
                   Belum Dibayar
                 </th>
+
                 <th
                   scope="col"
                   className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -306,7 +320,7 @@ const RekapIuran = () => {
               {!loading && rekapData.length === 0 && (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan="6"
                     className="text-center p-5 text-gray-500 italic"
                   >
                     {selectedTahun
@@ -330,6 +344,7 @@ const RekapIuran = () => {
                     <td className="px-4 py-3 whitespace-nowrap text-right text-red-600">
                       {formatRupiah(item.total_belum_dibayar)}
                     </td>
+
                     <td className="px-4 py-3 whitespace-nowrap text-center">
                       <div className="flex justify-center items-center gap-2">
                         <button
@@ -339,10 +354,15 @@ const RekapIuran = () => {
                               item.nama_jamaah
                             )
                           }
-                          className="p-1.5 text-blue-600 hover:text-blue-800"
+                          className="p-1.5 text-blue-600 hover:text-blue-800 disabled:opacity-50"
                           title="Unduh Template Excel Pembayaran Jamaah Ini"
+                          disabled={loadingTemplate === item.id_jamaah}
                         >
-                          <Download size={16} />
+                          {loadingTemplate === item.id_jamaah ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <Download size={16} />
+                          )}
                         </button>
                         <button
                           onClick={() =>
@@ -377,14 +397,13 @@ const RekapIuran = () => {
                   <td className="px-4 py-3 text-right text-red-700">
                     {formatRupiah(grandTotalBelumDibayar)}
                   </td>
-                  <td className="px-4 py-3"></td>{" "}
-                  {/* Kolom kosong untuk Action */}
+                  <td colSpan="2" className="px-4 py-3"></td>{" "}
+                  {/* Kolom kosong untuk Anggota & Action */}
                 </tr>
               </tfoot>
             )}
           </table>
         </div>
-
         {/* Pagination tidak diperlukan jika rekap selalu menampilkan semua jamaah */}
       </div>
     </div>
