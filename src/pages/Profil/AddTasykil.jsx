@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import FieldAlert from "../../components/FieldAlert";
 import api from "../../utils/api";
@@ -7,6 +7,9 @@ const AddTasykil = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const [formData, setFormData] = useState({
     tgl_pelaksanaan: "",
@@ -18,16 +21,31 @@ const AddTasykil = () => {
   });
 
   const [anggotaList, setAnggotaList] = useState([]);
+  const [selectedAnggota, setSelectedAnggota] = useState(null);
   const [message, setMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Fetch all anggota
   useEffect(() => {
     const fetchAnggota = async () => {
       setIsLoading(true);
       try {
-        const response = await api.get('/anggota/all'); // Use the /all endpoint
+        const response = await api.get('/anggota/all');
         if (response.data?.data) {
           setAnggotaList(response.data.data);
         } else {
@@ -67,6 +85,14 @@ const AddTasykil = () => {
               no_sk: tasykiData.no_sk || "",
               id_anggota: ketuaData?.id_anggota || "",
             });
+            
+            // Set selected anggota from the data
+            if (ketuaData?.id_anggota) {
+              const selectedAnggotaData = anggotaList.find(
+                anggota => anggota.id_anggota === ketuaData.id_anggota
+              );
+              setSelectedAnggota(selectedAnggotaData);
+            }
           }
         } catch (error) {
           setMessage("Gagal mengambil data");
@@ -78,7 +104,7 @@ const AddTasykil = () => {
     };
 
     fetchTasykil();
-  }, [id, isEditMode]);
+  }, [id, isEditMode, anggotaList]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,6 +113,21 @@ const AddTasykil = () => {
       [name]: value
     }));
   };
+
+  const handleSelectAnggota = (anggota) => {
+    setSelectedAnggota(anggota);
+    setFormData(prev => ({
+      ...prev,
+      id_anggota: anggota.id_anggota
+    }));
+    setIsDropdownOpen(false);
+    setSearchTerm("");
+  };
+
+  const filteredAnggota = searchTerm
+    ? anggotaList.filter(anggota => 
+        anggota.nama_lengkap.toLowerCase().includes(searchTerm.toLowerCase()))
+    : anggotaList;
 
   const validateForm = () => {
     if (!formData.id_anggota) {
@@ -159,24 +200,65 @@ const AddTasykil = () => {
 
       {/* Form Content */}
       <div className="flex flex-col gap-6">
-        {/* Ketua Selection */}
+        {/* Ketua Selection with Search */}
         <div className="space-y-1">
           <label className="block text-sm font-medium text-green-800">
             Ketua <span className="text-red-500">*</span>
           </label>
-          <select
-            name="id_anggota"
-            value={formData.id_anggota}
-            onChange={handleChange}
-            className="border border-green-200 p-2 rounded-md w-full bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-          >
-            <option value="">Pilih Ketua</option>
-            {anggotaList.map((anggota) => (
-              <option key={anggota.id_anggota} value={anggota.id_anggota}>
-                {anggota.nama_lengkap}
-              </option>
-            ))}
-          </select>
+          <div className="relative" ref={dropdownRef}>
+            <div className="flex">
+              <input
+                type="text"
+                value={selectedAnggota ? selectedAnggota.nama_lengkap : searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setSelectedAnggota(null);
+                  setFormData(prev => ({...prev, id_anggota: ""}));
+                  setIsDropdownOpen(true);
+                }}
+                onClick={() => setIsDropdownOpen(true)}
+                placeholder="Cari nama ketua..."
+                className="border border-green-200 p-2 rounded-l-md w-full focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+              />
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="bg-green-600 text-white px-3 rounded-r-md hover:bg-green-700"
+              >
+                {isDropdownOpen ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            
+            {isDropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white border border-green-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {isLoading ? (
+                  <div className="p-3 text-center text-gray-500">Loading...</div>
+                ) : filteredAnggota.length > 0 ? (
+                  filteredAnggota.map(anggota => (
+                    <div
+                      key={anggota.id_anggota}
+                      className="p-3 hover:bg-green-50 cursor-pointer border-b border-green-100 last:border-b-0"
+                      onClick={() => handleSelectAnggota(anggota)}
+                    >
+                      {anggota.nama_lengkap}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-3 text-center text-gray-500">Tidak ada anggota ditemukan</div>
+                )}
+              </div>
+            )}
+          </div>
+          {selectedAnggota && (
+            <p className="text-xs text-green-600">ID Anggota: {selectedAnggota.id_anggota}</p>
+          )}
         </div>
 
         {/* Tanggal Fields */}

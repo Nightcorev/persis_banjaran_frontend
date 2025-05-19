@@ -8,7 +8,7 @@ function ChartStatistik() {
   const [selectedChart, setSelectedChart] = useState("Bar");
   const [selectedData, setSelectedData] = useState("anggota");
   const [monos, setMonos] = useState([]);
-  
+  const [loading, setLoading] = useState(true);
   const [responseData, setResponseData] = useState({ 
     pendidikan: [], 
     pekerjaan: [], 
@@ -21,17 +21,18 @@ function ChartStatistik() {
       .then((response) => setResponseData(response.data))
       .catch((error) => console.error("Error fetching data_chart:", error));
 
-    api.get("/data_monografi")
-      .then(response => {
-        const data = response.data.data_monografi;
-        setMonos([
-          { title: "Jumlah Persis", count: data.jum_persis, color: "#22c55e" }, 
-          { title: "Jumlah Persistri", count: data.jum_persistri, color: "#3b82f6" }, 
-          { title: "Jumlah Pemuda", count: data.jum_pemuda, color: "#ef4444" }, 
-          { title: "Jumlah Pemudi", count: data.jum_pemudi, color: "#fbbf24" }
-        ]);
-      })
-      .catch(error => console.error("Error fetching monografi data:", error));
+      setLoading(false);
+    // api.get("/data_monografi")
+    //   .then(response => {
+    //     const data = response.data.data_monografi;
+    //     setMonos([
+    //       { title: "Jumlah Persis", count: data.jum_persis, color: "#22c55e" }, 
+    //       { title: "Jumlah Persistri", count: data.jum_persistri, color: "#3b82f6" }, 
+    //       { title: "Jumlah Pemuda", count: data.jum_pemuda, color: "#ef4444" }, 
+    //       { title: "Jumlah Pemudi", count: data.jum_pemudi, color: "#fbbf24" }
+    //     ]);
+    //   })
+    //   .catch(error => console.error("Error fetching monografi data:", error));
   }, []);
 
   const dataOptions = ["anggota", "pendidikan", "pekerjaan", "keterampilan", "mubaligh"];
@@ -106,10 +107,18 @@ function ChartStatistik() {
     };
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-lg font-semibold text-gray-700">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       {/* Statistik Mono */}
-      <div className="flex gap-4">
+      {/* <div className="flex gap-4">
         {monos.map((mono, index) => (
           <div
             key={index}
@@ -125,7 +134,7 @@ function ChartStatistik() {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Chart */}
       <div className="bg-white p-4 shadow-lg rounded-lg">

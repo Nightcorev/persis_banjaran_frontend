@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Sidebar = ({ isOpen }) => {
   const [isProfilOpen, setIsProfilOpen] = useState(false);
@@ -9,9 +9,20 @@ const Sidebar = ({ isOpen }) => {
   const [isManageAuthOpen, setIsManageAuthOpen] = useState(false);
   const [isIuranOpen, setIsIuranOpen] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+
+  // Add resize listener for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const toggleProfilMenu = () => {
     setIsProfilOpen(!isProfilOpen);
@@ -44,13 +55,12 @@ const Sidebar = ({ isOpen }) => {
   return (
     <div
       className={`
-    ${isOpen ? "md:static" : "absolute"} 
-    top-0 left-0 h-full w-64 bg-gray-800 text-white 
-    transition-transform duration-300 z-40 
-    ${isOpen ? "translate-x-0" : "-translate-x-full"}
-  `}
+        fixed md:fixed top-0 left-0 h-screen w-64 bg-gray-800 text-white 
+        transition-all duration-300 z-50 overflow-y-auto
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
     >
-      <div className="p-3 text-sm bg-gray-900">Menu</div>
+      <div className="sticky top-0 p-3 text-sm bg-gray-900 z-10">Menu</div>
       <nav className="flex-1 text-sm">
         <ul>
           {/* Menu Dashboard */}
@@ -355,8 +365,8 @@ const Sidebar = ({ isOpen }) => {
                 className="size-4"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
                 />
               </svg>
@@ -418,8 +428,8 @@ const Sidebar = ({ isOpen }) => {
                 className="size-4"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"
                 />
               </svg>
@@ -428,7 +438,7 @@ const Sidebar = ({ isOpen }) => {
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth={1.5}
+                strokeWidth="1.5"
                 stroke="currentColor"
                 className={`w-4 h-4 ml-auto transition-transform ${
                   isChatbotOpen ? "rotate-180" : ""

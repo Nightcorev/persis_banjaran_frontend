@@ -1,28 +1,31 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import api from "../../utils/api"; // Import the API utility
 
 const ViewAnggota = () => {
   const { id } = useParams();
   const [photo, setPhoto] = useState("");
   const [activeTab, setActiveTab] = useState("Personal");
   const [anggotaData, setAnggotaData] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const fetchAnggotaData = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/get_anggota/${id}`);
-        const data = await response.json();
-        setAnggotaData(data);
-        setPhoto(data.personal.fotoURL);
+        const response = await api.get(`/get_anggota/${id}`);
+        setAnggotaData(response.data);
+        setPhoto(response.data.personal.fotoURL);
       } catch (error) {
         console.error("Error fetching anggota data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchAnggotaData();
   }, [id]);
 
-  if (!anggotaData) {
+  if (loading || !anggotaData) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-green-500"></div>

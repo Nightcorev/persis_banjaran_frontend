@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../../../components/Modal";
+import api from "../../../utils/api"; // Import the API utility
 
 const InputDataPekerjaanKeterampilan = ({ data, onDataChange, nomorAnggota }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -7,16 +8,44 @@ const InputDataPekerjaanKeterampilan = ({ data, onDataChange, nomorAnggota }) =>
   const [lainnyaKeterampilan, setLainnyaKeterampilan] = useState("");
   const [pekerjaanChoice, setPekerjaanChoice] = useState([]);
   const [keterampilanChoice, setKeterampilanChoice] = useState([]);
+  const [errors, setErrors] = useState({
+    pekerjaan: {},
+    keterampilan: {}
+  });
 
   const pekerjaan = data.pekerjaan || { pekerjaan: "", lainnya: "" };
   const tabelKeterampilan = data.keterampilan || [];
 
+  // Validate field based on database data type
+  const validateField = (name, value) => {
+    let errorMessage = "";
+    
+    switch(name) {
+      case "id_master_keterampilan": // int4
+        if (value && isNaN(Number(value))) {
+          errorMessage = "ID keterampilan harus berupa angka";
+        }
+        break;
+      case "lainnya": // varchar(100)
+        if (value && value.length > 100) {
+          errorMessage = "Keterampilan lainnya maksimal 100 karakter";
+        }
+        break;
+      case "deskripsi": // text
+        // No length validation for text type
+        break;
+      default:
+        break;
+    }
+    
+    return errorMessage;
+  };
+
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/data_choice_pekerjaan_keterampilan")
-      .then((response) => response.json())
-      .then((data) => {
-        setPekerjaanChoice(data.pekerjaan);
-        setKeterampilanChoice(data.keterampilan);
+    api.get("/data_choice_pekerjaan_keterampilan")
+      .then((response) => {
+        setPekerjaanChoice(response.data.pekerjaan);
+        setKeterampilanChoice(response.data.keterampilan);
       })
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
@@ -26,10 +55,25 @@ const InputDataPekerjaanKeterampilan = ({ data, onDataChange, nomorAnggota }) =>
     setIsPopupOpen(false);
     setSelectedKeterampilan(""); // Reset state
     setLainnyaKeterampilan("");
+    setErrors({...errors, keterampilan: {}});
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Validate the input if it's related to keterampilan
+    let error = "";
+    if (name === "lainnya") {
+      error = validateField(name, value);
+      setErrors({
+        ...errors, 
+        pekerjaan: {
+          ...errors.pekerjaan,
+          [name]: error
+        }
+      });
+    }
+    
     onDataChange({
       ...data,
       pekerjaan: {
@@ -41,10 +85,41 @@ const InputDataPekerjaanKeterampilan = ({ data, onDataChange, nomorAnggota }) =>
 
   const handleKeterampilanChange = (e) => {
     setSelectedKeterampilan(e.target.value);
+    setErrors({...errors, keterampilan: {}});
+  };
+
+  const handleLainnyaKeterampilanChange = (e) => {
+    const value = e.target.value;
+    setLainnyaKeterampilan(value);
+    
+    // Validate lainnya field
+    const error = validateField("lainnya", value);
+    setErrors({
+      ...errors, 
+      keterampilan: {
+        ...errors.keterampilan,
+        lainnya: error
+      }
+    });
   };
 
   const handleSubmitKeterampilan = (e) => {
     e.preventDefault();
+
+    // Check if there's an error in the "lainnya" field
+    if (selectedKeterampilan === "Lainnya") {
+      const error = validateField("lainnya", lainnyaKeterampilan);
+      if (error) {
+        setErrors({
+          ...errors,
+          keterampilan: {
+            ...errors.keterampilan,
+            lainnya: error
+          }
+        });
+        return;
+      }
+    }
 
     const keterampilanBaru =
       selectedKeterampilan === "Lainnya" ? lainnyaKeterampilan : selectedKeterampilan;
@@ -86,19 +161,26 @@ const InputDataPekerjaanKeterampilan = ({ data, onDataChange, nomorAnggota }) =>
             </option>
           ))}
         </select>
-        {pekerjaan.pekerjaan === "Lainnya" && (
-          <div className="flex items-center gap-2">
-            <label className="text-xs">Pekerjaan Lainnya</label>
+      </div>
+
+      {pekerjaan.pekerjaan === "Lainnya" && (
+        <div className="flex items-center gap-2">
+          <label className="text-xs">Pekerjaan Lainnya</label>
+          <div className="w-full">
             <input
               type="text"
               name="lainnya"
-              value={pekerjaan.lainnya}
+              value={pekerjaan.lainnya || ""}
               onChange={handleInputChange}
-              className="p-2 border rounded-md text-xs"
+              className={`p-2 border rounded-md text-xs ${errors.pekerjaan?.lainnya ? "border-red-500" : ""}`}
+              maxLength={100}
             />
+            {errors.pekerjaan?.lainnya && (
+              <p className="text-red-500 text-xs mt-1">{errors.pekerjaan.lainnya}</p>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="flex items-center gap-4 pb-4">
         <label className="text-xs">Nama Instansi</label>
@@ -114,28 +196,29 @@ const InputDataPekerjaanKeterampilan = ({ data, onDataChange, nomorAnggota }) =>
       <div className="flex items-center gap-4 pb-4">
         <label className="text-xs">Deskripsi Pekerjaan</label>
         <textarea
-              className="w-sm p-2 border rounded-md text-xs"
-              value={pekerjaan.deskripsiPekerjaan || ""}
-              onChange={handleInputChange}
+          className="w-sm p-2 border rounded-md text-xs"
+          name="deskripsiPekerjaan"
+          value={pekerjaan.deskripsiPekerjaan || ""}
+          onChange={handleInputChange}
         />
       </div>
 
       <div className="flex items-center gap-4">
-            <label className="text-xs">Pendapatan</label>
-            <select
-              name="pendapatan"
-              className="w-sm p-2 border rounded-md text-xs"
-              value={pekerjaan.pendapatan}
-              onChange={handleInputChange}
-            >
-              <option value="">-- Silahkan Pilih</option>
-              <option value="Kurang dari  1 juta rupiah">Kurang dari  1 juta rupiah</option>
-              <option value="1 juta s.d kurang dari 2 juta rupiah">1 juta s.d kurang dari 2 juta rupiah</option>
-              <option value="2 Juta s.d kurang dari 3 juta rupiah">2 Juta s.d kurang dari 3 juta rupiah</option>
-              <option value="3 juta s.d kurang dari 4 juta rupiah">3 juta s.d kurang dari 4 juta rupiah</option>
-              <option value="Lebih dari 4 juta rupiah">Lebih dari 4 juta rupiah</option>
-            </select>
-          </div>
+        <label className="text-xs">Pendapatan</label>
+        <select
+          name="pendapatan"
+          className="w-sm p-2 border rounded-md text-xs"
+          value={pekerjaan.pendapatan || ""}
+          onChange={handleInputChange}
+        >
+          <option value="">-- Silahkan Pilih</option>
+          <option value="Kurang dari  1 juta rupiah">Kurang dari  1 juta rupiah</option>
+          <option value="1 juta s.d kurang dari 2 juta rupiah">1 juta s.d kurang dari 2 juta rupiah</option>
+          <option value="2 Juta s.d kurang dari 3 juta rupiah">2 Juta s.d kurang dari 3 juta rupiah</option>
+          <option value="3 juta s.d kurang dari 4 juta rupiah">3 juta s.d kurang dari 4 juta rupiah</option>
+          <option value="Lebih dari 4 juta rupiah">Lebih dari 4 juta rupiah</option>
+        </select>
+      </div>
 
       <div className="flex flex-row-reverse">
         <button
@@ -198,14 +281,20 @@ const InputDataPekerjaanKeterampilan = ({ data, onDataChange, nomorAnggota }) =>
             {selectedKeterampilan === "Lainnya" && (
               <div>
                 <label className="text-xs">Masukkan Keterampilan</label>
-                <input
-                  type="text"
-                  name="lainnya"
-                  className="p-2 border rounded-md text-xs w-full"
-                  value={lainnyaKeterampilan}
-                  onChange={(e) => setLainnyaKeterampilan(e.target.value)}
-                  required
-                />
+                <div>
+                  <input
+                    type="text"
+                    name="lainnya"
+                    className={`p-2 border rounded-md text-xs w-full ${errors.keterampilan?.lainnya ? "border-red-500" : ""}`}
+                    value={lainnyaKeterampilan}
+                    onChange={handleLainnyaKeterampilanChange}
+                    maxLength={100}
+                    required
+                  />
+                  {errors.keterampilan?.lainnya && (
+                    <p className="text-red-500 text-xs mt-1">{errors.keterampilan.lainnya}</p>
+                  )}
+                </div>
               </div>
             )}
           </div>
