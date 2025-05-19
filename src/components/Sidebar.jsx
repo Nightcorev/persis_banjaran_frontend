@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Sidebar = ({ isOpen }) => {
   const [isProfilOpen, setIsProfilOpen] = useState(false);
@@ -9,9 +9,20 @@ const Sidebar = ({ isOpen }) => {
   const [isManageAuthOpen, setIsManageAuthOpen] = useState(false);
   const [isIuranOpen, setIsIuranOpen] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+
+  // Add resize listener for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const toggleProfilMenu = () => {
     setIsProfilOpen(!isProfilOpen);
@@ -44,13 +55,12 @@ const Sidebar = ({ isOpen }) => {
   return (
     <div
       className={`
-    ${isOpen ? "md:static" : "absolute"} 
-    top-0 left-0 h-full w-64 bg-gray-800 text-white 
-    transition-transform duration-300 z-40 
-    ${isOpen ? "translate-x-0" : "-translate-x-full"}
-  `}
+        fixed md:fixed top-0 left-0 h-screen w-64 bg-gray-800 text-white 
+        transition-all duration-300 z-50 overflow-y-auto
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
     >
-      <div className="p-3 text-sm bg-gray-900">Menu</div>
+      <div className="sticky top-0 p-3 text-sm bg-gray-900 z-10">Menu</div>
       <nav className="flex-1 text-sm">
         <ul>
           {/* Menu Dashboard */}
@@ -428,7 +438,7 @@ const Sidebar = ({ isOpen }) => {
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth={1.5}
+                strokeWidth="1.5"
                 stroke="currentColor"
                 className={`w-4 h-4 ml-auto transition-transform ${
                   isChatbotOpen ? "rotate-180" : ""
