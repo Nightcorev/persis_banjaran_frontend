@@ -97,7 +97,7 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
           const options = (response.data.data || response.data || []).map(
             (anggota) => ({
               value: anggota.id_anggota, // ID tetap sebagai value internal react-select
-              label: `${anggota.nama_lengkap}  `, // Tampilkan no_telp di label
+              label: `${anggota.nama_lengkap} (${anggota.no_telp || 'N/A'}) `, // Tampilkan no_telp di label
               no_telp: anggota.no_telp, // Simpan no_telp di objek opsi
             })
           );
@@ -222,6 +222,9 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
     dataToSend.append("status_pengiriman", form.status_pengiriman);
 
     if (form.status_pengiriman === "Terjadwal") {
+      dataToSend.append("waktu_pengiriman", form.waktu_pengiriman);
+    }
+    if (form.status_pengiriman === "Langsung") {
       dataToSend.append("waktu_pengiriman", form.waktu_pengiriman);
     }
     if (form.nama_file_server) {
@@ -741,6 +744,9 @@ const KelolaBroadcast = () => {
     /* ... (Kode submit tidak berubah) ... */
     try {
       const response = await api.post("/broadcast", formData);
+      formData.forEach((value, key) => {
+        console.log(key + ': ' + value);
+      });
       toast.success(response.data.message || "Broadcast berhasil ditambahkan!");
       handleCloseAddModal();
       fetchData();

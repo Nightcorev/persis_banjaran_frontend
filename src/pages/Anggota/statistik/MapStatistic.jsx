@@ -1,51 +1,48 @@
-// src/pages/Anggota/MapsStatistik.jsx
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import api from "../../../utils/api";
 
-const MapStatistik = () => {
+// Dummy data statis
+const dummyData = [
+  { nama_jamaah: "Ahmad", lokasi_lat: -6.9175, lokasi_long: 107.6191 },
+  { nama_jamaah: "Fatimah", lokasi_lat: -6.9351, lokasi_long: 107.6045 },
+  { nama_jamaah: "Yusuf", lokasi_lat: -6.8902, lokasi_long: 107.6103 },
+  { nama_jamaah: "Aisyah", lokasi_lat: -6.9201, lokasi_long: 107.6300 },
+  { nama_jamaah: "Zaid", lokasi_lat: -6.9020, lokasi_long: 107.6120 },
+];
+
+const MapStatistic = () => {
+  const [jumlahData, setJumlahData] = useState(3);
   const [markers, setMarkers] = useState([]);
 
   useEffect(() => {
-    const fetchMonographyData = async () => {
-      try {
-        const response = await api.get('/getMonographyData');
-        if (response.status === 200) {
-          setMarkers(response.data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching monography data:', error);
-      }
-    };
-
-    fetchMonographyData();
-  }, []);
+    setMarkers(dummyData.slice(0, jumlahData));
+  }, [jumlahData]);
 
   return (
     <div className='bg-white p-4 shadow-lg rounded-lg'>
       <div className="flex-row space-x-4 mb-4">
-            <label className="text-lg pe-2">Pilih Data</label>
-            <select
-              className="w-sm p-2 pe-10 border rounded-md text-xs"
-              
-            >
-              <option value="Bar">Bar Chart</option>
-              <option value="Pie">Pie Chart</option>
-            </select>
+        <label className="text-lg pe-2">Jumlah Data</label>
+        <select
+          className="w-sm p-2 pe-10 border rounded-md text-xs"
+          value={jumlahData}
+          onChange={(e) => setJumlahData(parseInt(e.target.value))}
+        >
+          <option value={2}>2 Marker</option>
+          <option value={3}>3 Marker</option>
+          <option value={5}>Semua Marker</option>
+        </select>
       </div>
-      <MapContainer center={[-7.250445, 112.768845]} zoom={5} style={{ height: "80vh", width: "100%"}}>
+
+      <MapContainer center={[-6.9175, 107.6191]} zoom={12} style={{ height: "80vh", width: "100%" }}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; OpenStreetMap contributors'
         />
         {markers.map((marker, index) => (
           <Marker key={index} position={[marker.lokasi_lat, marker.lokasi_long]}>
-            <Popup>
-              <strong>{marker.nama_jamaah}</strong>
-              
-            </Popup>
+            <Popup><strong>{marker.nama_jamaah}</strong></Popup>
           </Marker>
         ))}
         <SetBounds markers={markers} />
@@ -54,18 +51,15 @@ const MapStatistik = () => {
   );
 };
 
-// Komponen untuk mengatur batas peta berdasarkan marker
 const SetBounds = ({ markers }) => {
   const map = useMap();
-
   useEffect(() => {
     if (markers.length > 0) {
-      const bounds = L.latLngBounds(markers.map(marker => [marker.lokasi_lat, marker.lokasi_long]));
+      const bounds = L.latLngBounds(markers.map(m => [m.lokasi_lat, m.lokasi_long]));
       map.fitBounds(bounds);
     }
   }, [markers, map]);
-
   return null;
 };
 
-export default MapStatistik;
+export default MapStatistic;

@@ -14,7 +14,7 @@ import Home from "./pages/Dashboard";
 import AdminLayout from "./layouts/AdminLayout";
 import DataAnggota from "./pages/Anggota/DataAnggota";
 import AddAnggota from "./pages/Anggota/AddAnggota";
-import Statistik from "./pages/Anggota/statistik/ChartStatistic";
+import Statistik from "./pages/Anggota/statistik/StatistikLayout";
 import DataPesantren from "./pages/Pendidikan/DataPesantren";
 import ErrorPage from "./components/ErrorPage";
 import NotFound from "./components/404NotFound";
