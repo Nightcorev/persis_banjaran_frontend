@@ -129,8 +129,48 @@ const KelolaPermission = () => {
       value_fitur: "data_anggota",
     },
     {
+      nama_fitur: "Advance Statistik",
+      value_fitur: "advance_statistik",
+    },
+    {
       nama_fitur: "Data Jamaah",
       value_fitur: "data_jamaah",
+    },
+    {
+      nama_fitur: "Data Tasykil",
+      value_fitur: "data_tasykil",
+    },
+    {
+      nama_fitur: "Musyawarah Jamaah",
+      value_fitur: "musyawarah_jamaah",
+    },
+    {
+      nama_fitur: "Anggota Musyawarah",
+      value_fitur: "anggota_musyawarah",
+    },
+    {
+      nama_fitur: "Kelola Tahun Iuran",
+      value_fitur: "kelola_tahun_iuran",
+    },
+    {
+      nama_fitur: "Kelola Iuran",
+      value_fitur: "kelola_iuran",
+    },
+    {
+      nama_fitur: "Rekap Iuran",
+      value_fitur: "rekap_iuran",
+    },
+    {
+      nama_fitur: "Reminder Iuran",
+      value_fitur: "reminder_iuran",
+    },
+    {
+      nama_fitur: "Broadcast Informasi",
+      value_fitur: "broadcast_informasi",
+    },
+    {
+      nama_fitur: "Kelola Interaksi Chatbot",
+      value_fitur: "kelola_interaksi_chatbot",
     },
   ];
 
@@ -140,7 +180,7 @@ const KelolaPermission = () => {
       value_jenis: "add",
     },
     {
-      nama_jenis: "Index",
+      nama_jenis: "Show",
       value_jenis: "show",
     },
     {
@@ -150,6 +190,22 @@ const KelolaPermission = () => {
     {
       nama_jenis: "Hapus",
       value_jenis: "delete",
+    },
+    {
+      nama_jenis: "Export",
+      value_jenis: "export",
+    },
+    {
+      nama_jenis: "Import",
+      value_jenis: "import",
+    },
+    {
+      nama_jenis: "Validasi",
+      value_jenis: "validate",
+    },
+    {
+      nama_jenis: "Kirim",
+      value_jenis: "send",
     },
   ];
 

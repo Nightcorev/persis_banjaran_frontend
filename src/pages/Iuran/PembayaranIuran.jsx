@@ -37,7 +37,6 @@ import {
 import ImportModal from "../../components/KelolaIuran/ImportModal"; // Path relatif dari pages ke components
 import HistoryModal from "../../components/KelolaIuran/HistoryModal";
 import ValidationModal from "../../components/KelolaIuran/ValidationModal";
-import ManageTahunModal from "../../components/KelolaIuran/ManageTahunModal";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const MONTHLY_FEE = 10000;
@@ -110,8 +109,7 @@ const KelolaIuran = () => {
   const [error, setError] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const [tahunListManage, setTahunListManage] = useState(false);
-  const [isManageTahunModalOpen, setIsManageTahunModalOpen] = useState(false);
+
   const [loadingTemplatePj, setLoadingTemplatePj] = useState(false);
   const [historyTarget, setHistoryTarget] = useState({
     anggotaId: null,
@@ -136,25 +134,21 @@ const KelolaIuran = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState(null); // Untuk filter status
 
-  // Data User & Role
-  const account = JSON.parse(localStorage.getItem("user")) || {
-    role: "Bendahara",
-  }; // Default role jika tidak ada
+  const account = JSON.parse(localStorage.getItem("user"));
   const isBendaharaOrAdmin = ["Bendahara", "Super Admin"].includes(
     account?.role
   );
+  const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+  // Helper function
+  const hasPermission = (perm) =>
+    isBendaharaOrAdmin ||
+    (Array.isArray(permissions) && permissions.includes(perm));
+
   const isPjUser = account?.role === "Pimpinan Jamaah";
 
   const pjJamaahId = isPjUser ? account?.id_master_jamaah : null;
   const [pjJamaahName, setPjJamaahName] = useState("");
-
   // console.log(pjJamaahId);
-
-  const canInputIuran = [
-    "Pimpinan Jamaah",
-    "Bendahara",
-    "Super Admin",
-  ].includes(account?.role);
 
   // --- Fetch Data ---
   const fetchTahunAktif = useCallback(
@@ -336,13 +330,9 @@ const KelolaIuran = () => {
     //console.log("URL Params:", { jamaahIdFromUrl, tahunFromUrl });
     //console.log("Pj jamaah : ", pjJamaahName);
 
-    // Fetch tahun dulu, lalu set selectedTahun (termasuk dari URL jika ada)
-    // Kemudian fetch jamaah, lalu set selectedJamaahFilter (termasuk dari URL jika ada)
-    // fetchIuranSummary akan terpicu oleh perubahan selectedTahun atau selectedJamaahFilter
     fetchTahunAktif(tahunFromUrl).then(() => {
       fetchJamaah(jamaahIdFromUrl);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Hanya dijalankan sekali saat mount untuk membaca URL params
 
   // Fetch data iuran ketika filter atau halaman berubah
@@ -529,77 +519,6 @@ const KelolaIuran = () => {
     }
   };
 
-  const handleAddTahun = async (tahun) => {
-    setLoadingTahun(true);
-    try {
-      await api.post("/tahun-aktif", { tahun });
-      toast.success(`Tahun ${tahun} berhasil ditambahkan.`);
-      fetchTahunAktif();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Gagal menambah tahun.");
-    } finally {
-      setLoadingTahun(false);
-    }
-  };
-
-  const handleToggleTahunStatus = async (id, newStatus) => {
-    if (newStatus === "Aktif") {
-      const tahunAktifLain = tahunListManage.find(
-        (th) => th.id !== id && th.status === "Aktif"
-      );
-      if (
-        tahunAktifLain &&
-        !window.confirm(
-          `Tahun ${tahunAktifLain.tahun} sedang aktif. Apakah Anda yakin ingin mengaktifkan tahun ini? Tahun ${tahunAktifLain.tahun} akan otomatis tidak aktif.`
-        )
-      ) {
-        return;
-      }
-    }
-    setLoadingTahun(true);
-    try {
-      await api.put(`/tahun-aktif/${id}`, { status: newStatus });
-      toast.success(`Status tahun berhasil diubah.`);
-      await fetchTahunAktif(); // Tunggu fetchTahunAktif selesai
-      // Jika tahun yang diubah adalah tahun yang sedang difilter, refresh iuran
-      // Cek apakah selectedTahun perlu diupdate jika tahun aktif berubah
-      const updatedTahun = tahunListManage.find((th) => th.id === id);
-      if (
-        updatedTahun &&
-        selectedTahun &&
-        updatedTahun.tahun === selectedTahun.value
-      ) {
-        // Jika tahun yang statusnya diubah adalah tahun yang dipilih,
-        // dan status barunya 'Tidak Aktif', mungkin reset filter tahun atau pilih yg aktif baru
-        if (newStatus === "Tidak Aktif") {
-          const tahunAktifBaru = tahunOptions.find(
-            (th) =>
-              th.value !== selectedTahun.value &&
-              tahunListManage.find(
-                (tl) => tl.tahun === th.value && tl.status === "Aktif"
-              )
-          );
-          setSelectedTahun(
-            tahunAktifBaru || (tahunOptions.length > 0 ? tahunOptions[0] : null)
-          );
-        }
-      } else if (newStatus === "Aktif") {
-        // Jika tahun lain diaktifkan
-        setSelectedTahun({
-          value: updatedTahun.tahun,
-          label: updatedTahun.tahun.toString(),
-        });
-      }
-      // fetchIuranSummary(); // Akan ter-trigger oleh perubahan selectedTahun
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Gagal mengubah status tahun."
-      );
-    } finally {
-      setLoadingTahun(false);
-    }
-  };
-
   const handleVerifyLog = async (logId) => {
     /* ... (sama, panggil fetchPendingCount setelahnya) ... */ if (
       !window.confirm("Verifikasi pembayaran ini?")
@@ -689,39 +608,25 @@ const KelolaIuran = () => {
       <div className="max-w-full mx-auto bg-white p-5 sm:p-6 rounded-lg shadow-md flex flex-col">
         {/* Header & Tombol Aksi Utama */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 pb-4 border-b gap-2 flex-shrink-0">
-          <h1 className="text-xl font-bold text-gray-800">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-800">
             Kelola Pembayaran Iuran
           </h1>
+          {/* Tombol-tombol aksi dengan flex-wrap agar rapi di layar kecil */}
           <div className="flex flex-wrap gap-2">
-            {!isInputMode && (
-              <Link to="/iuran/reminder">
-                <button className="flex items-center gap-1 px-3 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm shadow-sm">
-                  <Send size={16} /> Kirim Reminder Iuran
+            {isInputMode &&
+              (hasPermission("import_kelola_iuran") || isPjUser) && (
+                <button
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 text-xs sm:text-sm shadow-sm disabled:opacity-50"
+                  disabled={loading || loadingImport}
+                >
+                  <Upload size={16} /> Impor Excel
                 </button>
-              </Link>
-            )}
-            {isBendaharaOrAdmin && isInputMode && (
-              <button
-                onClick={() => setIsManageTahunModalOpen(true)}
-                className="flex items-center gap-1 px-3 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm shadow-sm disabled:opacity-50"
-                disabled={loading || loadingTahun}
-              >
-                <Settings size={16} /> Kelola Tahun
-              </button>
-            )}
-            {isInputMode && (isBendaharaOrAdmin || isPjUser) && (
-              <button
-                onClick={() => setIsImportModalOpen(true)}
-                className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 text-sm shadow-sm disabled:opacity-50"
-                disabled={loading || loadingImport}
-              >
-                <Upload size={16} /> Impor Excel
-              </button>
-            )}
-            {canInputIuran && (
+              )}
+            {(hasPermission("add_kelola_iuran") || isPjUser) && (
               <button
                 onClick={() => setIsInputMode((prev) => !prev)}
-                className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm shadow-sm ${
+                className={`flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 rounded-md text-xs sm:text-sm shadow-sm ${
                   isInputMode
                     ? "bg-orange-500 text-white hover:bg-orange-600"
                     : "bg-green-600 text-white hover:bg-green-800"
@@ -740,28 +645,30 @@ const KelolaIuran = () => {
         </div>
 
         {/* Notifikasi Pending (BARU) */}
-        {isBendaharaOrAdmin && pendingCount > 0 && !loading && (
-          <div className="mb-4 p-3 bg-orange-100 border-l-4 border-orange-500 rounded text-orange-700 flex items-center justify-between flex-wrap gap-2 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <Bell size={18} />
-              <span>
-                Ada <strong>{pendingCount} anggota</strong> dengan iuran
-                menunggu validasi untuk tahun {selectedTahun?.label || ""}.
-              </span>
+        {hasPermission("validate_kelola_iuran") &&
+          pendingCount > 0 &&
+          !loading && (
+            <div className="mb-4 p-3 bg-orange-100 border-l-4 border-orange-500 rounded text-orange-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 flex-shrink-0 text-sm">
+              <div className="flex items-center gap-2">
+                <Bell size={18} />
+                <span>
+                  Ada <strong>{pendingCount} anggota</strong> dengan iuran
+                  menunggu validasi untuk tahun {selectedTahun?.label || ""}.
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  const pendingOpt = statusFilterOptions.find(
+                    (opt) => opt.value === "Pending"
+                  );
+                  if (pendingOpt) setSelectedStatusFilter(pendingOpt);
+                }}
+                className="px-3 py-1.5 sm:py-2 bg-orange-500 text-white text-xs sm:text-sm rounded hover:bg-orange-600 shadow-sm self-start sm:self-center mt-2 sm:mt-0"
+              >
+                Lihat Data Pending
+              </button>
             </div>
-            <button
-              onClick={() => {
-                setSelectedStatusFilter(
-                  statusFilterOptions.find((opt) => opt.value === "Pending")
-                );
-                // Scroll ke tabel jika perlu: document.getElementById('tabel-iuran').scrollIntoView();
-              }}
-              className="px-3 py-2 bg-orange-500 text-white text-sm rounded hover:bg-orange-600 shadow-sm"
-            >
-              Lihat Data Pending
-            </button>
-          </div>
-        )}
+          )}
 
         {/* Filter */}
         <div className="mb-4 grid grid-cols-1 md:grid-cols-5 gap-4 items-end flex-shrink-0">
@@ -879,45 +786,44 @@ const KelolaIuran = () => {
               <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
             </div>
           )}
-           
-          <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-sm">
-                       {" "}
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
+
+          <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-xs md:text-sm">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
                   <th
                     rowSpan="2"
-                    className="px-2 py-3 text-left font-medium  uppercase tracking-wider w-10 sticky left-0 bg-gray-50 z-10 border-r"
+                    className="sticky left-0 z-20 bg-gray-50 border-r px-1 md:px-2 py-1 md:py-3 text-left font-medium uppercase tracking-wider w-8 md:w-10 min-w-[32px] md:min-w-[40px] text-xs md:text-sm"
                   >
                     No
                   </th>
                   <th
                     rowSpan="2"
-                    className="px-3 py-3 text-left font-medium  uppercase tracking-wider min-w-[150px] sticky left-10 bg-gray-50 z-10 border-r"
+                    className="sticky left-8 md:left-10 z-20 bg-gray-50 border-r px-1 md:px-3 py-1 md:py-3 text-left font-medium uppercase tracking-wider min-w-[100px] md:min-w-[150px] text-xs md:text-sm"
                   >
                     Nama Anggota
                   </th>
                   <th
                     rowSpan="2"
-                    className="px-3 py-3 text-left font-medium  uppercase tracking-wider min-w-[120px]"
+                    className="px-1 md:px-3 py-1 md:py-3 text-left font-medium uppercase tracking-wider min-w-[70px] md:min-w-[120px] text-xs md:text-sm"
                   >
                     Jamaah
                   </th>
                   <th
                     colSpan={MONTH_NAMES.length}
-                    className="px-3 py-2 text-center font-medium  uppercase tracking-wider border-b"
+                    className="px-1 md:px-3 py-1 md:py-2 text-center font-medium uppercase tracking-wider border-b text-xs md:text-sm"
                   >
                     Bulan Pembayaran ({selectedTahun?.value || "..."})
                   </th>
                   <th
                     colSpan="2"
-                    className="px-3 py-2 text-center font-medium  uppercase tracking-wider border-b"
+                    className="px-1 md:px-3 py-1 md:py-2 text-center font-medium uppercase tracking-wider border-b text-xs md:text-sm"
                   >
                     Rincian Pembayaran ({selectedTahun?.value || "..."})
                   </th>
                   <th
                     rowSpan="2"
-                    className="px-3 py-3 text-center font-medium  uppercase tracking-wider min-w-[100px]"
+                    className="px-1 md:px-3 py-1 md:py-3 text-center font-medium uppercase tracking-wider min-w-[60px] md:min-w-[100px] text-xs md:text-sm"
                   >
                     Action
                   </th>
@@ -926,16 +832,15 @@ const KelolaIuran = () => {
                   {MONTH_NAMES.map((month, index) => (
                     <th
                       key={index}
-                      className="px-1 py-1 text-center font-medium  border-l w-[50px]"
+                      className="px-0.5 md:px-1 py-0.5 md:py-1 text-center font-medium border-l w-[28px] md:w-[50px] text-xs md:text-sm"
                     >
                       {month}
                     </th>
                   ))}
-                  {/* Sub-header untuk Rincian */}
-                  <th className="px-3 py-2 text-right font-medium  border-l uppercase tracking-wider">
+                  <th className="px-1 md:px-3 py-1 md:py-2 text-right font-medium border-l uppercase tracking-wider text-xs md:text-sm">
                     Sudah Dibayar
                   </th>
-                  <th className="px-3 py-2 text-right font-medium  border-l uppercase tracking-wider">
+                  <th className="px-1 md:px-3 py-1 md:py-2 text-right font-medium border-l uppercase tracking-wider text-xs md:text-sm">
                     Belum Dibayar
                   </th>
                 </tr>
@@ -982,13 +887,13 @@ const KelolaIuran = () => {
 
                     return (
                       <tr key={item.anggota_id} className="hover:bg-gray-50">
-                        <td className="px-2 py-2 whitespace-nowrap text-center text-gray-500 sticky left-0 bg-white hover:bg-gray-50 border-r">
+                        <td className="sticky left-0 z-10 bg-gray-50 border-r px-1 md:px-2 py-1 md:py-3 text-left font-medium uppercase tracking-wider w-8 md:w-10 min-w-[32px] md:min-w-[40px] text-xs md:text-sm">
                           {(page - 1) * perPage + index + 1}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap font-medium text-gray-900 sticky left-10 bg-white hover:bg-gray-50 border-r">
+                        <td className="sticky left-8 md:left-10 z-10 bg-gray-50 border-r px-1 md:px-3 py-1 md:py-3 text-left font-medium uppercase tracking-wider min-w-[100px] md:min-w-[150px] text-xs md:text-sm">
                           {item.nama_lengkap}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-gray-700">
+                        <td className="px-1 md:px-3 py-1 md:py-3 text-left font-medium uppercase tracking-wider min-w-[70px] md:min-w-[120px] text-xs md:text-sm">
                           {item.nama_jamaah}
                         </td>
                         {MONTH_NAMES.map((_, monthIndex) => {
@@ -1004,14 +909,12 @@ const KelolaIuran = () => {
                           const isChecked = currentSelection.has(monthNumber);
                           const canCheck =
                             status === "Belum Lunas" || status === "Failed";
-                          const isDisabled =
-                            status === "Verified" || status === "Pending";
                           let cellContent;
                           if (isInputMode && canCheck) {
                             cellContent = (
                               <input
                                 type="checkbox"
-                                className="form-checkbox h-3.5 w-3.5 text-blue-600 rounded focus:ring-blue-500 mx-auto block disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="form-checkbox h-3 w-3 md:h-3.5 md:w-3.5 text-blue-600 rounded focus:ring-blue-500 mx-auto block disabled:opacity-50 disabled:cursor-not-allowed"
                                 checked={isChecked}
                                 onChange={() =>
                                   handleMonthCheckboxChange(
@@ -1073,7 +976,7 @@ const KelolaIuran = () => {
                           return (
                             <td
                               key={monthIndex}
-                              className={`px-1 py-1 text-center border-l ${
+                              className={`px-0.5 md:px-1 py-0.5 md:py-1 text-center border-l ${
                                 isInputMode && canCheck
                                   ? "cursor-pointer hover:bg-blue-50"
                                   : ""
@@ -1083,13 +986,13 @@ const KelolaIuran = () => {
                             </td>
                           );
                         })}
-                        <td className="px-3 py-2 whitespace-nowrap text-right text-green-600 font-medium">
+                        <td className="px-1 md:px-3 py-1 md:py-3 whitespace-nowrap text-right text-green-600 font-medium uppercase tracking-wider min-w-[60px] md:min-w-[120px] text-xs md:text-sm">
                           {formatRupiah(nominalSudahDibayar)}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-right text-red-600 font-medium">
+                        <td className="px-1 md:px-3 py-1 md:py-3 whitespace-nowrap text-right text-red-600 font-medium uppercase tracking-wider min-w-[60px] md:min-w-[120px] text-xs md:text-sm">
                           {formatRupiah(nominalBelumDibayar)}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-center">
+                        <td className="px-1 md:px-3 py-1 md:py-3 whitespace-nowrap text-center">
                           <div className="flex justify-center items-center gap-1">
                             {isInputMode && (
                               <button
@@ -1117,20 +1020,21 @@ const KelolaIuran = () => {
                             >
                               <History size={14} />
                             </button>
-                            {isBendaharaOrAdmin && hasPendingMonth && (
-                              <button
-                                onClick={() =>
-                                  handleOpenValidationModal(
-                                    item.anggota_id,
-                                    item.nama_lengkap
-                                  )
-                                }
-                                className="p-1 bg-orange-500 text-white rounded hover:bg-orange-600"
-                                title="Validasi Pembayaran Pending"
-                              >
-                                <ListChecks size={14} />
-                              </button>
-                            )}
+                            {hasPermission("validate_kelola_iuran") &&
+                              hasPendingMonth && (
+                                <button
+                                  onClick={() =>
+                                    handleOpenValidationModal(
+                                      item.anggota_id,
+                                      item.nama_lengkap
+                                    )
+                                  }
+                                  className="p-1 bg-orange-500 text-white rounded hover:bg-orange-600"
+                                  title="Validasi Pembayaran Pending"
+                                >
+                                  <ListChecks size={14} />
+                                </button>
+                              )}
                           </div>
                         </td>
                       </tr>
@@ -1142,21 +1046,21 @@ const KelolaIuran = () => {
                   <tr>
                     <td
                       colSpan={3 + MONTH_NAMES.length}
-                      className="px-3 py-3 text-right text-gray-700 uppercase"
+                      className="px-1 md:px-3 py-1 md:py-3 text-right text-gray-700 uppercase text-xs md:text-sm"
                     >
                       Total Halaman Ini:
                     </td>
-                    <td className="px-3 py-3 text-right text-green-700">
+                    <td className="px-1 md:px-3 py-1 md:py-3 text-right text-green-700 font-medium uppercase tracking-wider min-w-[60px] md:min-w-[120px] text-xs md:text-sm">
                       {formatRupiah(grandTotalSudahDibayar)}
                     </td>
-                    <td className="px-3 py-3 text-right text-red-700">
+                    <td className="px-1 md:px-3 py-1 md:py-3 text-right text-red-700 font-medium uppercase tracking-wider min-w-[60px] md:min-w-[120px] text-xs md:text-sm">
                       {formatRupiah(grandTotalBelumDibayar)}
                     </td>
-                    <td className="px-3 py-3"></td>
+                    <td className="px-1 md:px-3 py-1 md:py-3"></td>
                   </tr>
                 </tfoot>
               )}
-            </table>{" "}
+            </table>
           </div>
         </div>
 
@@ -1167,13 +1071,12 @@ const KelolaIuran = () => {
               <button
                 onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                 disabled={page === 1}
-                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300"
+                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300 md:text-sm sm:text-xs"
               >
                 Prev
               </button>
-              <span>
-                Halaman {page} dari {Math.ceil(total / perPage)} (Total: {total}
-                )
+              <span className="text-gray-600 md:text-sm sm:text-xs">
+                Halaman {page} dari {Math.ceil(total / perPage)}
               </span>
               <button
                 onClick={() => setPage((prev) => prev + 1)}
@@ -1192,7 +1095,6 @@ const KelolaIuran = () => {
         onClose={() => setIsImportModalOpen(false)}
         onImport={handleImport}
         loading={loadingImport}
-        // Props BARU untuk PJ
         isPjUser={isPjUser}
         pjJamaahInfo={
           isPjUser
@@ -1221,14 +1123,6 @@ const KelolaIuran = () => {
         target={validationTarget}
         onVerify={handleVerifyLog}
         onReject={handleRejectLog}
-      />
-      <ManageTahunModal
-        isOpen={isManageTahunModalOpen}
-        onClose={() => setIsManageTahunModalOpen(false)}
-        tahunList={tahunListManage}
-        onAddTahun={handleAddTahun}
-        onToggleStatus={handleToggleTahunStatus}
-        loading={loadingTahun}
       />
     </div>
   );

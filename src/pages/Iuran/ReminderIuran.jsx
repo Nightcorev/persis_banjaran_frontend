@@ -210,11 +210,11 @@ const ReminderIuran = () => {
   return (
     <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
-        <div className="flex  items-center ">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <div className="flex items-center flex-wrap gap-2">
           <Link
             to="/iuran/pembayaran"
-            className="p-2 font-bold hover:bg-gray-200 rounded-lg"
+            className="p-2 font-bold hover:bg-gray-200 rounded-lg flex-shrink-0"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -231,20 +231,20 @@ const ReminderIuran = () => {
               />
             </svg>
           </Link>
-          <h1 className="text-xl font-bold text-gray-800">
+          <h1 className="text-xl font-bold text-gray-800 text-center md:text-left flex-grow">
             Kirim Reminder Tunggakan Iuran ({CURRENT_YEAR})
           </h1>
         </div>
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 text-center md:text-right w-full md:w-auto">
           Data tunggakan per bulan: {MONTH_NAMES[CURRENT_MONTH_INDEX]}
         </p>
       </div>
 
       {/* Filter & Pencarian */}
-      <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+      <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 w-full">
         {/* Per Page & Filter Jamaah */}
-        <div className="flex items-center gap-2 text-sm flex-wrap">
+        <div className="flex items-center gap-2 text-sm flex-wrap w-full md:w-auto">
           <label>Tampilkan:</label>
           <select
             value={perPage}
@@ -252,8 +252,7 @@ const ReminderIuran = () => {
               setPage(1);
               setPerPage(Number(e.target.value));
             }}
-            className="border p-2 rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-            style={{ maxWidth: "70px" }}
+            className="border p-2 rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 max-w-[70px]"
             disabled={loading} // Disable saat loading
           >
             <option value="10">10</option>
@@ -272,15 +271,15 @@ const ReminderIuran = () => {
             isClearable
             isSearchable
             placeholder="Semua Jamaah..."
-            className="w-48 z-20"
+            className="w-full sm:w-48 z-20"
             styles={{ control: (base) => ({ ...base, minHeight: "42px" }) }}
             isDisabled={loading} // Disable saat loading
           />
         </div>
 
         {/* Input Pencarian */}
-        <div className="flex items-center text-sm">
-          <label htmlFor="search" className="mr-2">
+        <div className="flex items-center text-sm w-full md:w-auto">
+          <label htmlFor="search" className="mr-2 flex-shrink-0">
             Cari:
           </label>
           <input
@@ -292,22 +291,21 @@ const ReminderIuran = () => {
               setSearchTerm(e.target.value);
             }}
             placeholder="Cari Nama Anggota..."
-            className="border p-2 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="border p-2 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-full"
             disabled={loading} // Disable saat loading
           />
         </div>
       </div>
 
       {/* Tombol Aksi Massal */}
-      <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+      <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center flex-wrap w-full">
         <button
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full sm:w-auto"
           onClick={() =>
             handleBatchSendReminder(Array.from(selectedAnggotaIds))
           }
           disabled={selectedAnggotaIds.size === 0 || loadingSend || loading}
         >
-          {/* ... (Icon Kirim) ... */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -326,12 +324,11 @@ const ReminderIuran = () => {
         </button>
         {selectedJamaahFilter && (
           <button
-            className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full sm:w-auto"
             onClick={handleSendToJamaah}
             disabled={loadingSend || loading || tunggakanData.length === 0} // Disable jika tidak ada data di jamaah tsb
             title={`Kirim reminder ke semua anggota ${selectedJamaahFilter.label} yang menunggak`}
           >
-            {/* ... (Icon Kirim Jamaah) ... */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -350,20 +347,22 @@ const ReminderIuran = () => {
           </button>
         )}
         {loadingSend && (
-          <span className="text-sm text-gray-600 italic">Mengirim...</span>
+          <span className="text-sm text-gray-600 italic w-full sm:w-auto text-center sm:text-left">
+            Mengirim...
+          </span>
         )}
       </div>
 
       {/* Alert Error */}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300">
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300 text-sm w-full">
           {error}
         </div>
       )}
 
       {/* Tabel Data Tunggakan */}
       <div className="overflow-x-auto border rounded-lg text-sm">
-        <table className="table-auto w-full border-collapse border border-gray-300 text-black">
+        <table className="min-w-full divide-y divide-gray-200 text-xs md:text-sm">
           <thead className="bg-gray-100 sticky top-0 z-10">
             <tr>
               {/* Kolom Checkbox */}
@@ -505,7 +504,7 @@ const ReminderIuran = () => {
           Prev
         </button>
         <span>
-          Halaman {page} dari {Math.ceil(total / perPage)} (Total: {total} data)
+          Halaman {page} dari {Math.ceil(total / perPage)}
         </span>
         <button
           onClick={() => setPage((prev) => prev + 1)}

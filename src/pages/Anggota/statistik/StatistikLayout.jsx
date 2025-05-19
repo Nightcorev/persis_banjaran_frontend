@@ -9,20 +9,46 @@ function StatistikLayout() {
   const [activeSection, setActiveSection] = useState("chart");
   const [monos, setMonos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+
+  const isSuperAdmin = "Super Admin";
+
+  // Helper function
+  const hasPermission = (perm) =>
+    user?.role === isSuperAdmin ||
+    (Array.isArray(permissions) && permissions.includes(perm));
 
   useEffect(() => {
-    api.get("/data_monografi")
-      .then(response => {
+    api
+      .get("/data_monografi")
+      .then((response) => {
         const data = response.data.data_monografi;
         setMonos([
-          { title: "Jumlah Persis", count: data.jum_persis, color: "bg-green-500" },
-          { title: "Jumlah Persistri", count: data.jum_persistri, color: "bg-blue-500" },
-          { title: "Jumlah Pemuda", count: data.jum_pemuda, color: "bg-red-500" },
-          { title: "Jumlah Pemudi", count: data.jum_pemudi, color: "bg-yellow-500" }
+          {
+            title: "Jumlah Persis",
+            count: data.jum_persis,
+            color: "bg-green-500",
+          },
+          {
+            title: "Jumlah Persistri",
+            count: data.jum_persistri,
+            color: "bg-blue-500",
+          },
+          {
+            title: "Jumlah Pemuda",
+            count: data.jum_pemuda,
+            color: "bg-red-500",
+          },
+          {
+            title: "Jumlah Pemudi",
+            count: data.jum_pemudi,
+            color: "bg-yellow-500",
+          },
         ]);
         setLoading(false);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error fetching monografi data:", error);
       });
   }, []);
@@ -64,15 +90,12 @@ function StatistikLayout() {
       <div className="bg-white rounded-lg shadow-sm mb-6">
         <ul className="flex border-b border-gray-200">
           {sections.map((section) => (
-            <li
-              key={section.key}
-              className={`flex-1 text-center`}
-            >
+            <li key={section.key} className={`flex-1 text-center`}>
               <button
                 onClick={() => setActiveSection(section.key)}
                 className={`w-full py-4 px-6 flex items-center justify-center space-x-2 font-medium text-sm focus:outline-none transition-colors ${
-                  activeSection === section.key 
-                    ? "text-blue-600 border-b-2 border-blue-600" 
+                  activeSection === section.key
+                    ? "text-blue-600 border-b-2 border-blue-600"
                     : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -82,11 +105,13 @@ function StatistikLayout() {
             </li>
           ))}
         </ul>
-        
+
         {/* Tab Content */}
         <div className="p-6">
           {activeSection === "chart" && <ChartStatistic />}
-          {activeSection === "advanced" && <AdvancedStatistic />}
+          {hasPermission("show_advance_statistik") &&
+            activeSection === "advanced" && <AdvancedStatistic />}
+          {/* Only show AdvancedStatistic if the user has permission */}
         </div>
       </div>
     </div>
