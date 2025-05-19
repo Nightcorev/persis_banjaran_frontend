@@ -1,73 +1,87 @@
 import React from 'react';
 
 const Fasilitas = () => {
-    return (
-    <>
-
-{/* Video Perkenalan */}
-
-        <div className="flex" style={{ height: "500px", marginTop: "40px", gap: "40px" }}>
-        <div className="p-6 bg-white rounded-lg shadow-lg w-1/2" style={{ marginLeft: "110px" }}>
-            <h1 className="text-lg font-bold mb-4">Pintu Masuk Kantor Bersama</h1>
-            <img 
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Page Title */}
+      <h1 className="text-2xl md:text-3xl font-bold mb-8 text-center">Fasilitas PC Persis Banjaran</h1>
+      
+      {/* Facility Items - First Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-4">
+            <h2 className="text-lg font-bold mb-2">Pintu Masuk Kantor Bersama</h2>
+          </div>
+          <img 
             src="/Profil/KantorDepan.jpeg" 
             alt="Pintu Masuk Kantor Bersama" 
-            style={{ height: "400px", width: "100%", objectFit: "cover", borderRadius: "8px" }} 
-            />
+            className="w-full h-64 md:h-80 object-cover"
+          />
         </div>
 
-        <div className="p-6 bg-white rounded-lg shadow-lg w-1/2" style={{ marginRight: "70px" }}>
-            <h1 className="text-lg font-bold mb-4">Aula Lantai 1 dan Kantor PC Persis Banjaran</h1>
-            <img 
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-4">
+            <h2 className="text-lg font-bold mb-2">Aula Lantai 1 dan Kantor PC Persis Banjaran</h2>
+          </div>
+          <img 
             src="/Profil/KantorLt1.jpeg" 
             alt="Aula Lantai 1 dan Kantor PC Persis Banjaran" 
-            style={{ height: "400px", width: "100%", objectFit: "cover", borderRadius: "8px" }} 
-            />
+            className="w-full h-64 md:h-80 object-cover"
+          />
         </div>
-        </div>
+      </div>
 
-        <div className="flex" style={{ height: "500px", marginTop: "30px", gap: "40px" }}>
-        <div className="p-6 bg-white rounded-lg shadow-lg w-1/2" style={{ marginLeft: "110px" }}>
-            <h1 className="text-lg font-bold mb-4">Aula Lantai 2 dan Kantor Otonom PC Persis Banjaran</h1>
-            <img 
+      {/* Facility Items - Second Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-4">
+            <h2 className="text-lg font-bold mb-2">Aula Lantai 2 dan Kantor Otonom PC Persis Banjaran</h2>
+          </div>
+          <img 
             src="/Profil/KantorLt2.jpeg" 
             alt="Aula Lantai 2 dan Kantor Otonom PC Persis Banjaran" 
-            style={{ height: "400px", width: "100%", objectFit: "cover", borderRadius: "8px" }} 
-            />
+            className="w-full h-64 md:h-80 object-cover"
+          />
         </div>
 
-        <div className="p-6 bg-white rounded-lg shadow-lg w-1/2" style={{ marginRight: "70px" }}>
-            <h1 className="text-lg font-bold mb-4">Kantin Sehat</h1>
-            <img 
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-4">
+            <h2 className="text-lg font-bold mb-2">Kantin Sehat</h2>
+          </div>
+          <img 
             src="/Profil/Kantin.jpg" 
             alt="Kantin Sehat" 
-            style={{ height: "400px", width: "100%", objectFit: "cover", borderRadius: "8px" }} 
-            />
+            className="w-full h-64 md:h-80 object-cover"
+          />
         </div>
-        </div>
+      </div>
 
-        <div className="flex" style={{ height: "500px", marginTop: "30px", gap: "40px" }}>
-        <div className="p-6 bg-white rounded-lg shadow-lg w-1/2" style={{ marginLeft: "110px" }}>
-            <h1 className="text-lg font-bold mb-4">Kantor Lazpersis KLP Banjaran</h1>
-            <img 
+      {/* Facility Items - Third Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-4">
+            <h2 className="text-lg font-bold mb-2">Kantor Lazpersis KLP Banjaran</h2>
+          </div>
+          <img 
             src="/Profil/KantorKLP.jpeg" 
             alt="Kantor Lazpersis KLP Banjaran" 
-            style={{ height: "400px", width: "100%", objectFit: "cover", borderRadius: "8px" }} 
-            />
+            className="w-full h-64 md:h-80 object-cover"
+          />
         </div>
 
-        <div className="p-6 bg-white rounded-lg shadow-lg w-1/2" style={{ marginRight: "70px" }}>
-            <h1 className="text-lg font-bold mb-4">Mesjid PC Persis Banjaran</h1>
-            <img 
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-4">
+            <h2 className="text-lg font-bold mb-2">Mesjid PC Persis Banjaran</h2>
+          </div>
+          <img 
             src="/Profil/Mesjid.jpg" 
             alt="Mesjid PC Persis Banjaran" 
-            style={{ height: "400px", width: "100%", objectFit: "cover", borderRadius: "8px" }} 
-            />
+            className="w-full h-64 md:h-80 object-cover"
+          />
         </div>
-        </div>
-      
-    </>
-    );
-  };
-  
-export default Fasilitas;  
+      </div>
+    </div>
+  );
+};
+
+export default Fasilitas;

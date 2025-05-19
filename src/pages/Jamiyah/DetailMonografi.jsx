@@ -55,31 +55,34 @@ const DetailMonografi = () => {
     }
   };
 
-  if (loading) return <div className="p-6">Memuat data...</div>;
-  if (error) return <div className="p-6 text-red-500">{error}</div>;
-  if (!jamaah) return <div className="p-6">Data jamaah tidak ditemukan.</div>;
+  if (loading) return <div className="p-3 sm:p-6">Memuat data...</div>;
+  if (error) return <div className="p-3 sm:p-6 text-red-500">{error}</div>;
+  if (!jamaah) return <div className="p-3 sm:p-6">Data jamaah tidak ditemukan.</div>;
 
   // Get current active musyawarah and its ketua
   const currentMusyawarah = jamaah.musyawarah?.find(m => m.aktif);
   const ketuaJamaah = currentMusyawarah?.musyawarah_detail?.find(d => d.jabatan === "Ketua")?.anggota;
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">{jamaah.nama_jamaah}</h1>
+    <div className="p-3 sm:p-6 bg-white rounded-lg shadow-lg">
+      {/* Header - Made responsive */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold">{jamaah.nama_jamaah}</h1>
         <Link
           to="/jamiyah/data-jamiyah"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded hover:bg-blue-600 text-sm sm:text-base"
         >
           Kembali
         </Link>
       </div>
-      <div className="flex flex-wrap gap-6 p-4">
-        {/* Profile Card */}
-        <div className="w-full md:w-64 bg-white shadow-md rounded-3xl p-4 text-center">
+      
+      {/* Main content area - Made responsive with flex-wrap and better column sizing */}
+      <div className="flex flex-col md:flex-row gap-4 sm:gap-6 p-2 sm:p-4">
+        {/* Profile Card - Fixed width on desktop, full width on mobile */}
+        <div className="w-full md:w-64 bg-white shadow-md rounded-2xl sm:rounded-3xl p-3 sm:p-4 text-center">
           <div className="relative">
             {ketuaJamaah?.foto ? (
-              <div className="h-80 rounded-md overflow-hidden">
+              <div className="h-60 sm:h-80 rounded-md overflow-hidden">
                 <img 
                   src={`http://localhost:8000/storage/uploads/${ketuaJamaah.foto}`} 
                   alt="Foto Ketua"
@@ -87,51 +90,51 @@ const DetailMonografi = () => {
                 />
               </div>
             ) : (
-              <div className="h-80 bg-gray-300 flex items-center justify-center rounded-md">
+              <div className="h-60 sm:h-80 bg-gray-300 flex items-center justify-center rounded-md">
                 <span className="text-gray-500">Foto</span>
               </div>
             )}
           </div>
-          <p className="font-bold text-lg mt-4">{ketuaJamaah?.nama_lengkap || "Belum ada ketua"}</p>
-          <p className="text-gray-600">KETUA JAMAAH</p>
+          <p className="font-bold text-base sm:text-lg mt-3 sm:mt-4">{ketuaJamaah?.nama_lengkap || "Belum ada ketua"}</p>
+          <p className="text-gray-600 text-sm sm:text-base">KETUA JAMAAH</p>
         </div>
 
-        {/* Statistics & Details */}
-        <div className="flex-1 space-y-4">
+        {/* Statistics & Details - Flex grow to fill space */}
+        <div className="flex-1 space-y-3 sm:space-y-4">
           {/* Detail Information */}
-          <div className="bg-white p-6 rounded-3xl shadow-lg">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <p className="font-bold text-gray-700">NAMA JAMAAH</p>
-                <p className="text-gray-600">{jamaah.nama_jamaah}</p>
+          <div className="bg-white p-3 sm:p-6 rounded-2xl sm:rounded-3xl shadow-md sm:shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-1 sm:space-y-2">
+                <p className="font-bold text-gray-700 text-sm sm:text-base">NAMA JAMAAH</p>
+                <p className="text-gray-600 text-sm sm:text-base">{jamaah.nama_jamaah}</p>
               </div>
               <div className="md:col-span-2 space-y-1">
-                <p className="font-bold text-gray-700">STATUS</p>
+                <p className="font-bold text-gray-700 text-sm sm:text-base">STATUS</p>
                 {jamaah.aktif ? (
-                  <span className="inline-flex items-center px-3 py-1 text-sm font-semibold bg-green-100 text-green-800 rounded-full">
-                    <span className="w-2 h-2 mr-1 bg-green-500 rounded-full"></span>
+                  <span className="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold bg-green-100 text-green-800 rounded-full">
+                    <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 mr-1 bg-green-500 rounded-full"></span>
                     Aktif
                   </span>
                 ) : (
-                  <span className="inline-flex items-center px-3 py-1 text-sm font-semibold bg-red-100 text-red-800 rounded-full">
-                    <span className="w-2 h-2 mr-1 bg-red-500 rounded-full"></span>
+                  <span className="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold bg-red-100 text-red-800 rounded-full">
+                    <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 mr-1 bg-red-500 rounded-full"></span>
                     Tidak Aktif
                   </span>
                 )}
               </div>
               <div className="md:col-span-2 space-y-1">
-                <p className="font-bold text-gray-700">ALAMAT</p>
-                <p className="text-gray-600">{jamaah.alamat}</p>
+                <p className="font-bold text-gray-700 text-sm sm:text-base">ALAMAT</p>
+                <p className="text-gray-600 text-sm sm:text-base">{jamaah.alamat}</p>
               </div>
               <div className="md:col-span-2 space-y-1">
-                <p className="font-bold text-gray-700">LOKASI MAPS</p>
+                <p className="font-bold text-gray-700 text-sm sm:text-base">LOKASI MAPS</p>
                 <a 
                   href={jamaah.lokasi_map} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                   Buka di Google Maps
@@ -140,35 +143,36 @@ const DetailMonografi = () => {
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-            <div className="p-4 bg-white rounded-2xl shadow-md">
-              <p className="text-sm font-medium text-gray-600 mb-1">PERSIS</p>
-              <h3 className="text-2xl font-semibold text-gray-800">{jamaah.jum_persis || 0}</h3>
+          {/* Stats - Responsive grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mt-3 sm:mt-4">
+            <div className="p-2 sm:p-4 bg-white rounded-xl sm:rounded-2xl shadow-md">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 mb-0.5 sm:mb-1">PERSIS</p>
+              <h3 className="text-xl sm:text-2xl font-semibold text-gray-800">{jamaah.jum_persis || 0}</h3>
             </div>
-            <div className="p-4 bg-white rounded-2xl shadow-md">
-              <p className="text-sm font-medium text-gray-600 mb-1">PERSISTRI</p>
-              <h3 className="text-2xl font-semibold text-gray-800">{jamaah.monografi?.jum_persistri || 0}</h3>
+            <div className="p-2 sm:p-4 bg-white rounded-xl sm:rounded-2xl shadow-md">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 mb-0.5 sm:mb-1">PERSISTRI</p>
+              <h3 className="text-xl sm:text-2xl font-semibold text-gray-800">{jamaah.monografi?.jum_persistri || 0}</h3>
             </div>
-            <div className="p-4 bg-white rounded-2xl shadow-md">
-              <p className="text-sm font-medium text-gray-600 mb-1">PEMUDA</p>
-              <h3 className="text-2xl font-semibold text-gray-800">{jamaah.monografi?.jum_pemuda || 0}</h3>
+            <div className="p-2 sm:p-4 bg-white rounded-xl sm:rounded-2xl shadow-md">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 mb-0.5 sm:mb-1">PEMUDA</p>
+              <h3 className="text-xl sm:text-2xl font-semibold text-gray-800">{jamaah.monografi?.jum_pemuda || 0}</h3>
             </div>
-            <div className="p-4 bg-white rounded-2xl shadow-md">
-              <p className="text-sm font-medium text-gray-600 mb-1">PEMUDI</p>
-              <h3 className="text-2xl font-semibold text-gray-800">{jamaah.monografi?.jum_pemudi || 0}</h3>
+            <div className="p-2 sm:p-4 bg-white rounded-xl sm:rounded-2xl shadow-md">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 mb-0.5 sm:mb-1">PEMUDI</p>
+              <h3 className="text-xl sm:text-2xl font-semibold text-gray-800">{jamaah.monografi?.jum_pemudi || 0}</h3>
             </div>
           </div>
         </div>
       </div>
       
-      <div className="p-4 mt-5">
-        {/* Tabs Header */}
-        <div className="flex space-x-3">
+      {/* Tabs Section - Made scrollable on mobile */}
+      <div className="p-2 sm:p-4 mt-3 sm:mt-5">
+        {/* Tabs Header - Scrollable on mobile */}
+        <div className="flex overflow-x-auto pb-1 hide-scrollbar">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`px-4 py-2 rounded-t-lg font-medium border border-gray-400 ${
+              className={`px-2 sm:px-4 py-1 sm:py-2 rounded-t-lg font-medium text-sm sm:text-base border border-gray-400 whitespace-nowrap mr-1 sm:mr-3 ${
                 activeTab === tab.id ? "bg-white" : "bg-gray-500 text-white"
               }`}
               onClick={() => setActiveTab(tab.id)}
@@ -179,7 +183,7 @@ const DetailMonografi = () => {
         </div>
 
         {/* Tabs Content */}
-        <div className="p-6 bg-white rounded-b-3xl shadow-md border border-gray-400">
+        <div className="p-3 sm:p-6 bg-white rounded-b-2xl sm:rounded-b-3xl shadow-md border border-gray-400">
           {renderTabContent()}
         </div>
       </div>
@@ -187,30 +191,30 @@ const DetailMonografi = () => {
   );
 };
 
-// Utility components for the stats and info rows
+// Utility components for the stats and info rows - Made responsive
 export const StatCard = ({ title, subtitle, color = "blue" }) => (
-  <div className={`flex flex-col items-center justify-center bg-${color}-600 hover:bg-${color}-700 transition-colors h-20 rounded-lg text-white text-center shadow-md`}>
-    <span className="text-xl font-bold">{title}</span>
-    <span className="text-sm">{subtitle}</span>
+  <div className={`flex flex-col items-center justify-center bg-${color}-600 hover:bg-${color}-700 transition-colors h-16 sm:h-20 rounded-lg text-white text-center shadow-md`}>
+    <span className="text-lg sm:text-xl font-bold">{title}</span>
+    <span className="text-xs sm:text-sm">{subtitle}</span>
   </div>
 );
 
-// Modifikasi InfoRow component
+// Modified InfoRow component for responsiveness
 export const InfoRow = ({ icon, label, value }) => (
-  <div className="mb-6 last:mb-0">
-    <div className="flex items-center gap-2 mb-1">
+  <div className="mb-4 sm:mb-6 last:mb-0">
+    <div className="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1">
       {getIcon(icon)}
-      <h2 className="text-lg font-bold text-blue-800">{label}</h2>
+      <h2 className="text-base sm:text-lg font-bold text-blue-800">{label}</h2>
     </div>
     {icon === "maps" ? (
       <a 
         href={value} 
         target="_blank" 
         rel="noopener noreferrer" 
-        className="text-blue-600 hover:text-blue-800 ml-7 flex items-center gap-2"
+        className="text-blue-600 hover:text-blue-800 ml-5 sm:ml-7 flex items-center gap-1 sm:gap-2 text-sm"
       >
         <svg 
-          className="w-5 h-5" 
+          className="w-4 h-4 sm:w-5 sm:h-5" 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -225,14 +229,14 @@ export const InfoRow = ({ icon, label, value }) => (
         Buka di Google Maps
       </a>
     ) : (
-      <p className="text-gray-700 ml-7">{value}</p>
+      <p className="text-gray-700 ml-5 sm:ml-7 text-sm sm:text-base">{value}</p>
     )}
   </div>
 );
 
-// Tambahkan icon maps di getIcon function
+// Added responsive sizing to icons
 const getIcon = (type) => {
-  const iconClass = "w-5 h-5 text-blue-600";
+  const iconClass = "w-4 h-4 sm:w-5 sm:h-5 text-blue-600";
   switch (type) {
     case "building":
       return (
@@ -263,5 +267,18 @@ const getIcon = (type) => {
       return null;
   }
 };
+
+// Add a style block to hide scrollbars on mobile tab navigation
+const styleBlock = document.createElement('style');
+styleBlock.textContent = `
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+`;
+document.head.appendChild(styleBlock);
 
 export default DetailMonografi;
