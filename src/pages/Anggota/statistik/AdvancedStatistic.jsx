@@ -97,16 +97,16 @@ const AdvancedStatistic = () => {
   ];
 
   useEffect(() => {
-    // Mengambil data dari API
-    fetch("http://127.0.0.1:8000/api/data_choice_advanced_statistic")
-      .then((response) => response.json())
-      .then((data) => {
-        setOptions(data);
+    api.get("/data_choice_advanced_statistic")
+      .then((response) => {
+        setOptions(response.data);
         setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching data: ", error);
         setLoading(false);
+        // Error akan otomatis ditangani oleh interceptor axios Anda
+        // Tidak perlu menampilkan toast di sini karena sudah dihandle interceptor
       });
   }, []);
 
