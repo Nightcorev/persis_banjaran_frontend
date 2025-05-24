@@ -3,20 +3,12 @@ import { Bar, Pie } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend } from "chart.js";
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 import api from "../../../utils/api";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle} from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import {
-  Trash2
-} from "lucide-react";
+import { Trash2 } from "lucide-react";
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
+// Leaflet icon configuration
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -39,7 +31,6 @@ const SetBounds = ({ markers }) => {
   return null;
 };
 
-
 const AdvancedStatistic = () => {
   const [open, setOpen] = useState(false);
   const [selectedFields, setSelectedFields] = useState({});
@@ -51,7 +42,7 @@ const AdvancedStatistic = () => {
   const [detailAnggota, setDetailAnggota] = useState([]);
   const [selectedJamaah, setSelectedJamaah] = useState("semua");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10); // Default items per page
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fieldAnggota = [
     { key: "master_otonom", label: "Otonom", type: "select", optionsKey: "master_otonom", optionValue: "id_otonom", optionLabel: "nama_otonom" },
@@ -105,8 +96,6 @@ const AdvancedStatistic = () => {
       .catch((error) => {
         console.error("Error fetching data: ", error);
         setLoading(false);
-        // Error akan otomatis ditangani oleh interceptor axios Anda
-        // Tidak perlu menampilkan toast di sini karena sudah dihandle interceptor
       });
   }, []);
 
@@ -125,18 +114,13 @@ const AdvancedStatistic = () => {
   };
 
   const handleClearAll = () => {
-      // Clear all checkboxes
-      setSelectedFields({});
-      // Clear all input fields
-      setFormData({});
-    };
+    setSelectedFields({});
+    setFormData({});
+  };
 
   const handleSave = async () => {
-    console.log(formData)
-    // Membuat query params dari formData
     const params = {};
     
-    // Menambahkan hanya field yang memiliki nilai
     Object.entries(formData).forEach(([key, value]) => {
       if (selectedFields[key] && value !== undefined && value !== null && value !== '') {
         params[key] = value;
@@ -144,22 +128,12 @@ const AdvancedStatistic = () => {
     });
 
     try {
-      // Menggunakan api utility yang sudah di-configure
-      const response = await api.get('/advanced_statistic', {
-        params: params // Axios akan otomatis menangani query params
-      });
-
+      const response = await api.get('/advanced_statistic', { params });
       setChartData(response.data.statistics);
       setDetailAnggota(response.data.detail_anggota || []);
       setOpen(false);
-      console.log('Success:', response.data.detail_anggota);
     } catch (error) {
-      // Error sudah ditangani oleh interceptor, jadi tidak perlu menampilkan lagi
       console.error('Error:', error);
-      // Jika Anda ingin menangani error secara spesifik di sini, Anda bisa:
-      // if (axios.isAxiosError(error)) {
-      //   console.log('Error response:', error.response?.data);
-      // }
     }
   };
 
@@ -167,7 +141,7 @@ const AdvancedStatistic = () => {
     if (field.type === "select" && options[field.optionsKey]) {
       return (
         <select
-          className="border p-2 rounded w-full"
+          className="border p-2 rounded w-full text-sm md:text-base"
           value={formData[field.key] || ""}
           onChange={(e) => handleInputChange(field.key, e.target.value)}
         >
@@ -184,7 +158,7 @@ const AdvancedStatistic = () => {
     return (
       <input
         type={field.type}
-        className="border p-2 rounded w-full"
+        className="border p-2 rounded w-full text-sm md:text-base"
         value={formData[field.key] || ""}
         onChange={(e) => handleInputChange(field.key, e.target.value)}
       />
@@ -194,15 +168,16 @@ const AdvancedStatistic = () => {
   const renderFieldGroup = (fields, title) => {
     return (
       <div>
-        <h3 className="font-semibold text-blue-700 mb-2 border-b pb-1">{title}</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <h3 className="font-semibold text-blue-700 mb-2 border-b pb-1 text-sm md:text-base">{title}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           {fields.map((field) => (
             <div key={field.key} className="flex flex-col gap-1">
-              <label className="flex items-center gap-2">
+              <label className="flex items-center gap-2 text-sm md:text-base">
                 <input
                   type="checkbox"
                   checked={!!selectedFields[field.key]}
                   onChange={() => handleCheckboxChange(field.key)}
+                  className="w-4 h-4"
                 />
                 {field.label}
               </label>
@@ -214,15 +189,79 @@ const AdvancedStatistic = () => {
     );
   };
 
+  const randomColors = [
+    "#FF6633", "#FFB399", "#FF33FF", "#FFFF99", "#00B3E6",
+    "#E6B333", "#3366E6", "#999966", "#99FF99", "#B34D4D",
+    "#80B300", "#809900", "#E6B3B3", "#6680B3", "#66991A",
+    "#FF99E6", "#CCFF1A", "#FF1A66", "#E6331A", "#33FFCC",
+    "#66994D", "#B366CC", "#4D8000", "#B33300", "#CC80CC",
+    "#66664D", "#991AFF", "#E666FF", "#4DB3FF", "#1AB399",
+    "#E666B3", "#33991A", "#CC9999", "#B3B31A", "#00E680"
+  ];
+
   const barData = {
     labels: chartData.map((item) => item.nama_jamaah),
     datasets: [
       {
         label: "Jumlah Anggota",
         data: chartData.map((item) => item.jumlah_anggota),
-        backgroundColor: "rgba(54, 162, 235, 0.6)",
+        backgroundColor: chartData.map((_, index) => 
+          randomColors[index % randomColors.length]
+        ),
+        borderColor: chartData.map((_, index) => 
+          randomColors[index % randomColors.length]
+        ),
+        borderWidth: 1,
       },
     ],
+  };
+
+  const barOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            return `${label}: ${value}`;
+          },
+          afterLabel: (context) => {
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = Math.round((context.raw / total) * 100);
+            return `Persentase: ${percentage}%`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          callback: function(value) {
+            const label = this.getLabelForValue(value);
+            return label.length > 8 ? `${label.substring(0, 8)}...` : label;
+          },
+          autoSkip: false,
+          maxRotation: 45,
+          minRotation: 45,
+          font: {
+            size: 10,
+          }
+        }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: {
+            size: 10,
+          }
+        }
+      }
+    }
   };
 
   const pieData = {
@@ -230,9 +269,52 @@ const AdvancedStatistic = () => {
     datasets: [
       {
         data: chartData.map((item) => item.jumlah_anggota),
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+        backgroundColor: chartData.map((_, index) => 
+          randomColors[index % randomColors.length]
+        ),
+        borderWidth: 1,
       },
     ],
+  };
+
+  const pieOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          boxWidth: 12,
+          padding: 12,
+          font: {
+            size: 10,
+          },
+          generateLabels: (chart) => {
+            const data = chart.data;
+            if (data.labels.length && data.datasets.length) {
+              return data.labels.map((label, i) => ({
+                text: label.length > 15 ? `${label.substring(0, 15)}...` : label,
+                fillStyle: data.datasets[0].backgroundColor[i],
+                hidden: false,
+                index: i
+              }));
+            }
+            return [];
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = Math.round((value / total) * 100);
+            return `${label}: ${value} (${percentage}%)`;
+          }
+        }
+      }
+    }
   };
 
   const calculateQuartiles = (data) => {
@@ -251,7 +333,7 @@ const AdvancedStatistic = () => {
     if (value <= quartiles.Q2) return { level: 2, color: 'blue' };
     if (value <= quartiles.Q3) return { level: 3, color: 'orange' };
     return { level: 4, color: 'red' };
-  }
+  };
   
   const quartiles = chartData.length > 0 ? calculateQuartiles(chartData) : null;
 
@@ -264,31 +346,42 @@ const AdvancedStatistic = () => {
   }
 
   return (
-    <div className="bg-white p-4 shadow-lg rounded-lg">
+    <div className="bg-white p-2 md:p-4 shadow-lg rounded-lg">
       <button 
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-gray-500" 
+        className="px-3 py-1 md:px-4 md:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm md:text-base"
         onClick={() => setOpen(true)}
       >
         Isi Data
       </button>
       
       {open && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[1000]">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[60vw] max-h-[80vh] overflow-y-auto">
-            <h2 className="text-lg font-bold mb-4">Isi Data</h2>
-            <div className="mt-4 flex justify-end space-x-2">
-              <button 
-                className="px-4 py-2 bg-gray-300 rounded" 
-                onClick={handleClearAll}
-              > <Trash2 /> </button>
-              <button className="px-4 py-2 bg-gray-300 rounded" onClick={() => setOpen(false)}>
-                Batal
-              </button>
-              <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={handleSave}>
-                Simpan
-              </button>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[1000] p-2 md:p-4">
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg md:text-xl font-bold">Isi Data</h2>
+              <div className="flex space-x-2">
+                <button 
+                  className="p-2 bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={handleClearAll}
+                > 
+                  <Trash2 size={18} />
+                </button>
+                <button 
+                  className="px-3 py-1 bg-gray-300 rounded text-sm md:text-base"
+                  onClick={() => setOpen(false)}
+                >
+                  Batal
+                </button>
+                <button 
+                  className="px-3 py-1 bg-blue-500 text-white rounded text-sm md:text-base"
+                  onClick={handleSave}
+                >
+                  Simpan
+                </button>
+              </div>
             </div>
-            <div className="grid grid-cols-1 gap-6">
+            
+            <div className="grid grid-cols-1 gap-4 md:gap-6">
               {renderFieldGroup(fieldAnggota, "Data Anggota")}
               {renderFieldGroup(fieldKeluarga, "Data Keluarga")}
               {renderFieldGroup(fieldPendidikan, "Data Pendidikan")}
@@ -296,26 +389,14 @@ const AdvancedStatistic = () => {
               {renderFieldGroup(fieldKeterampilan, "Data Keterampilan")}
               {renderFieldGroup(fieldMinat, "Data Minat")}
             </div>
-            <div className="mt-4 flex justify-end space-x-2">
-              <button 
-                className="px-4 py-2 bg-gray-300 rounded" 
-                onClick={handleClearAll}
-              > Hapus </button>
-              <button className="px-4 py-2 bg-gray-300 rounded" onClick={() => setOpen(false)}>
-                Batal
-              </button>
-              <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={handleSave}>
-                Simpan
-              </button>
-            </div>
           </div>
         </div>
       )}
       
-      <div className="mt-4 flex justify-between items-center">
-        <label>Pilih Tampilan: </label>
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <label className="text-sm md:text-base">Pilih Tampilan:</label>
         <select 
-          className="border p-2 rounded" 
+          className="border p-2 rounded text-sm md:text-base w-full sm:w-auto"
           value={chartType} 
           onChange={(e) => setChartType(e.target.value)}
         >
@@ -326,11 +407,106 @@ const AdvancedStatistic = () => {
         </select>
       </div>
       
-      <div className="mt-6">
-        {chartType === "bar" && <Bar data={barData} />}
-        {chartType === "pie" && <Pie data={pieData} />}
+      <div className="mt-4">
+        {chartType === "bar" && (
+          <div className="flex flex-col gap-4">
+            {/* Chart Container with Horizontal Scroll */}
+            <div className="relative w-full h-96 overflow-x-auto">
+              <div 
+                className="absolute min-w-full" 
+                style={{ height: '100%', minWidth: `${chartData.length * 50}px` }}
+              >
+                <Bar 
+                  data={barData}
+                  options={{
+                    ...barOptions,
+                    plugins: {
+                      ...barOptions.plugins,
+                      legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                          boxWidth: 12,
+                          font: {
+                            size: 10
+                          }
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Data Table */}
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold mb-3 text-sm md:text-base">Detail Data</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-xs md:text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left">No</th>
+                      <th className="px-4 py-2 text-left">Jamaah</th>
+                      <th className="px-4 py-2 text-left">Jumlah</th>
+                      <th className="px-4 py-2 text-left">Warna</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {chartData.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-2">{index + 1}</td>
+                        <td className="px-4 py-2 max-w-xs truncate" title={item.nama_jamaah}>
+                          {item.nama_jamaah}
+                        </td>
+                        <td className="px-4 py-2 font-medium">{item.jumlah_anggota}</td>
+                        <td className="px-4 py-2">
+                          <span 
+                            className="inline-block w-4 h-4 rounded-full"
+                            style={{ 
+                              backgroundColor: randomColors[index % randomColors.length] 
+                            }}
+                          ></span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {chartType === "pie" && (
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="w-full lg:w-2/3 h-96 lg:h-[500px]">
+              <Pie 
+                data={pieData}
+                options={pieOptions}
+              />
+            </div>
+            <div className="w-full lg:w-1/3 overflow-y-auto max-h-96 border rounded-lg p-4">
+              <h3 className="font-bold mb-2">Detail Data:</h3>
+              <ul className="space-y-2">
+                {chartData.map((item, index) => (
+                  <li key={index} className="flex items-center">
+                    <span 
+                      className="inline-block w-3 h-3 mr-2 rounded-full"
+                      style={{ 
+                        backgroundColor: randomColors[index % randomColors.length] 
+                      }}
+                    ></span>
+                    <span>
+                      {item.nama_jamaah}: {item.jumlah_anggota}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+        
         {!open && chartType === "map" && (
-          <div className="h-[500px] w-full">
+          <div className="h-[400px] w-full relative">
             <MapContainer 
               center={[-6.9175, 107.6191]} 
               zoom={12} 
@@ -347,12 +523,11 @@ const AdvancedStatistic = () => {
                   getLevelAndColor(item.jumlah_anggota, quartiles) : 
                   { color: 'blue' };
                 
-                const radius = item.jumlah_anggota * 10; // Sesuaikan faktor pengali sesuai kebutuhan
+                const radius = item.jumlah_anggota * 10;
                 
                 return (
-                  <>
+                  <div key={`marker-${index}`}>
                     <Circle
-                      key={`circle-${index}`}
                       center={[item.lokasi_lat, item.lokasi_long]}
                       radius={radius}
                       pathOptions={{
@@ -362,7 +537,6 @@ const AdvancedStatistic = () => {
                       }}
                     />
                     <Marker 
-                      key={`marker-${index}`}
                       position={[item.lokasi_lat, item.lokasi_long]}
                     >
                       <Popup>
@@ -371,15 +545,14 @@ const AdvancedStatistic = () => {
                         {quartiles && `Level: ${getLevelAndColor(item.jumlah_anggota, quartiles).level}`}
                       </Popup>
                     </Marker>
-                  </>
+                  </div>
                 );
               })}
               <SetBounds markers={chartData.filter(item => item.lokasi_lat && item.lokasi_long)} />
             </MapContainer>
             
-            {/* Tambahkan legenda */}
             {quartiles && (
-              <div className="absolute bottom-4 right-4 bg-white p-2 rounded shadow z-[1000]">
+              <div className="absolute bottom-2 right-2 bg-white p-2 rounded shadow z-[1000] text-xs md:text-sm">
                 <h4 className="font-bold mb-1">Level:</h4>
                 <div className="flex items-center mb-1">
                   <div className="w-4 h-4 bg-green-500 mr-2"></div>
@@ -401,17 +574,18 @@ const AdvancedStatistic = () => {
             )}
           </div>
         )}
+        
         {chartType === "tabel" && (
           <div className="mt-4">
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div>
-                <label className="mr-2">Filter Jamaah:</label>
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-2 md:gap-4">
+              <div className="flex-1">
+                <label className="mr-2 text-sm md:text-base">Filter Jamaah:</label>
                 <select 
-                  className="border p-2 rounded"
+                  className="border p-2 rounded w-full text-sm md:text-base"
                   value={selectedJamaah}
                   onChange={(e) => {
                     setSelectedJamaah(e.target.value);
-                    setCurrentPage(1); // Reset to first page when filter changes
+                    setCurrentPage(1);
                   }}
                 >
                   <option value="semua">Semua Jamaah</option>
@@ -423,14 +597,14 @@ const AdvancedStatistic = () => {
                 </select>
               </div>
               
-              <div>
-                <label className="mr-2">Items per page:</label>
+              <div className="flex-1">
+                <label className="mr-2 text-sm md:text-base">Items per page:</label>
                 <select 
-                  className="border p-2 rounded"
+                  className="border p-2 rounded w-full text-sm md:text-base"
                   value={itemsPerPage}
                   onChange={(e) => {
                     setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1); // Reset to first page when items per page changes
+                    setCurrentPage(1);
                   }}
                 >
                   <option value="5">5</option>
@@ -442,9 +616,8 @@ const AdvancedStatistic = () => {
               </div>
             </div>
 
-            {/* Table with scroll */}
-            <div className="overflow-x-auto border rounded-lg" style={{ maxHeight: '500px', overflowY: 'auto' }}>
-              <table className="min-w-full bg-white">
+            <div className="overflow-x-auto border rounded-lg" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              <table className="min-w-full bg-white text-sm md:text-base">
                 <thead className="sticky top-0 bg-gray-100 z-10">
                   <tr>
                     <th className="py-2 px-4 border">No</th>
@@ -470,7 +643,6 @@ const AdvancedStatistic = () => {
               </table>
             </div>
 
-            {/* Pagination controls */}
             {(() => {
               const filteredData = detailAnggota.filter(anggota => 
                 selectedJamaah === "semua" || 
@@ -481,7 +653,7 @@ const AdvancedStatistic = () => {
               if (totalPages <= 1) return null;
 
               return (
-                <div className="flex justify-between items-center mt-4">
+                <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-sm md:text-base">
                   <div>
                     Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
                     {Math.min(currentPage * itemsPerPage, filteredData.length)} of{' '}

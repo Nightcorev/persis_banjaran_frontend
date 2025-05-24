@@ -152,7 +152,7 @@ const InputDataPendidikan = ({ data, onDataChange, nomorAnggota }) => {
         </div>
 
         {/* Tahun Masuk */}
-        <div className="flex items-center gap-4 pb-4">
+        {/* <div className="flex items-center gap-4 pb-4">
           <label className="text-xs w-1/3">Tahun Masuk</label>
           <div className="w-full">
             <input
@@ -168,10 +168,10 @@ const InputDataPendidikan = ({ data, onDataChange, nomorAnggota }) => {
               <p className="text-red-500 text-xs mt-1">{errors.tahunMasuk}</p>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Tahun Keluar */}
-        <div className="flex items-center gap-4 pb-4">
+        {/* <div className="flex items-center gap-4 pb-4">
           <label className="text-xs w-1/3">Tahun Keluar</label>
           <div className="w-full">
             <input
@@ -187,10 +187,10 @@ const InputDataPendidikan = ({ data, onDataChange, nomorAnggota }) => {
               <p className="text-red-500 text-xs mt-1">{errors.tahunKeluar}</p>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Jenis Pendidikan */}
-        <div className="flex items-center gap-4 pb-4">
+        {/* <div className="flex items-center gap-4 pb-4">
           <label className="text-xs w-1/3">Jenis Pendidikan</label>
           <div className="w-full">
             <select
@@ -211,7 +211,7 @@ const InputDataPendidikan = ({ data, onDataChange, nomorAnggota }) => {
               </p>
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
