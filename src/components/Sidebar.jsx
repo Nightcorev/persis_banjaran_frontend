@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 
 const Sidebar = ({ isOpen }) => {
   const [isProfilOpen, setIsProfilOpen] = useState(false);
-  const [isUsersOpen, setIsUsersOpen] = useState(false);
+  const [isAnggotaOpen, setIsAnggotaOpen] = useState(false);
   const [isJamiyyahOpen, setIsJamiyyahOpen] = useState(false);
   const [isPendidikanOpen, setIsPendidikanOpen] = useState(false);
   const [isManageAuthOpen, setIsManageAuthOpen] = useState(false);
@@ -13,6 +13,22 @@ const Sidebar = ({ isOpen }) => {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+
+  const isSuperAdmin = "Super Admin";
+  const isBendahara = "Bendahara";
+  const isPimpinanJamaah = "Pimpinan Jamaah";
+
+  // Helper function
+  const hasPermission = (perm) =>
+    user?.role === isSuperAdmin ||
+    (Array.isArray(permissions) && permissions.includes(perm));
+
+  const hasAnyPermission = (perms) =>
+    user?.role === isSuperAdmin ||
+    (Array.isArray(permissions) && perms.some((p) => permissions.includes(p)));
+
+  const hasRole = (roles) =>
+    Array.isArray(roles) ? roles.includes(user?.role) : user?.role === roles;
 
   // Add resize listener for mobile detection
   useEffect(() => {
@@ -28,16 +44,12 @@ const Sidebar = ({ isOpen }) => {
     setIsProfilOpen(!isProfilOpen);
   };
 
-  const toggleUsersMenu = () => {
-    setIsUsersOpen(!isUsersOpen);
+  const toggleAnggotaMenu = () => {
+    setIsAnggotaOpen(!isAnggotaOpen);
   };
 
   const toggleJamiyyahMenu = () => {
     setIsJamiyyahOpen(!isJamiyyahOpen);
-  };
-
-  const togglePendidikanhMenu = () => {
-    setIsPendidikanOpen(!isPendidikanOpen);
   };
 
   const toggleManageAuthMenu = () => {
@@ -136,12 +148,16 @@ const Sidebar = ({ isOpen }) => {
                 isProfilOpen ? "max-h-40" : "max-h-0"
               }`}
             >
-              <Link
-                  to="/profil/data-tasykil"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Data Tasykil
-                </Link>
+              {hasPermission("show_data_tasykil") && (
+                <li>
+                  <Link
+                    to="/profil/data-tasykil"
+                    className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                  >
+                    Data Tasykil
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   to="/profil/fasilitas"
@@ -153,10 +169,10 @@ const Sidebar = ({ isOpen }) => {
             </ul>
           </li>
 
-          {/* Menu User  */}
+          {/* Menu Anggota  */}
           <li>
             <button
-              onClick={toggleUsersMenu}
+              onClick={toggleAnggotaMenu}
               className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
             >
               <svg
@@ -183,7 +199,7 @@ const Sidebar = ({ isOpen }) => {
                 strokeWidth={1.5}
                 stroke="currentColor"
                 className={`w-4 h-4 ml-auto transition-transform ${
-                  isUsersOpen ? "rotate-180" : ""
+                  isAnggotaOpen ? "rotate-180" : ""
                 }`}
               >
                 <path
@@ -195,17 +211,20 @@ const Sidebar = ({ isOpen }) => {
             </button>
             <ul
               className={`transition-all overflow-hidden duration-300 ease-in-out ${
-                isUsersOpen ? "max-h-40" : "max-h-0"
+                isAnggotaOpen ? "max-h-40" : "max-h-0"
               }`}
             >
-              <li>
-                <Link
-                  to="/users/data-anggota"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Data Anggota
-                </Link>
-              </li>
+              {(hasRole(isPimpinanJamaah) ||
+                hasPermission("show_rekap_iuran")) && (
+                <li>
+                  <Link
+                    to="/users/data-anggota"
+                    className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                  >
+                    Data Anggota
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   to="/users/statistik"
@@ -218,6 +237,7 @@ const Sidebar = ({ isOpen }) => {
           </li>
 
           {/* Menu Jami'yyah */}
+
           <li>
             <button
               onClick={toggleJamiyyahMenu}
@@ -266,6 +286,7 @@ const Sidebar = ({ isOpen }) => {
                 isJamiyyahOpen ? "max-h-40" : "max-h-0"
               }`}
             >
+              {" "}
               <li>
                 <Link
                   to="/jamiyah/data-jamiyah"
@@ -273,210 +294,155 @@ const Sidebar = ({ isOpen }) => {
                 >
                   Data Jamaah
                 </Link>
-                <li>
-              </li>
-              </li>
-            </ul>
-          </li>
-
-          {/* Menu Pendidikan */}
-          {/* <li>
-            <button
-              onClick={togglePendidikanhMenu}
-              className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"
-                />
-              </svg>
-              Pendidikan
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className={`w-4 h-4 ml-auto transition-transform ${
-                  isPendidikanOpen ? "rotate-180" : ""
-                }`}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            <ul
-              className={`transition-all overflow-hidden duration-300 ease-in-out ${
-                isPendidikanOpen ? "max-h-40" : "max-h-0"
-              }`}
-            >
-              <li>
-                <Link
-                  to="/pendidikan/data-pesantren"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Data Pesanteren
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/pendidikan/data-asatidz"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Data Asatidz
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/pendidikan/statistik"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Statistik
-                </Link>
-              </li>
-            </ul>
-          </li> */}
-
-          {/* Menu manage data iuran */}
-
-          <li>
-            <button
-              onClick={toggleIuranMenu}
-              className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
-                />
-              </svg>
-              Iuran Anggota
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className={`w-4 h-4 ml-auto transition-transform ${
-                  isIuranOpen ? "rotate-180" : ""
-                }`}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            <ul
-              className={`transition-all overflow-hidden duration-300 ease-in-out ${
-                isIuranOpen ? "max-h-40" : "max-h-0"
-              }`}
-            >
-              <li>
-                <Link
-                  to="/iuran/pembayaran"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Kelola Pembayaran Iuran
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/iuran/rekap"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
-                >
-                  Rekap Iuran
-                </Link>
               </li>
             </ul>
           </li>
 
           {/* Menu manage data iuran */}
-
-          <li>
-            <button
-              onClick={toggleChatbotMenu}
-              className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-4"
+          {(hasRole([isBendahara, isPimpinanJamaah]) ||
+            hasAnyPermission(["show_kelola_iuran", "show_rekap_iuran"])) && (
+            <li>
+              <button
+                onClick={toggleIuranMenu}
+                className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"
-                />
-              </svg>
-              Kelola Chatbot Informasi
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className={`w-4 h-4 ml-auto transition-transform ${
-                  isChatbotOpen ? "rotate-180" : ""
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
+                  />
+                </svg>
+                Iuran Anggota
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className={`w-4 h-4 ml-auto transition-transform ${
+                    isIuranOpen ? "rotate-180" : ""
+                  }`}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              <ul
+                className={`transition-all overflow-hidden duration-300 ease-in-out ${
+                  isIuranOpen ? "max-h-40" : "max-h-0"
                 }`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            <ul
-              className={`transition-all overflow-hidden duration-300 ease-in-out ${
-                isChatbotOpen ? "max-h-40" : "max-h-0"
-              }`}
-            >
-              <li>
-                <Link
-                  to="/kelola_broadcast_informasi"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                {" "}
+                {(hasRole([isBendahara, isPimpinanJamaah]) ||
+                  hasPermission("show_kelola_iuran")) && (
+                  <li>
+                    <Link
+                      to="/iuran/pembayaran"
+                      className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                    >
+                      Kelola Pembayaran Iuran
+                    </Link>
+                  </li>
+                )}
+                {(hasRole(isBendahara) ||
+                  hasPermission("show_rekap_iuran")) && (
+                  <li>
+                    <Link
+                      to="/iuran/rekap"
+                      className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                    >
+                      Rekap Iuran
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            </li>
+          )}
+
+          {/* Menu manage data iuran */}
+          {hasAnyPermission([
+            "show_broadcast_informasi",
+            "show_kelola_interaksi_chatbot",
+          ]) && (
+            <li>
+              <button
+                onClick={toggleChatbotMenu}
+                className="flex items-center gap-3 p-3 w-full text-left hover:bg-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-4"
                 >
-                  Broadcast Informasi
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/kelola_chatbot"
-                  className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"
+                  />
+                </svg>
+                Kelola Chatbot Informasi
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className={`w-4 h-4 ml-auto transition-transform ${
+                    isChatbotOpen ? "rotate-180" : ""
+                  }`}
                 >
-                  Dashboard Informasi
-                </Link>
-              </li>
-            </ul>
-          </li>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              <ul
+                className={`transition-all overflow-hidden duration-300 ease-in-out ${
+                  isChatbotOpen ? "max-h-40" : "max-h-0"
+                }`}
+              >
+                {hasPermission("show_broadcast_informasi") && (
+                  <li>
+                    <Link
+                      to="/kelola_broadcast_informasi"
+                      className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                    >
+                      Broadcast Informasi
+                    </Link>
+                  </li>
+                )}
+                {hasPermission("show_kelola_interaksi_chatbot") && (
+                  <li>
+                    <Link
+                      to="/kelola_chatbot"
+                      className="block pl-10 p-3 text-gray-300 hover:bg-gray-700"
+                    >
+                      Dashboard Informasi
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            </li>
+          )}
 
           {/* Menu manage role dan akun */}
-          {user?.role === "Super Admin" && (
+          {hasRole(isSuperAdmin) && (
             <li>
               <button
                 onClick={toggleManageAuthMenu}

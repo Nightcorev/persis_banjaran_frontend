@@ -89,15 +89,39 @@ const router = createBrowserRouter(
 
           {/* Musyawarah Routes */}
           <Route path="/profil/data-tasykil" element={<DataTasykil />} />
-          <Route path="/profil/data-tasykil/add-tasykil" element={<AddTasykil />} />
-          <Route path="/profil/data-tasykil/edit/:id" element={<AddTasykil />} />
-          <Route path="/profil/data-tasykil/detail/:id" element={<MusyawarahDetail />} />
-          <Route path="/jamiyah/musyawarah/detail/:id" element={<MusyawarahDetail />} />
-          <Route path="jamiyah/detail-jamiyah/data-musyawarah/add-musyawarah" element={<AddMusyawarah/>} />
-          <Route path="jamiyah/musyawarah/data-musyawarah/edit-musyawarah/:id" element={<AddMusyawarah/>} />
-          <Route path="jamiyah/musyawarah/detail/add/:id" element={<AddDetailMusyawarah/>} />
-          <Route path="/jamiyah/musyawarah/detail/edit/:id/:detailId" element={<AddDetailMusyawarah />} />
-          
+          <Route
+            path="/profil/data-tasykil/add-tasykil"
+            element={<AddTasykil />}
+          />
+          <Route
+            path="/profil/data-tasykil/edit/:id"
+            element={<AddTasykil />}
+          />
+          <Route
+            path="/profil/data-tasykil/detail/:id"
+            element={<MusyawarahDetail />}
+          />
+          <Route
+            path="/jamiyah/musyawarah/detail/:id"
+            element={<MusyawarahDetail />}
+          />
+          <Route
+            path="jamiyah/detail-jamiyah/data-musyawarah/add-musyawarah"
+            element={<AddMusyawarah />}
+          />
+          <Route
+            path="jamiyah/musyawarah/data-musyawarah/edit-musyawarah/:id"
+            element={<AddMusyawarah />}
+          />
+          <Route
+            path="jamiyah/musyawarah/detail/add/:id"
+            element={<AddDetailMusyawarah />}
+          />
+          <Route
+            path="/jamiyah/musyawarah/detail/edit/:id/:detailId"
+            element={<AddDetailMusyawarah />}
+          />
+
           {/* Iuran Routes */}
           <Route path="iuran/pembayaran" element={<DataIuran />} />
           <Route path="iuran/reminder" element={<ReminderIuran />} />

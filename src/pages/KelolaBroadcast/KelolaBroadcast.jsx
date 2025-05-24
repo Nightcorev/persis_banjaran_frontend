@@ -97,7 +97,7 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
           const options = (response.data.data || response.data || []).map(
             (anggota) => ({
               value: anggota.id_anggota, // ID tetap sebagai value internal react-select
-              label: `${anggota.nama_lengkap} (${anggota.no_telp || 'N/A'}) `, // Tampilkan no_telp di label
+              label: `${anggota.nama_lengkap} (${anggota.no_telp || "N/A"}) `, // Tampilkan no_telp di label
               no_telp: anggota.no_telp, // Simpan no_telp di objek opsi
             })
           );
@@ -660,9 +660,15 @@ const KelolaBroadcast = () => {
   const [error, setError] = useState(null);
   const searchTimeoutRef = useRef(null);
 
-  // Mengambil data user/permissions
+  const user = JSON.parse(localStorage.getItem("user"));
   const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
-  const account = JSON.parse(localStorage.getItem("user"));
+
+  const isSuperAdmin = "Super Admin";
+
+  // Helper function
+  const hasPermission = (perm) =>
+    user?.role === isSuperAdmin ||
+    (Array.isArray(permissions) && permissions.includes(perm));
 
   // --- Fungsi Fetch Data (Sama) ---
   const fetchData = useCallback(async () => {
@@ -745,7 +751,7 @@ const KelolaBroadcast = () => {
     try {
       const response = await api.post("/broadcast", formData);
       formData.forEach((value, key) => {
-        console.log(key + ': ' + value);
+        console.log(key + ": " + value);
       });
       toast.success(response.data.message || "Broadcast berhasil ditambahkan!");
       handleCloseAddModal();
@@ -761,17 +767,16 @@ const KelolaBroadcast = () => {
 
   return (
     <div className="p-4 md:p-6 bg-gray-100 min-h-screen">
-      <div className=" mx-auto bg-white p-5 sm:p-6 rounded-lg shadow-md">
-        {/* Header Halaman (Sama) */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800">
+      <div className="mx-auto bg-white p-4 sm:p-6 rounded-lg shadow-md w-full">
+        {/* Header Halaman */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-200 gap-4">
+          <h1 className="text-xl font-bold text-gray-800 text-center sm:text-left w-full sm:w-auto">
             Kelola Informasi Broadcast
           </h1>
-          {(account?.role === "Super Admin" ||
-            permissions.includes("create_broadcast")) && (
+          {hasPermission("add_broadcast_informasi") && (
             <button
               onClick={handleOpenAddModal}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm shadow-sm"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm shadow-sm w-full sm:w-auto disabled:opacity-50"
               disabled={loading}
             >
               <Plus size={18} /> Tambah Broadcast
@@ -779,18 +784,17 @@ const KelolaBroadcast = () => {
           )}
         </div>
 
-        {/* Filter & Pencarian (Sama) */}
-        <div className="mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-          <div className="flex items-center gap-2 text-sm flex-wrap">
-            <label className="text-gray-600">Tampilkan:</label>
+        {/* Filter & Pencarian */}
+        <div className="mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+          <div className="flex items-center gap-2 text-sm flex-wrap w-full md:w-auto">
+            <label className="text-gray-600 flex-shrink-0">Tampilkan:</label>
             <select
               value={perPage}
               onChange={(e) => {
                 setPage(1);
                 setPerPage(Number(e.target.value));
               }}
-              className="border border-gray-300 p-2 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-              style={{ maxWidth: "80px" }}
+              className="border border-gray-300 p-2 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm max-w-[80px]"
               disabled={loading}
             >
               <option value="10">10</option>
@@ -798,15 +802,15 @@ const KelolaBroadcast = () => {
               <option value="50">50</option>
               <option value="100">100</option>
             </select>
-            <span className="text-gray-600">data</span>
+            <span className="text-gray-600 flex-shrink-0">data</span>
           </div>
-          <div className="relative flex items-center text-sm">
+          <div className="relative flex items-center text-sm w-full md:w-auto">
             <input
               id="search"
               type="text"
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Cari berdasarkan pesan..."
-              className="border border-gray-300 p-2 pl-8 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm w-full sm:w-64"
+              className="border border-gray-300 p-2 pl-8 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm w-full"
               disabled={loading}
             />
             <Search
@@ -816,13 +820,13 @@ const KelolaBroadcast = () => {
           </div>
         </div>
 
-        {/* Alert Error (Sama) */}
+        {/* Alert Error */}
         {error && !loading && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300 text-sm">
-            {error}{" "}
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300 text-sm flex flex-col sm:flex-row items-center gap-2 w-full">
+            <div className="flex-grow">{error}</div>
             <button
               onClick={fetchData}
-              className="ml-2 font-semibold underline"
+              className="ml-0 sm:ml-auto font-semibold underline hover:text-red-900 mt-2 sm:mt-0 flex-shrink-0"
             >
               Coba lagi
             </button>
@@ -831,7 +835,7 @@ const KelolaBroadcast = () => {
 
         {/* Tabel Data */}
         <div className="overflow-x-auto max-h-[65vh] border rounded-lg text-sm">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
+          <table className="min-w-full divide-y divide-gray-200 text-xs md:text-sm">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 {/* ... (Header tabel sama) ... */}

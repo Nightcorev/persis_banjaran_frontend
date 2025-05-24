@@ -3,9 +3,6 @@ import api from "../../utils/api";
 import ExportExcelModal from "../../components/ExportExcelModal";
 
 const DataAnggota = () => {
-  const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
-  const account = JSON.parse(localStorage.getItem("user"));
-
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -13,6 +10,16 @@ const DataAnggota = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+
+  const isSuperAdmin = "Super Admin";
+
+  // Helper function
+  const hasPermission = (perm) =>
+    user?.role === isSuperAdmin ||
+    (Array.isArray(permissions) && permissions.includes(perm));
 
   // Create a function to handle search term changes
   const handleSearchChange = (e) => {
@@ -72,30 +79,31 @@ const DataAnggota = () => {
         <h1 className="text-lg font-bold">Data Anggota</h1>
         <div className="flex flex-wrap gap-2">
           {/* Export Button */}
-          <button
-            onClick={() => setShowExportModal(true)}
-            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center text-sm"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {hasPermission("export_data_anggota") && (
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center text-sm"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
-            Export Excel
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              Export Excel
+            </button>
+          )}
 
           {/* Add Anggota Button */}
-          {(account?.role === "Super Admin" ||
-            permissions.includes("add_data_anggota")) && (
+          {hasPermission("add_data_anggota") && (
             <a href="/users/data-anggota/add-anggota">
               <button className="px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center text-sm">
                 <svg
@@ -187,12 +195,18 @@ const DataAnggota = () => {
                     </td>
                     <td className="border p-2 text-center">
                       <img
-                        src={`http://localhost:8000/storage/uploads/${user.foto || "persis_default.jpeg"}`}
+                        src={`http://localhost:8000/storage/uploads/${
+                          user.foto || "persis_default.jpeg"
+                        }`}
                         alt="Foto User"
                         className="w-12 h-12 object-cover mx-auto"
                         onError={(e) => {
-                          console.error("Gambar tidak ditemukan:", e.target.src);
-                          e.target.src = "http://localhost:8000/storage/uploads/persis_default.jpeg";
+                          console.error(
+                            "Gambar tidak ditemukan:",
+                            e.target.src
+                          );
+                          e.target.src =
+                            "http://localhost:8000/storage/uploads/persis_default.jpeg";
                         }}
                       />
                     </td>
@@ -215,9 +229,11 @@ const DataAnggota = () => {
                     >
                       {user.status_aktif === 1 ? "Aktif" : "Tidak Aktif"}
                     </td>
-                      <td className="border p-2 text-center">
+                    <td className="border p-2 text-center">
                       <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2 justify-center">
-                        <a href={`/users/data-anggota/view-anggota/${user.id_anggota}`}>
+                        <a
+                          href={`/users/data-anggota/view-anggota/${user.id_anggota}`}
+                        >
                           <button className="bg-green-600 text-white px-3 py-1 rounded hover:bg-blue-600 flex items-center justify-center w-full sm:w-auto">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -240,10 +256,11 @@ const DataAnggota = () => {
                             </svg>
                           </button>
                         </a>
-                    
-                        {(account?.role === "Super Admin" ||
-                          permissions.includes("edit_data_anggota")) && (
-                          <a href={`/users/data-anggota/edit-anggota/${user.id_anggota}`}>
+
+                        {hasPermission("edit_data_anggota") && (
+                          <a
+                            href={`/users/data-anggota/edit-anggota/${user.id_anggota}`}
+                          >
                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 flex items-center justify-center w-full sm:w-auto">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -262,9 +279,8 @@ const DataAnggota = () => {
                             </button>
                           </a>
                         )}
-                        
-                        {(account?.role === "Super Admin" ||
-                          permissions.includes("delete_data_anggota")) && (
+
+                        {hasPermission("delete_data_anggota") && (
                           <button
                             onClick={() => handleDelete(user.id_anggota)}
                             className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center justify-center w-full sm:w-auto"

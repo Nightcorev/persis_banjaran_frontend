@@ -124,6 +124,16 @@ export default function KelolaChatbot() {
     total: 0,
   });
 
+  const user = JSON.parse(localStorage.getItem("user"));
+  const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+
+  const isSuperAdmin = "Super Admin";
+
+  // Helper function
+  const hasPermission = (perm) =>
+    user?.role === isSuperAdmin ||
+    (Array.isArray(permissions) && permissions.includes(perm));
+
   // --- Fungsi Fetch Data ---
   const fetchChatbotItems = useCallback(async () => {
     setLoading(true);
@@ -233,28 +243,30 @@ export default function KelolaChatbot() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
-      <div className="mx-auto bg-white p-5 sm:p-6 rounded-lg shadow-md">
+      <div className="mx-auto bg-white p-5 sm:p-6 rounded-lg shadow-md max-w-screen-lg">
         {/* Header Halaman */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 pb-4 border-b border-gray-200 gap-4">
+          <h1 className="text-xl font-bold text-gray-800 text-center sm:text-left w-full sm:w-auto">
             Kelola Interaksi Chatbot
           </h1>
-          <button
-            onClick={() => openModal()}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm shadow-sm"
-            disabled={loading} // Disable saat loading
-          >
-            <Plus size={18} /> Tambah Item Chatbot
-          </button>
+          {hasPermission("add_kelola_interaksi_chatbot") && (
+            <button
+              onClick={() => openModal()}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm shadow-sm w-full sm:w-auto disabled:opacity-50"
+              disabled={loading} // Disable saat loading
+            >
+              <Plus size={18} /> Tambah Item Chatbot
+            </button>
+          )}
         </div>
 
         {/* Alert Error */}
         {error && !loading && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300 text-sm">
-            {error}{" "}
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded border border-red-300 text-sm flex flex-col sm:flex-row items-center gap-2 w-full">
+            <div className="flex-grow">{error}</div>
             <button
               onClick={fetchChatbotItems}
-              className="ml-2 font-semibold underline"
+              className="ml-0 sm:ml-2 font-semibold underline hover:text-red-900 mt-2 sm:mt-0 flex-shrink-0"
             >
               Coba lagi
             </button>
@@ -263,7 +275,7 @@ export default function KelolaChatbot() {
 
         {/* Tampilan Loading */}
         {loading && (
-          <div className="text-center py-10">
+          <div className="text-center py-10 w-full">
             <div className="flex justify-center items-center text-gray-600">
               <svg
                 className="animate-spin -ml-1 mr-3 h-5 w-5"
@@ -291,28 +303,29 @@ export default function KelolaChatbot() {
         )}
 
         {/* Daftar Item Chatbot */}
-        {/* Daftar Item Chatbot */}
         {!loading && !error && (
-          <div className="space-y-3">
+          <div className="space-y-3 w-full">
             {chatbotItems.length === 0 && (
-              <p className="text-center text-gray-500 italic py-6">
+              <p className="text-center text-gray-500 italic py-6 w-full">
                 Belum ada item chatbot. Silakan tambahkan item baru.
               </p>
             )}
             {chatbotItems.map((item, index) => (
               <div
                 key={item.id}
-                className="p-2 border border-gray-200 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                className="p-3 border border-gray-200 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full"
               >
-                <div className="grid grid-cols-12 gap-1 items-start">
+                <div className="grid grid-cols-12 gap-2 sm:gap-4 items-start">
                   {/* Nomor */}
-                  <div className="col-span-1 flex justify-center items-center text-center text-3xl font-semibold text-gray-700 h-full">
+                  {/* Adjusted column span for responsiveness */}
+                  <div className="col-span-2 sm:col-span-1 flex justify-center items-center text-center text-2xl sm:text-3xl font-semibold text-gray-700 h-full">
                     <div className="flex items-center justify-center h-full">
                       {index + 1}.
                     </div>
                   </div>
                   {/* Pesan dan Jawaban */}
-                  <div className="col-span-10 space-y-2">
+                  {/* Adjusted column span for responsiveness */}
+                  <div className="col-span-8 sm:col-span-9 space-y-2">
                     <div className="text-gray-800 break-words">
                       <span className="font-semibold text-blue-700">P:</span>{" "}
                       {item.pesan}
@@ -323,40 +336,47 @@ export default function KelolaChatbot() {
                     </div>
                   </div>
                   {/* Aksi */}
-                  <div className="col-span-1 flex flex-col items-center space-y-2">
-                    <button
-                      onClick={() => openModal(item)}
-                      className="p-1 text-yellow-600 hover:text-yellow-800"
-                      title="Edit Item"
-                      disabled={loading} // Disable saat loading
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteItem(item.id)}
-                      className="p-1 text-red-600 hover:text-red-800"
-                      title="Hapus Item"
-                      disabled={loading} // Disable saat loading
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                  {/* Adjusted column span and layout for responsiveness */}
+                  <div className="col-span-2 sm:col-span-2 flex flex-row sm:flex-col items-center justify-center sm:justify-start gap-2">
+                    {hasPermission("edit_kelola_interaksi_chatbot") && (
+                      <button
+                        onClick={() => openModal(item)}
+                        className="p-1 text-yellow-600 hover:text-yellow-800"
+                        title="Edit Item"
+                        disabled={loading} // Disable saat loading
+                      >
+                        <Edit size={18} />
+                      </button>
+                    )}
+                    {hasPermission("delete_kelola_interaksi_chatbot") && (
+                      <button
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="p-1 text-red-600 hover:text-red-800"
+                        title="Hapus Item"
+                        disabled={loading} // Disable saat loading
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {/* Pagination */}
         {!loading && pagination.last_page > 1 && (
-          <div className="mt-4 flex justify-between items-center">
+          <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
             <button
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={pagination.current_page === 1}
-              className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
+              className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50 w-full sm:w-auto"
             >
               Prev
             </button>
 
-            <span>
+            <span className="text-center sm:text-left">
               Halaman {pagination.current_page} dari{" "}
               {Math.ceil(pagination.total / pagination.per_page)}
             </span>
@@ -367,7 +387,7 @@ export default function KelolaChatbot() {
                 pagination.current_page >=
                 Math.ceil(pagination.total / pagination.per_page)
               }
-              className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
+              className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50 w-full sm:w-auto"
             >
               Next
             </button>
@@ -375,7 +395,7 @@ export default function KelolaChatbot() {
         )}
       </div>
 
-      {/* Modal Form */}
+      {/* Modal Form (Assuming ChatbotModal component handles its own responsiveness) */}
       <ChatbotModal
         isOpen={isModalOpen}
         onClose={closeModal}
