@@ -216,6 +216,7 @@ export default function KelolaChatbot() {
         try {
           // Panggil API Delete (DELETE /chatbot/{id})
           await api.delete(`/chatbot/${itemId}`);
+          console.log(itemId)
           toast.success("Item berhasil dihapus.");
           fetchChatbotItems(); // Ambil data terbaru
         } catch (err) {

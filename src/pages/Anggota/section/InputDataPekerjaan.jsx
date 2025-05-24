@@ -171,11 +171,11 @@ const InputDataPekerjaan = ({ data, onDataChange, nomorAnggota }) => {
               onChange={handleInputChange}
             >
               <option value="">-- Silahkan Pilih --</option>
-              <option value="Kurang dari 1 juta rupiah">Kurang dari 1 juta rupiah</option>
-              <option value="1 juta s.d kurang dari 2 juta rupiah">1 juta s.d kurang dari 2 juta rupiah</option>
-              <option value="2 Juta s.d kurang dari 3 juta rupiah">2 Juta s.d kurang dari 3 juta rupiah</option>
-              <option value="3 juta s.d kurang dari 4 juta rupiah">3 juta s.d kurang dari 4 juta rupiah</option>
-              <option value="Lebih dari 4 juta rupiah">Lebih dari 4 juta rupiah</option>
+              <option value="1">Kurang dari 1 juta rupiah</option>
+              <option value="2">1 juta s.d kurang dari 2 juta rupiah</option>
+              <option value="3">2 Juta s.d kurang dari 3 juta rupiah</option>
+              <option value="4">3 juta s.d kurang dari 4 juta rupiah</option>
+              <option value="5">Lebih dari 4 juta rupiah</option>
             </select>
             {errors.pendapatan && <p className="text-red-500 text-xs mt-1">{errors.pendapatan}</p>}
           </div>

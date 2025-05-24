@@ -39,7 +39,7 @@ const AdminLayout = () => {
         {/* Overlay that appears when sidebar is open on mobile */}
         {isMobile && isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black bg-opacity-50"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -47,7 +47,7 @@ const AdminLayout = () => {
         <button
           onClick={() => setSidebarOpen(!isSidebarOpen)}
           className={`
-            fixed z-[60] bg-blue-600 hover:bg-blue-700
+            fixed bg-blue-600 hover:bg-blue-700
             text-white p-2 rounded-r-lg shadow-md
             transition-all duration-300 ease-in-out
             flex items-center justify-center

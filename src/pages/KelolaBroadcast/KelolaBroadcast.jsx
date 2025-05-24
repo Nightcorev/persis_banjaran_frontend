@@ -51,8 +51,8 @@ const getFileIcon = (filename) => {
 function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
-    deskripsi: "",
-    nama_file_server: null, // Nama file dari server setelah upload
+    pesan: "",
+    lampiran_server: null, // Nama file dari server setelah upload
     status_pengiriman: "",
     waktu_pengiriman: "",
     tujuan: "", // Pilihan: 'semua', 'PJ', 'nomor_tertentu'
@@ -71,8 +71,8 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
   useEffect(() => {
     if (isOpen) {
       setForm({
-        deskripsi: "",
-        nama_file_server: null,
+        pesan: "",
+        lampiran_server: null,
         status_pengiriman: "",
         waktu_pengiriman: "",
         tujuan: "",
@@ -123,7 +123,7 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
     if (!file) {
       setFileObject(null);
       setUploadedFileNameDisplay("");
-      setForm((prev) => ({ ...prev, nama_file_server: null }));
+      setForm((prev) => ({ ...prev, lampiran_server: null }));
       return;
     }
 
@@ -145,21 +145,21 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
       );
 
       if (res.data.success) {
-        setForm((prev) => ({ ...prev, nama_file_server: res.data.filename }));
+        setForm((prev) => ({ ...prev, lampiran_server: res.data.filename }));
         setUploadedFileNameDisplay(res.data.filename);
         toast.success("Lampiran berhasil diunggah.");
       } else {
         setUploadedFileNameDisplay("Upload Gagal");
         toast.error(res.data.message || "Upload lampiran gagal.");
         setFileObject(null);
-        setForm((prev) => ({ ...prev, nama_file_server: null }));
+        setForm((prev) => ({ ...prev, lampiran_server: null }));
       }
     } catch (error) {
       console.error("Upload error:", error);
       setUploadedFileNameDisplay("Upload Gagal");
       toast.error("Upload lampiran gagal.");
       setFileObject(null);
-      setForm((prev) => ({ ...prev, nama_file_server: null }));
+      setForm((prev) => ({ ...prev, lampiran_server: null }));
     }
   };
 
@@ -200,7 +200,7 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.deskripsi || !form.tujuan || !form.status_pengiriman) {
+    if (!form.pesan || !form.tujuan || !form.status_pengiriman) {
       toast.warn(
         "Harap isi semua field yang wajib diisi (Penerima, Pesan, Status Pengiriman)."
       );
@@ -217,7 +217,7 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
 
     setIsSubmitting(true);
     const dataToSend = new FormData();
-    dataToSend.append("deskripsi", form.deskripsi);
+    dataToSend.append("pesan", form.pesan);
     dataToSend.append("tujuan", form.tujuan);
     dataToSend.append("status_pengiriman", form.status_pengiriman);
 
@@ -227,9 +227,9 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
     if (form.status_pengiriman === "Langsung") {
       dataToSend.append("waktu_pengiriman", form.waktu_pengiriman);
     }
-    if (form.nama_file_server) {
+    if (form.lampiran_server) {
       // Kirim nama file dari server
-      dataToSend.append("nama_file", form.nama_file_server);
+      dataToSend.append("lampiran", form.lampiran_server);
     }
     if (form.tujuan === "nomor_tertentu") {
       // Kirim array ID sebagai string JSON atau biarkan Laravel handle array
@@ -327,19 +327,19 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
           {/* Pesan */}
           <div>
             <label
-              htmlFor="deskripsi"
+              htmlFor="pesan"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Pesan <span className="text-red-500">*</span>
             </label>
             <textarea
-              id="deskripsi"
-              name="deskripsi"
+              id="pesan"
+              name="pesan"
               rows="5"
               placeholder="Masukkan isi pesan broadcast..."
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               onChange={handleChange}
-              value={form.deskripsi}
+              value={form.pesan}
               required
             ></textarea>
           </div>
@@ -347,7 +347,7 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
           {/* Lampiran */}
           <div>
             <label
-              htmlFor="nama_file_input"
+              htmlFor="lampiran_input"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Lampiran (Opsional - Gambar/PDF)
@@ -357,13 +357,13 @@ function AddBroadcastModal({ isOpen, onClose, onSubmit }) {
                 <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
                 <div className="flex text-sm text-gray-600">
                   <label
-                    htmlFor="nama_file_input"
+                    htmlFor="lampiran_input"
                     className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
                   >
                     <span>Unggah file</span>
                     <input
-                      id="nama_file_input"
-                      name="nama_file_obj"
+                      id="lampiran_input"
+                      name="lampiran_obj"
                       type="file"
                       className="sr-only"
                       onChange={handleFileChange}
@@ -471,14 +471,14 @@ function BroadcastDetailModal({ isOpen, onClose, data }) {
   /* ... (Kode modal detail tidak berubah) ... */
   if (!isOpen || !data) return null;
   const attachmentBaseUrl = "http://localhost:3000/public/uploads/broadcast/";
-  const attachmentUrl = data.nama_file
-    ? `${attachmentBaseUrl}${data.nama_file}`
+  const attachmentUrl = data.lampiran
+    ? `${attachmentBaseUrl}${data.lampiran}`
     : null;
-  const isPdf = attachmentUrl && data.nama_file.toLowerCase().endsWith(".pdf");
+  const isPdf = attachmentUrl && data.lampiran.toLowerCase().endsWith(".pdf");
   const isImage =
     attachmentUrl &&
     ["jpg", "jpeg", "png", "gif", "webp"].some((ext) =>
-      data.nama_file.toLowerCase().endsWith(ext)
+      data.lampiran.toLowerCase().endsWith(ext)
     );
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
@@ -532,7 +532,7 @@ function BroadcastDetailModal({ isOpen, onClose, data }) {
               Pesan:
             </strong>
             <p className="text-gray-800 whitespace-pre-wrap bg-gray-50 p-3 rounded border border-gray-200">
-              {data.deskripsi || "-"}
+              {data.pesan || "-"}
             </p>
           </div>
           {attachmentUrl && (
@@ -559,7 +559,7 @@ function BroadcastDetailModal({ isOpen, onClose, data }) {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-blue-600 hover:underline"
                 >
-                  {getFileIcon(data.nama_file)} {data.nama_file}
+                  {getFileIcon(data.lampiran)} {data.lampiran}
                 </a>
               )}
             </div>
@@ -921,21 +921,21 @@ const KelolaBroadcast = () => {
                     </td>
                     <td
                       className="px-4 py-3 text-gray-800 max-w-xs truncate"
-                      title={info.deskripsi}
+                      title={info.pesan}
                     >
-                      {info.deskripsi}
+                      {info.pesan}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-center">
-                      {info.nama_file ? (
+                      {info.lampiran ? (
                         <button
                           // --- UBAH onClick DI SINI ---
                           onClick={() =>
-                            handleOpenAttachmentModal(info.nama_file)
+                            handleOpenAttachmentModal(info.lampiran)
                           } // Buka modal lampiran
                           className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
-                          title={`Lihat lampiran: ${info.nama_file}`}
+                          title={`Lihat lampiran: ${info.lampiran}`}
                         >
-                          {getFileIcon(info.nama_file)}
+                          {getFileIcon(info.lampiran)}
                           <span className="hidden sm:inline">Lihat</span>
                         </button>
                       ) : (

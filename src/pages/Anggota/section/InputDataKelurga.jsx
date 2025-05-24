@@ -86,10 +86,10 @@ const InputDataKeluarga = ({ data, onDataChange, nomorAnggota }) => {
                             onChange={handleInputChange}
                         >
                             <option value="">-- Silahkan Pilih</option>
-                            <option value="Kurang dari 2 orang">Kurang dari 2 orang</option>
-                            <option value="2-3 Orang">2-3 Orang</option>
-                            <option value="4-5 orang">4-5 orang</option>
-                            <option value="Lebih dari 5 Orang">Lebih dari 5 Orang</option>
+                            <option value="1">Kurang dari 2 orang</option>
+                            <option value="2">2-3 Orang</option>
+                            <option value="3">4-5 orang</option>
+                            <option value="4">Lebih dari 5 Orang</option>
                         </select>
                         {errors.jumlahTanggungan && <p className="text-red-500 text-xs mt-1">{errors.jumlahTanggungan}</p>}
                     </div>
