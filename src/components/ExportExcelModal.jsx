@@ -37,9 +37,9 @@ const ExportExcelModal = ({ isOpen, onClose }) => {
     tingkat_pendidikan: true,
     nama_sekolah: false,
     jurusan: false,
-    tahun_masuk_pendidikan: false,
-    tahun_keluar: false,
-    jenis_pendidikan: false,
+    // tahun_masuk_pendidikan: false,
+    // tahun_keluar: false,
+    // jenis_pendidikan: false,
     
     // Work
     nama_pekerjaan: true,
@@ -92,9 +92,9 @@ const ExportExcelModal = ({ isOpen, onClose }) => {
       { id: "tingkat_pendidikan", label: "Tingkat Pendidikan" },
       { id: "nama_sekolah", label: "Nama Sekolah" },
       { id: "jurusan", label: "Jurusan" },
-      { id: "tahun_masuk_pendidikan", label: "Tahun Masuk" },
-      { id: "tahun_keluar", label: "Tahun Keluar" },
-      { id: "jenis_pendidikan", label: "Jenis Pendidikan" },
+      // { id: "tahun_masuk_pendidikan", label: "Tahun Masuk" },
+      // { id: "tahun_keluar", label: "Tahun Keluar" },
+      // { id: "jenis_pendidikan", label: "Jenis Pendidikan" },
     ],
     "Data Pekerjaan": [
       { id: "nama_pekerjaan", label: "Pekerjaan" },

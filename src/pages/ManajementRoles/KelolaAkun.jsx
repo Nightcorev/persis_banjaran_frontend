@@ -23,7 +23,7 @@ const KelolaAkun = () => {
   const [selectedUsername, setSelectedUsername] = useState("");
   const [selectedPassword, setSelectedPassword] = useState("");
   const [selectedAnggota, setSelectedAnggota] = useState([]);
-  const [selectedEmail, setSelectedEmail] = useState([]);
+  // const [selectedEmail, setSelectedEmail] = useState([]);
 
   const [editingAkunId, setEditingAkunId] = useState(null);
 
@@ -105,7 +105,7 @@ const KelolaAkun = () => {
         {
           id: selectedOption.value,
           nama_lengkap: selectedOption.label.split(" (")[0],
-          email: selectedOption.label.split("(")[1]?.replace(")", ""),
+          // email: selectedOption.label.split("(")[1]?.replace(")", ""),
         },
       ]);
     }
@@ -114,7 +114,7 @@ const KelolaAkun = () => {
   const openAddModal = () => {
     setSelectedUsername("");
     setSelectedPassword("");
-    setSelectedEmail("");
+    // setSelectedEmail("");
     setSelectedAnggota([]);
     setSelectedRole([]);
     setEditingAkunId(null);
@@ -125,13 +125,13 @@ const KelolaAkun = () => {
   const openEditModal = (akun) => {
     setSelectedRole([{ id: akun.role.id }]);
     setSelectedUsername(akun.username);
-    setSelectedEmail("");
+    // setSelectedEmail("");
     setSelectedPassword("");
     setSelectedAnggota([
       {
         id: akun.anggota.id_anggota,
         nama_lengkap: akun.anggota.nama_lengkap,
-        email: akun.anggota.email,
+        // email: akun.anggota.email,
       },
     ]);
     setEditingAkunId(akun.id);
@@ -155,17 +155,17 @@ const KelolaAkun = () => {
     setLoading(true);
 
     try {
-      let anggotaEmail = selectedAnggota[0].email;
-      if (!anggotaEmail || anggotaEmail === "-") {
-        anggotaEmail = `${selectedAnggota[0].nama_lengkap
-          .replace(/\s+/g, "")
-          .toLowerCase()}@gmail.com`;
-      }
-      let finalEmail = selectedEmail || anggotaEmail;
+      // let anggotaEmail = selectedAnggota[0].email;
+      // if (!anggotaEmail || anggotaEmail === "-") {
+      //   anggotaEmail = `${selectedAnggota[0].nama_lengkap
+      //     .replace(/\s+/g, "")
+      //     .toLowerCase()}@gmail.com`;
+      // }
+      // let finalEmail = selectedEmail || anggotaEmail;
 
       const payload = {
         name: selectedAnggota[0].nama_lengkap,
-        email: finalEmail,
+        // email: finalEmail,
         username: selectedUsername,
         password: selectedPassword || undefined,
         role_id: selectedRole[0].id,
@@ -191,7 +191,8 @@ const KelolaAkun = () => {
 
   const anggotaOptions = anggotas.map((anggota) => ({
     value: anggota.id_anggota,
-    label: `${anggota.nama_lengkap} (${anggota.email})`,
+    label: `${anggota.nama_lengkap}`,
+    // label: `${anggota.nama_lengkap} (${anggota.email})`,
   }));
 
   const customSelectStyles = {
@@ -280,7 +281,7 @@ const KelolaAkun = () => {
                 <th className="border p-2">No</th>
                 <th className="border p-2">Nama Lengkap</th>
                 <th className="border p-2">Username</th>
-                <th className="border p-2">Email</th>
+                {/* <th className="border p-2">Email</th> */}
                 <th className="border p-2">Role</th>
                 <th className="border p-2">Action</th>
               </tr>
@@ -297,7 +298,7 @@ const KelolaAkun = () => {
                     <td className="border p-1.5 sm:p-2 text-center">
                       {akun.username}
                     </td>
-                    <td className="border p-1.5 sm:p-2">{akun.email}</td>
+                    {/* <td className="border p-1.5 sm:p-2">{akun.email}</td> */}
                     <td className="border p-1.5 sm:p-2 text-center">
                       {akun.role ? akun.role.name_role : "Tidak ada role"}
                     </td>
@@ -439,7 +440,7 @@ const KelolaAkun = () => {
               </div>
 
               {/* Input Email (Edit mode only) */}
-              {isEditMode && (
+              {/* {isEditMode && (
                 <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
                   <label className="w-full sm:w-1/3 text-start font-medium text-xs sm:text-sm text-gray-700">
                     Email
@@ -452,7 +453,7 @@ const KelolaAkun = () => {
                     onChange={(e) => setSelectedEmail(e.target.value)}
                   />
                 </div>
-              )}
+              )} */}
 
               {/* Input Password */}
               <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
@@ -513,7 +514,8 @@ const KelolaAkun = () => {
                       selectedAnggota.length > 0
                         ? {
                             value: selectedAnggota[0].id,
-                            label: `${selectedAnggota[0].nama_lengkap} (${selectedAnggota[0].email})`,
+                            label: `${selectedAnggota[0].nama_lengkap}`,
+                            // label: `${selectedAnggota[0].nama_lengkap} (${selectedAnggota[0].email})`,
                           }
                         : null
                     }

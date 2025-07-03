@@ -155,15 +155,37 @@ const ReminderIuran = () => {
     tunggakanData.every((item) => selectedAnggotaIds.has(item.anggota_id));
 
   // --- Handler Aksi Kirim ---
-  const handleSendReminder = (anggota) => {
-    // Fungsi ini tetap bisa dipakai untuk tombol kirim per baris
-    console.log("Mengirim reminder (simulasi) ke:", anggota);
-    toast.info(
-      `Reminder akan dikirim ke ${anggota.nama_lengkap} (${
-        anggota.no_telp || "No Telp tidak ada"
-      })`
-    );
-    // Implementasi pengiriman WA sebenarnya bisa ditambahkan di sini
+  const handleSendReminder = async (anggota) => {
+    try {
+      // Data yang akan dikirim ke Laravel
+      // const reminderData = {
+      //   anggota_id: anggota.id,
+      //   nama_lengkap: anggota.nama_lengkap,
+      //   no_telp: anggota.no_telp,
+      //   nominal_tunggakan: anggota.total_tunggakan,
+      //   jumlah_bulan_tunggakan: anggota.bulan_tunggakan.length,
+      //   detail_bulan_tunggakan: anggota.bulan_tunggakan.join(', ')
+      // };
+
+      // Panggil endpoint Laravel
+      const response = await api.post(`${API_URL}/iuran/send_reminder`, anggota);
+
+      toast.success(
+        response.data.message ||
+          `Reminder berhasil dikirim ke ${anggota.nama_lengkap}`
+      );
+      
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || 
+        error.response?.data?.error || 
+        "Gagal mengirim reminder";
+        
+      toast.error(errorMessage);
+      console.error("Send reminder error:", error);
+    } finally {
+      setLoadingSend(false);
+    }
   };
 
   const handleBatchSendReminder = async (idsToSend) => {

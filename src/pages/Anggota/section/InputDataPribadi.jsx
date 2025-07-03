@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import api from "../../../utils/api";
+import { useParams } from "react-router-dom";
 
 const InputDataPribadi = ({ data, onDataChange, nomorAnggota, setNomorAnggota }) => {
+    const { id } = useParams();
     const [jamaahChoice, setJamaahChoice] = useState([]);
     const [otonomChoice, setOtonomChoice] = useState([]);
     const [errors, setErrors] = useState({});
+    const [isChecking, setIsChecking] = useState(false);
 
     useEffect(() => {
         // Fungsi untuk fetch data dari API
@@ -20,6 +23,29 @@ const InputDataPribadi = ({ data, onDataChange, nomorAnggota, setNomorAnggota })
     
         fetchChoices();
       }, []);
+
+    const checkUniqueFields = async (fieldName, value) => {
+      if (!value) return null;
+      
+      try {
+        setIsChecking(true);
+        const response = await api.post("/check_unique_fields", {
+          field: fieldName,
+          value: value,
+          currentId: id || null // Kirim ID jika sedang edit data
+        });
+        
+        if (!response.data.isUnique) {
+          return response.data.message;
+        }
+        return null;
+      } catch (error) {
+        console.error("Error checking unique fields:", error);
+        return "Gagal memverifikasi data";
+      } finally {
+        setIsChecking(false);
+      }
+    };
     
     // Fungsi validasi berdasarkan tipe data dari database
     const validateField = (name, value) => {
@@ -182,17 +208,23 @@ const InputDataPribadi = ({ data, onDataChange, nomorAnggota, setNomorAnggota })
                   handleDataChange("nomorAnggota", e.target.value);
                   setNomorAnggota(e.target.value);
                 }}
-                onBlur={() => {
+                onBlur={async () => {
                   if (!data.nomorAnggota) {
                     setErrors(prev => ({
                       ...prev,
                       nomorAnggota: "Field ini wajib diisi"
                     }));
+                  } else {
+                    // Validasi keunikan saat blur
+                    const error = await checkUniqueFields("nomorAnggota", data.nomorAnggota);
+                    setErrors(prev => ({...prev, nomorAnggota: error}));
                   }
                 }}
+                disabled={isChecking}
                 required
               />
               {errors.nomorAnggota && <p className="text-red-500 text-xs mt-1">{errors.nomorAnggota}</p>}
+              {isChecking && <p className="text-xs text-gray-500 mt-1">Memeriksa...</p>}
             </div>
           </div>
 
@@ -207,18 +239,24 @@ const InputDataPribadi = ({ data, onDataChange, nomorAnggota, setNomorAnggota })
                 className={`w-full p-2 border rounded-md text-xs ${errors.nomorKTP ? "border-red-500" : ""}`}
                 value={data.nomorKTP || ""}
                 onChange={(e) => handleDataChange("nomorKTP", e.target.value)}
-                onBlur={() => {
+                onBlur={async () => {
                   if (!data.nomorKTP) {
                     setErrors(prev => ({
                       ...prev,
                       nomorKTP: "Field ini wajib diisi"
                     }));
+                  } else {
+                    // Validasi keunikan saat blur
+                    const error = await checkUniqueFields("nomorKTP", data.nomorKTP);
+                    setErrors(prev => ({...prev, nomorKTP: error}));
                   }
                 }}
                 maxLength={20}
                 required
+                disabled={isChecking}
               />
               {errors.nomorKTP && <p className="text-red-500 text-xs mt-1">{errors.nomorKTP}</p>}
+              {isChecking && <p className="text-xs text-gray-500 mt-1">Memeriksa...</p>}
             </div>
           </div>
   
@@ -439,7 +477,7 @@ const InputDataPribadi = ({ data, onDataChange, nomorAnggota, setNomorAnggota })
                 <option value="1">Aktif</option>
                 <option value="0">Tidak</option>
                 <option value="2">Meninggal Dunia</option>
-                <option value="3">Mutasi</option>
+                <option value="3">Heregistrasi</option>
               </select>
               {errors.statusAktif && <p className="text-red-500 text-xs mt-1">{errors.statusAktif}</p>}
             </div>
