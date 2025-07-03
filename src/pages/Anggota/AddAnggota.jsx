@@ -97,7 +97,12 @@ const AddAnggota = () => {
 
       if (response.data.success) {
         console.log("Upload berhasil:", response.data);
-        const fullUrl = `http://localhost:8000${response.data.path}`;
+
+        const path = response.data.path.startsWith('/') 
+      ? response.data.path 
+      : `/${response.data.path}`;
+        
+        const fullUrl = `${import.meta.env.VITE_API_BASE_URL}${path}`.replace(/\/\//g, '/');
         
         setFormData(prevState => ({
           ...prevState,
